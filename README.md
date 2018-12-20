@@ -1,7 +1,6 @@
-# Magi Shift Core API
+# Magi Shift Core
 
-This repository contains Magi Shift core API,
-add this repo as npm package to your project.
+Magishift is Low-Code Framework, helps you to build application easier, faster and a more efficient use of time, and doesn’t matter whether you have software engineer background or not to deploy your wapplication.
 
 ## Code of conduct
 
