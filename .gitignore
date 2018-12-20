@@ -1,0 +1,44 @@
+# dependencies
+/node_modules
+
+# IDE
+/.idea
+/.awcache
+
+# misc
+npm-debug.log
+package.lock
+
+# example
+/quick-start
+
+# tests
+/test
+/coverage
+/.nyc_output
+
+.DS_Store
+
+
+clients/**
+.history
+
+# uploaded files
+files/*
+
+# distribution
+yarn-error.log
+
+# log
+
+*.log
+
+main.schema.graphql
+
+nohup.out
+
+logger/*
+
+.env
+
+dist

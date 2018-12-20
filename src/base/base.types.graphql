@@ -1,0 +1,7 @@
+scalar JSON
+
+scalar Date
+
+interface IEntity {
+  id: ID!
+}

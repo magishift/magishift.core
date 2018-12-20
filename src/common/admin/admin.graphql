@@ -1,0 +1,4 @@
+type Mutation {
+  loginAdmin(username: String, password: String): Token
+  logoutAdmin: Boolean
+}
