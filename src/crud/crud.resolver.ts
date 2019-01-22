@@ -4,6 +4,7 @@ import * as pluralize from 'pluralize';
 import { IEndpointRoles } from '../auth/role/role.interface';
 import { Roles } from '../auth/role/roles.decorator';
 import { RolesGuard } from '../auth/role/roles.guard';
+import { GraphQLInstance } from '../graphql/GraphQL.instance';
 import { HttpService } from '../http/http.service';
 import { ExceptionHandler } from '../utils/error.utils';
 import { capitalizeFirstLetter } from '../utils/string.utils';
@@ -85,7 +86,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
     @Roles(...(roles.read || roles.default))
     async findById(@Context() ctx: any): Promise<object> {
       try {
-        const result = await this.http.ExecGql(ctx.bodyScope);
+        const result = await GraphQLInstance.performQuery(ctx.bodyScope);
         return result[findById];
       } catch (e) {
         return ExceptionHandler(e);
@@ -96,7 +97,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
     @Roles(...(roles.read || roles.default))
     async findAll(@Context() ctx: any): Promise<object> {
       try {
-        const result = await this.http.ExecGql(ctx.bodyScope);
+        const result = await GraphQLInstance.performQuery(ctx.bodyScope);
 
         return result[findAll];
       } catch (e) {
@@ -152,7 +153,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
     @Roles(...(roles.delete || roles.default))
     async destroy(@Context() ctx: any): Promise<object> {
       try {
-        const result = await this.http.ExecGql(ctx.bodyScope);
+        const result = await GraphQLInstance.performQuery(ctx.bodyScope);
         return result[destroy];
       } catch (e) {
         return ExceptionHandler(e);
@@ -163,7 +164,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
     @Roles(...(roles.delete || roles.default))
     async destroyById(@Context() ctx: any): Promise<object> {
       try {
-        const result = await this.http.ExecGql(ctx.bodyScope);
+        const result = await GraphQLInstance.performQuery(ctx.bodyScope);
         return result[destroy];
       } catch (e) {
         return ExceptionHandler(e);

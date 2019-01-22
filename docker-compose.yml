@@ -54,3 +54,12 @@ services:
       - ${MAGISHIFT_ADMINER_PORT}:8080
     depends_on:
       - 'postgres'
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - ${MAGISHIFT_GRAFANA_PORT}:3000
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,briangann-gauge-panel,natel-plotly-panel
+    depends_on:
+      - 'postgres'

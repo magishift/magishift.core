@@ -10,12 +10,11 @@ import { json } from 'body-parser';
 import chalk from 'chalk';
 import * as express from 'express';
 import { existsSync } from 'fs';
-import * as graphqljs from 'graphql';
+import * as graphqlJS from 'graphql';
 import * as GraphQlJSON from 'graphql-type-json';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import { fileLoader, mergeTypes } from 'merge-graphql-schemas';
 import * as path from 'path';
-import { createPostGraphileSchema } from 'postgraphile';
 import 'reflect-metadata';
 import { AccountModule } from './auth/account/account.module';
 import { AuthModule } from './auth/auth.module';
@@ -31,6 +30,7 @@ import { ConfigService } from './config/config.service';
 import { CronModule } from './cron/cron.module';
 import { DraftModule } from './crud/draft/draft.module';
 import { FileStorageModule } from './fileStorage/fileStorage.module';
+import { GraphQLInstance } from './graphql/GraphQL.instance';
 import { HttpModule } from './http/http.module';
 import { LoggerModule } from './logger/logger.module';
 import { LoggerService } from './logger/logger.service';
@@ -43,6 +43,18 @@ import { DeviceModule } from './user/device/device.module';
 import { NotificationModule } from './user/notification/notification.module';
 import { ErrorFilter } from './utils/error.utils';
 
+/**
+ * Magishift application Bootstrapper
+ *
+ * @export
+ * @param {(Array<Type<any> | DynamicModule | ForwardReference>)} imports
+ * @param {IConfigOptions} config
+ * @param {Type<any>[]} [controllers]
+ * @param {Provider[]} [providers]
+ * @param {(Array<DynamicModule | string | Provider | ForwardReference>)} [exports]
+ * @param {Provider[]} [components]
+ * @returns {Promise<any>}
+ */
 export async function MagiApp(
   imports: Array<Type<any> | DynamicModule | ForwardReference>,
   config: IConfigOptions,
@@ -55,13 +67,9 @@ export async function MagiApp(
     ConfigService.setConfig = config;
   }
 
-  const postgresCon = `postgres://${config.db.main.username}:${config.db.main.password}@${config.db.main.host}:${
-    config.db.main.port
-  }/${config.db.main.database}`;
+  await GraphQLInstance.initialize(config.db.main);
 
-  const mainSchema = await createPostGraphileSchema(postgresCon, 'public', {
-    dynamicJson: true,
-  });
+  const mainSchema = GraphQLInstance.graphqlSchema;
 
   const graphqlPaths: string[] = [];
 
@@ -75,7 +83,7 @@ export async function MagiApp(
     return mergeTypes(fileLoader(val), { all: true });
   });
 
-  const schema = mergeTypes([...typesArray, graphqljs.printSchema(mainSchema)], { all: true });
+  const schema = mergeTypes([...typesArray, graphqlJS.printSchema(mainSchema)], { all: true });
 
   const defaultImports = [
     BaseModule,
@@ -182,6 +190,7 @@ export async function MagiApp(
 
     app.use('/favicon.ico', express.static(`${__dirname}/../images/favicon.ico`));
 
+    console.info(chalk.green(`Enabling Voyager`));
     app.use('/voyager', voyagerMiddleware({ endpointUrl: '/graphql' }));
 
     if (ApplicationModule.AgendaInstance) {
