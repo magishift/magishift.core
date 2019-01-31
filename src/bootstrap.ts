@@ -8,9 +8,10 @@ import * as Agenda from 'agenda';
 import * as Agendash from 'agendash';
 import { json } from 'body-parser';
 import chalk from 'chalk';
-import * as csurf from 'csurf';
+import * as compression from 'compression';
 import * as express from 'express';
 import * as rateLimit from 'express-rate-limit';
+import * as StatusMonitor from 'express-status-monitor';
 import { existsSync } from 'fs';
 import * as graphqlJS from 'graphql';
 import * as GraphQlJSON from 'graphql-type-json';
@@ -32,6 +33,7 @@ import { ConfigModule } from './config/config.module';
 import { ConfigService } from './config/config.service';
 import { CronModule } from './cron/cron.module';
 import { DraftModule } from './crud/draft/draft.module';
+import { PubSubList, PubSubProvider } from './crud/providers/pubSub.provider';
 import { FileStorageModule } from './fileStorage/fileStorage.module';
 import { GraphQLInstance } from './graphql/graphql.instance';
 import { HttpModule } from './http/http.module';
@@ -82,11 +84,13 @@ export async function MagiApp(
     graphqlPaths.push('node_modules/@mandalalabs/magishift.core/dist/**/*.graphql');
   }
 
-  const typesArray = graphqlPaths.map(val => {
-    return mergeTypes(fileLoader(val), { all: true });
+  const typesArray = graphqlPaths.map(graphqlPath => {
+    return mergeTypes(fileLoader(graphqlPath), { all: true });
   });
 
-  const schema = mergeTypes([...typesArray, graphqlJS.printSchema(mainSchema)], { all: true });
+  const graphQLSchema = mergeTypes([...typesArray, PubSubList.GetPubSubSchema, graphqlJS.printSchema(mainSchema)], {
+    all: true,
+  });
 
   const defaultImports = [
     BaseModule,
@@ -97,15 +101,21 @@ export async function MagiApp(
     ConfigModule.injectConfig(ConfigService.getConfig),
     GraphQLModule.forRoot({
       resolvers: { JSON: GraphQlJSON },
-      typeDefs: schema,
+      typeDefs: graphQLSchema,
       debug: true,
       playground: true,
       installSubscriptionHandlers: true,
       tracing: true,
-      context: ({ req }) => ({
-        authScope: req.headers.authorization,
-        bodyScope: req.body,
-      }),
+      context: data => {
+        if (data.req) {
+          return {
+            authScope: data.req.headers.authorization,
+            bodyScope: data.req.body,
+          };
+        }
+
+        return data;
+      },
     }),
     FileStorageModule,
     LoggerModule,
@@ -140,6 +150,13 @@ export async function MagiApp(
   }
 
   providers.push(DateScalar);
+  providers.push(PubSubProvider);
+
+  if (!exports) {
+    exports = [];
+  }
+
+  exports.push(PubSubProvider);
 
   @Module({
     imports: [...defaultImports, ...imports],
@@ -168,7 +185,7 @@ export async function MagiApp(
     }
   }
 
-  // Bootstrap Application
+  // Bootstrap Magi Application
   async function bootstrap(): Promise<void> {
     const appLogger = new LoggerService();
 
@@ -210,11 +227,13 @@ export async function MagiApp(
 
     app.use(json({ limit: '50mb' }));
 
-    console.info(chalk.green(`Init security features: helmet, csurf, rate-limit`));
+    app.use(StatusMonitor());
+
+    console.info(chalk.green(`Load security features: helmet, csurf, rate-limit`));
 
     app.use(helmet());
 
-    app.use(csurf());
+    // app.use(csurf());
 
     app.use(
       rateLimit({
@@ -222,6 +241,8 @@ export async function MagiApp(
         max: 100, // limit each IP to 100 requests per windowMs
       }),
     );
+
+    app.use(compression());
 
     await app.listen(ConfigService.getConfig.appPort);
 

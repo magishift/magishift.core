@@ -1,9 +1,11 @@
-import { UseGuards } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import { Context, Query, Resolver } from '@nestjs/graphql';
+import { PubSub } from 'graphql-subscriptions';
 import { ResolverFactory } from '../../crud/crud.resolver';
 import { GraphQLInstance } from '../../graphql/graphql.instance';
 import { HttpService } from '../../http/http.service';
 import { ExceptionHandler } from '../../utils/error.utils';
+import { AuthService } from '../auth.service';
 import { DefaultRoles } from '../role/role.const';
 import { Roles } from '../role/roles.decorator';
 import { RolesGuard } from '../role/roles.guard';
@@ -13,7 +15,11 @@ import { ACCOUNT_ENDPOINT } from './interfaces/account.const';
 import { IAccount, IAccountDto } from './interfaces/account.interface';
 
 const baseResolver = ResolverFactory<IAccountDto, IAccount>(ACCOUNT_ENDPOINT, {
-  default: [DefaultRoles.public],
+  default: [DefaultRoles.authenticated],
+  write: [DefaultRoles.public],
+  update: [DefaultRoles.authenticated],
+  read: [DefaultRoles.public],
+  delete: [DefaultRoles.admin],
 });
 
 @UseGuards(RolesGuard)
@@ -21,14 +27,16 @@ const baseResolver = ResolverFactory<IAccountDto, IAccount>(ACCOUNT_ENDPOINT, {
 export class AccountResolver extends baseResolver {
   constructor(
     protected readonly service: AccountService,
+    protected readonly authService: AuthService,
     protected readonly mapper: AccountMapper,
+    @Inject('PubSub') protected readonly pubSub: PubSub,
     protected readonly http: HttpService,
   ) {
-    super(service, mapper, http);
+    super(service, authService, mapper, pubSub, http);
   }
 
   @Query('accountById')
-  @Roles(DefaultRoles.public)
+  @Roles(DefaultRoles.authenticated)
   async findById(@Context() ctx: any): Promise<object> {
     try {
       const result: any = await GraphQLInstance.performQuery(ctx.bodyScope);
@@ -42,7 +50,7 @@ export class AccountResolver extends baseResolver {
   }
 
   @Query('allAccounts')
-  @Roles(DefaultRoles.public)
+  @Roles(DefaultRoles.admin)
   async findAll(@Context() ctx: any): Promise<object> {
     try {
       const result: any = await GraphQLInstance.performQuery(ctx.bodyScope);

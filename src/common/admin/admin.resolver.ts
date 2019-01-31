@@ -1,5 +1,7 @@
-import { UseGuards } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import { Resolver } from '@nestjs/graphql';
+import { PubSub } from 'graphql-subscriptions';
+import { AuthService } from '../../auth/auth.service';
 import { DefaultRoles } from '../../auth/role/role.const';
 import { RolesGuard } from '../../auth/role/roles.guard';
 import { HttpService } from '../../http/http.service';
@@ -16,9 +18,11 @@ export class AdminResolver extends UserResolverFactory<IAdminDto, IAdmin>(ADMIN_
 }) {
   constructor(
     protected readonly service: AdminService,
+    protected readonly authService: AuthService,
     protected readonly mapper: AdminMapper,
+    @Inject('PubSub') protected readonly pubSub: PubSub,
     protected readonly http: HttpService,
   ) {
-    super(service, mapper, http);
+    super(service, authService, mapper, pubSub, http);
   }
 }

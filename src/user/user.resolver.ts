@@ -1,5 +1,7 @@
-import { UseGuards } from '@nestjs/common';
-import { Args, Context, Mutation } from '@nestjs/graphql';
+import { Inject, UseGuards } from '@nestjs/common';
+import { Args, Mutation } from '@nestjs/graphql';
+import { PubSub } from 'graphql-subscriptions';
+import { AuthService } from '../auth/auth.service';
 import { ILoginData, IToken } from '../auth/interfaces/auth.interface';
 import { DefaultRoles } from '../auth/role/role.const';
 import { IEndpointRoles } from '../auth/role/role.interface';
@@ -17,9 +19,13 @@ import { UserService } from './user.service';
 export function UserResolverFactory<TDto extends IUserDto, TEntity extends IUser>(
   name: string,
   roles: IEndpointRoles,
-): {
-  new (service: UserService<TEntity, TDto>, mapper: UserMapper<TEntity, TDto>, http: HttpService): IUserResolver;
-} {
+): new (
+  service: UserService<TEntity, TDto>,
+  authService: AuthService,
+  mapper: UserMapper<TEntity, TDto>,
+  pubSub: PubSub,
+  http: HttpService,
+) => IUserResolver {
   const nameCapFirst = capitalizeFirstLetter(name);
   const login: string = `login${nameCapFirst}`;
   const logout: string = `logout${nameCapFirst}`;
@@ -32,10 +38,12 @@ export function UserResolverFactory<TDto extends IUserDto, TEntity extends IUser
   class UserResolverProduct extends baseResolverFactory implements IUserResolver {
     constructor(
       protected readonly service: UserService<TEntity, TDto>,
+      protected readonly authService: AuthService,
       protected readonly mapper: UserMapper<TEntity, TDto>,
+      @Inject('PubSub') protected readonly pubSub: PubSub,
       protected readonly http: HttpService,
     ) {
-      super(service, mapper, http);
+      super(service, authService, mapper, pubSub, http);
     }
 
     @Mutation(create)
@@ -54,7 +62,7 @@ export function UserResolverFactory<TDto extends IUserDto, TEntity extends IUser
 
     @Mutation(updateById)
     @Roles(...(roles.update || roles.write || roles.default))
-    async updateById(@Context() _ctx: any, @Args() args: { input }): Promise<object> {
+    async updateById(@Args() args: { input }): Promise<object> {
       try {
         const userDto = await this.mapper.dtoFromObject(args.input[`${name}Patch`]);
         await userDto.validate();

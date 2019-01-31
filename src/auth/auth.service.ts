@@ -6,12 +6,14 @@ import { DeepPartial, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { ConfigService } from '../config/config.service';
 import { IUserDto } from '../user/interfaces/user.interface';
+import { ExceptionHandler } from '../utils/error.utils';
 import { IAccountDto } from './account/interfaces/account.interface';
 import { IToken, ITokenPayload } from './interfaces/auth.interface';
 import { LoginHistoryDto } from './loginHistory/loginHistory.dto';
 import { LoginHistoryService } from './loginHistory/loginHistory.service';
 import { DefaultRoles } from './role/role.const';
 import { Session } from './session.entity';
+import { SessionUtil } from './session.util';
 
 @Injectable()
 export class AuthService {
@@ -76,6 +78,46 @@ export class AuthService {
     await this.sessionRepository.delete({
       token: authHeader[authHeader.length - 1],
     });
+  }
+
+  async authorizeToken(
+    jwtToken: string,
+    operationName: string,
+    permissions: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
+  ): Promise<boolean> {
+    try {
+      const isPublic = !permissions || permissions.length === 0 || permissions.indexOf(DefaultRoles.public) >= 0;
+
+      if (jwtToken !== undefined && jwtToken !== null && jwtToken !== DefaultRoles.public) {
+        const decryptedToken = jwt.verify(jwtToken, AuthService.jwtSecret) as ITokenPayload;
+
+        SessionUtil.setAccountId = decryptedToken.accountId;
+        SessionUtil.setAccountRealm = decryptedToken.realm;
+        SessionUtil.setAccountRoles = decryptedToken.roles;
+
+        await this.loginHistoryService.updateActions(decryptedToken.sessionId, operationName);
+
+        if (!isPublic) {
+          const session = await this.sessionRepository.findOne({
+            token: jwtToken,
+          });
+
+          if (!session) {
+            throw new HttpException('Invalid session authorization token', 401);
+          }
+
+          if (permissions.indexOf(DefaultRoles.authenticated) >= 0) {
+            return true;
+          }
+
+          return decryptedToken.roles.some(role => permissions.indexOf(role) >= 0);
+        }
+      }
+
+      return isPublic;
+    } catch (e) {
+      return ExceptionHandler(e, 401);
+    }
   }
 
   async encryptPassword(password: string): Promise<string> {
