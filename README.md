@@ -1,6 +1,6 @@
 # Magi Shift Core
 
-Magishift is Low-Code Framework, helps you to build application easier, faster and a more efficient use of time, and doesn’t matter whether you have software engineer background or not to deploy your wapplication.
+Magishift is Low-Code Framework, helps you to build application easier, faster and a more efficient use of time. By using magishift it doesn’t matter whether you have software engineer background or not to start deploy your application.
 
 ## Code of conduct
 
