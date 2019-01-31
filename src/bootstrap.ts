@@ -8,11 +8,14 @@ import * as Agenda from 'agenda';
 import * as Agendash from 'agendash';
 import { json } from 'body-parser';
 import chalk from 'chalk';
+import * as csurf from 'csurf';
 import * as express from 'express';
+import * as rateLimit from 'express-rate-limit';
 import { existsSync } from 'fs';
 import * as graphqlJS from 'graphql';
 import * as GraphQlJSON from 'graphql-type-json';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
+import * as helmet from 'helmet';
 import { fileLoader, mergeTypes } from 'merge-graphql-schemas';
 import * as path from 'path';
 import 'reflect-metadata';
@@ -30,7 +33,7 @@ import { ConfigService } from './config/config.service';
 import { CronModule } from './cron/cron.module';
 import { DraftModule } from './crud/draft/draft.module';
 import { FileStorageModule } from './fileStorage/fileStorage.module';
-import { GraphQLInstance } from './graphql/GraphQL.instance';
+import { GraphQLInstance } from './graphql/graphql.instance';
 import { HttpModule } from './http/http.module';
 import { LoggerModule } from './logger/logger.module';
 import { LoggerService } from './logger/logger.service';
@@ -206,6 +209,19 @@ export async function MagiApp(
     app.useGlobalFilters(new ErrorFilter(appLogger));
 
     app.use(json({ limit: '50mb' }));
+
+    console.info(chalk.green(`Init security features: helmet, csurf, rate-limit`));
+
+    app.use(helmet());
+
+    app.use(csurf());
+
+    app.use(
+      rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 100, // limit each IP to 100 requests per windowMs
+      }),
+    );
 
     await app.listen(ConfigService.getConfig.appPort);
 

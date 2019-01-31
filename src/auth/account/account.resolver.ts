@@ -1,7 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Context, Query, Resolver } from '@nestjs/graphql';
 import { ResolverFactory } from '../../crud/crud.resolver';
-import { GraphQLInstance } from '../../graphql/GraphQL.instance';
+import { GraphQLInstance } from '../../graphql/graphql.instance';
 import { HttpService } from '../../http/http.service';
 import { ExceptionHandler } from '../../utils/error.utils';
 import { DefaultRoles } from '../role/role.const';
@@ -46,11 +46,6 @@ export class AccountResolver extends baseResolver {
   async findAll(@Context() ctx: any): Promise<object> {
     try {
       const result: any = await GraphQLInstance.performQuery(ctx.bodyScope);
-
-      result.allAccounts.edges = result.allAccounts.edges.map(item => {
-        item.node.password = 'hidden';
-        return item;
-      });
 
       return result.allAccounts;
     } catch (e) {

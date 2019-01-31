@@ -29,9 +29,7 @@ import { IFormSchema } from './interfaces/form.interface';
 export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICrudEntity>(
   name: string,
   roles: IEndpointRoles,
-): {
-  new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>): CrudController<TDto, TEntity>;
-} {
+): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>) => CrudController<TDto, TEntity> {
   @ApiUseTags(name)
   @UseGuards(RolesGuard)
   @Roles(...roles.default)

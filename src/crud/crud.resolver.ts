@@ -4,7 +4,7 @@ import * as pluralize from 'pluralize';
 import { IEndpointRoles } from '../auth/role/role.interface';
 import { Roles } from '../auth/role/roles.decorator';
 import { RolesGuard } from '../auth/role/roles.guard';
-import { GraphQLInstance } from '../graphql/GraphQL.instance';
+import { GraphQLInstance } from '../graphql/graphql.instance';
 import { HttpService } from '../http/http.service';
 import { ExceptionHandler } from '../utils/error.utils';
 import { capitalizeFirstLetter } from '../utils/string.utils';
@@ -49,19 +49,17 @@ export abstract class CrudResolver<TDto extends ICrudDto, TEntity extends ICrudE
   }
 
   private forceFactory(): Error {
-    return new Error('Please use ResolverFactory or extends and override this method');
+    return new Error('Please use ResolverFactory or extends and override this method!');
   }
 }
 
 export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEntity>(
   name: string,
   roles: IEndpointRoles,
-): {
-  new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>, http: HttpService): CrudResolver<
-    TDto,
-    TEntity
-  >;
-} {
+): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>, http: HttpService) => CrudResolver<
+  TDto,
+  TEntity
+> {
   const nameCapFirst = capitalizeFirstLetter(name);
 
   const findById: string = `${name}ById`;
