@@ -83,13 +83,15 @@ export class AuthService {
   async authorizeToken(
     jwtToken: string,
     operationName: string,
-    permissions: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
+    permissions: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
   ): Promise<boolean> {
     try {
       const isPublic = !permissions || permissions.length === 0 || permissions.indexOf(DefaultRoles.public) >= 0;
 
       if (jwtToken !== undefined && jwtToken !== null && jwtToken !== DefaultRoles.public) {
         const decryptedToken = jwt.verify(jwtToken, AuthService.jwtSecret) as ITokenPayload;
+
+        // const isOwnerOnly = permissions.indexOf(DefaultRoles.owner) >= 0;
 
         SessionUtil.setAccountId = decryptedToken.accountId;
         SessionUtil.setAccountRealm = decryptedToken.realm;
@@ -110,7 +112,13 @@ export class AuthService {
             return true;
           }
 
-          return decryptedToken.roles.some(role => permissions.indexOf(role) >= 0);
+          const result = decryptedToken.roles.some(role => permissions.indexOf(role) >= 0);
+
+          if (!result && permissions.indexOf(DefaultRoles.owner) >= 0) {
+            return true;
+          }
+
+          return result;
         }
       }
 
@@ -142,7 +150,7 @@ export class AuthService {
     realm: string,
     roles: string[],
   ): Promise<IToken> {
-    const expiresIn = ConfigService.getConfig.jwtExpiresIn || '30d';
+    const expiresIn = ConfigService.getConfig.jwtExpiresIn || '14d';
     const secretOrKey = AuthService.jwtSecret;
 
     delete account.password;
@@ -162,6 +170,7 @@ export class AuthService {
       email: userData.email,
       phoneNumber: userData.phoneNumber,
       photo: null,
+      _dataOwner: null,
       createdBy: null,
       updatedBy: null,
       isDeleted: null,

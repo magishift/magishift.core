@@ -10,7 +10,7 @@ import { IEmailTemplate, IEmailTemplateDto } from './interfaces/emailTemplate.in
 export class EmailTemplateController extends CrudControllerFactory<IEmailTemplateDto, IEmailTemplate>(
   EMAIL_TEMPLATE_ENDPOINT,
   {
-    default: [DefaultRoles.admin],
+    default: [DefaultRoles.superAdmin],
   },
 ) {
   constructor(

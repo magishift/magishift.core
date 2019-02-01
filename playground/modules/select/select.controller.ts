@@ -8,7 +8,7 @@ import { SelectService } from './select.service';
 
 @Controller(SELECT_ENDPOINT)
 export class SelectController extends CrudControllerFactory<ISelectDto, ISelect>(SELECT_ENDPOINT, {
-  default: [DefaultRoles.admin],
+  default: [DefaultRoles.superAdmin],
 }) {
   constructor(readonly selectService: SelectService, protected readonly mapper: SelectMapper) {
     super(selectService, mapper);

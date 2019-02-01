@@ -10,7 +10,7 @@ import { NotificationService } from './notification.service';
 export class NotificationController extends CrudControllerFactory<INotificationDto, INotification>(
   NOTIFICATION_ENDPOINT,
   {
-    default: [DefaultRoles.admin],
+    default: [DefaultRoles.superAdmin],
   },
 ) {
   constructor(

@@ -1,7 +1,8 @@
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { BeforeInsert, Column, Entity, OneToMany } from 'typeorm';
 import { DataStatus } from '../../base/interfaces/base.interface';
 import { CrudEntity } from '../../crud/crud.entity';
 import { LoginHistory } from '../loginHistory/loginHistory.entity';
+import { SessionUtil } from '../session.util';
 import { IAccount } from './interfaces/account.interface';
 
 @Entity()
@@ -21,18 +22,18 @@ export class Account extends CrudEntity implements IAccount {
   @Column({ type: 'simple-array', default: [] })
   roles: string[];
 
-  @ManyToOne(_ => Account, account => account.id)
-  createdBy: Account;
-
-  @ManyToOne(_ => Account, account => account.id)
-  updatedBy: Account;
-
-  @Column({ default: false })
-  isDeleted: boolean = false;
-
   @Column({ default: DataStatus.Submitted })
   _dataStatus: DataStatus;
 
   @OneToMany(_ => LoginHistory, loginHistory => loginHistory.account)
   loginHistories: LoginHistory[];
+
+  @BeforeInsert()
+  protected beforeInsert(): void {
+    this.createdBy = { id: SessionUtil.getAccountId } as Account;
+
+    this._dataOwner = this;
+
+    delete this.createdAt;
+  }
 }

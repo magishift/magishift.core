@@ -18,6 +18,11 @@ export abstract class CrudDto extends BaseDto implements ICrudDto {
   @ApiModelProperty()
   @IsOptional()
   @IsUUID()
+  _dataOwner: IAccountDto;
+
+  @ApiModelProperty()
+  @IsOptional()
+  @IsUUID()
   createdBy: IAccountDto;
 
   @ApiModelProperty()

@@ -8,7 +8,7 @@ import { PickerService } from './picker.service';
 
 @Controller(PICKER_ENDPOINT)
 export class PickerController extends CrudControllerFactory<IPickerDto, IPicker>(PICKER_ENDPOINT, {
-  default: [DefaultRoles.admin],
+  default: [DefaultRoles.superAdmin],
 }) {
   constructor(readonly pickerService: PickerService, protected readonly mapper: PickerMapper) {
     super(pickerService, mapper);

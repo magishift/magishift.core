@@ -26,6 +26,8 @@ export class AccountDto extends BaseDto implements IAccountDto {
 
   updatedBy: IAccountDto;
 
+  _dataOwner: IAccountDto;
+
   constructor(init?: Partial<AccountDto>) {
     super();
     Object.assign(this, init);

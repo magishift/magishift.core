@@ -1,6 +1,6 @@
 export enum DefaultRoles {
   public = 'public',
   authenticated = 'authenticated',
-  admin = 'admin',
+  superAdmin = 'admin',
   owner = 'owner',
 }

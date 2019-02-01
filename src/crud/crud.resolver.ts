@@ -197,7 +197,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
               return this.pubSub.asyncIterator(subCreated);
             }
 
-            throw new HttpException(`Yuo don't have have permission to subscribe`, 401);
+            throw new HttpException(`You don't have have permission to subscribe`, 403);
           } catch (e) {
             return ExceptionHandler(e);
           }
@@ -222,7 +222,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
               return this.pubSub.asyncIterator(subUpdated);
             }
 
-            throw new HttpException(`Yuo don't have have permission to subscribe`, 401);
+            throw new HttpException(`You don't have have permission to subscribe`, 403);
           } catch (e) {
             return ExceptionHandler(e);
           }
@@ -243,7 +243,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
               return this.pubSub.asyncIterator(subDestroyed);
             }
 
-            throw new HttpException(`Yuo don't have have permission to subscribe`, 401);
+            throw new HttpException(`You don't have have permission to subscribe`, 403);
           } catch (e) {
             return ExceptionHandler(e);
           }

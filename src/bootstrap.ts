@@ -1,6 +1,6 @@
 import { MailerModule } from '@nest-modules/mailer';
 import { DynamicModule, ForwardReference, Module, Provider, Type } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { GraphQLModule } from '@nestjs/graphql';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -22,7 +22,9 @@ import * as path from 'path';
 import 'reflect-metadata';
 import { AccountModule } from './auth/account/account.module';
 import { AuthModule } from './auth/auth.module';
+import { AuthInterceptor } from './auth/interceptors/auth.interceptor';
 import { LoginHistoryModule } from './auth/loginHistory/loginHistory.module';
+import { RoleModule } from './auth/role/role.module';
 import { BaseModule } from './base/base.module';
 import { DateScalar } from './base/base.scalar';
 import { AdminModule } from './common/admin/admin.module';
@@ -109,6 +111,7 @@ export async function MagiApp(
       context: data => {
         if (data.req) {
           return {
+            ...data.req,
             authScope: data.req.headers.authorization,
             bodyScope: data.req.body,
           };
@@ -124,6 +127,7 @@ export async function MagiApp(
     EmailTemplateModule,
     SmsTemplateModule,
     AuthModule,
+    RoleModule,
     AccountModule,
     LoginHistoryModule,
     AdminModule,
@@ -167,9 +171,12 @@ export async function MagiApp(
   })
   class ApplicationModule {
     static AgendaInstance: Agenda;
+    static ReflectorInstance: Reflector;
 
-    constructor(private readonly cron: CronModule) {
+    constructor(readonly cron: CronModule, readonly reflector: Reflector) {
       ApplicationModule.AgendaInstance = this.agendaSetup(ConfigService.getConfig);
+      ApplicationModule.ReflectorInstance = reflector;
+
       this.cron.configureAgenda(ApplicationModule.AgendaInstance);
     }
 
@@ -224,6 +231,8 @@ export async function MagiApp(
     }
 
     app.useGlobalFilters(new ErrorFilter(appLogger));
+
+    app.useGlobalInterceptors(new AuthInterceptor(ApplicationModule.ReflectorInstance));
 
     app.use(json({ limit: '50mb' }));
 

@@ -14,6 +14,8 @@ export interface ICrudEntity extends IBaseEntity {
 
   _dataStatus: DataStatus;
 
+  readonly _dataOwner: IAccount;
+
   readonly createdBy: IAccount;
 
   readonly updatedBy: IAccount;
@@ -27,6 +29,8 @@ export interface ICrudDto extends IBaseDto {
   isDeleted?: boolean;
 
   _dataStatus?: DataStatus;
+
+  _dataOwner?: IAccountDto;
 
   createdBy?: IAccountDto;
 

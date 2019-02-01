@@ -36,7 +36,7 @@ export class RolesGuard implements CanActivate {
       if (authHeader && authHeader.length > 0) {
         const jwtToken = authHeader[authHeader.length - 1] || request.query.token;
 
-        return this.authService.authorizeToken(jwtToken, context.getHandler().name, permissions);
+        return await this.authService.authorizeToken(jwtToken, context.getHandler().name, permissions);
       }
 
       return isPublic;

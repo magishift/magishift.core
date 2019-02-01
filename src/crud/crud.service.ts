@@ -2,6 +2,8 @@ import { HttpException } from '@nestjs/common';
 import * as _ from 'lodash';
 import { Brackets, DeepPartial, FindOneOptions, Repository, SelectQueryBuilder } from 'typeorm';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
+import { DefaultRoles } from '../auth/role/role.const';
+import { SessionUtil } from '../auth/session.util';
 import { BaseService } from '../base/base.service';
 import { DataStatus } from '../base/interfaces/base.interface';
 import { getPropertyType, getRelationsName, isPropertyTypeNumber } from '../database/utils.database';
@@ -46,12 +48,25 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return result;
   }
 
-  async fetch(id: string, options?: FindOneOptions<TEntity>): Promise<TDto> {
+  async fetch(
+    id: string,
+    options?: FindOneOptions<TEntity>,
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+  ): Promise<TDto> {
     options = options || {};
 
     options.relations = options.relations || getRelationsName(this.repository.metadata.columns);
 
     const result = await this.repository.findOne(id, options);
+
+    if (
+      permissions &&
+      permissions.indexOf(DefaultRoles.owner) >= 0 &&
+      SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+      result._dataOwner.id !== SessionUtil.getAccountId
+    ) {
+      throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can read`, 403);
+    }
 
     if (!result) {
       throw new HttpException(`${this.constructor.name} FindById(${id}) Id Not Found`, 404);
@@ -64,12 +79,25 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return this.mapper.entityToDto(result);
   }
 
-  async findOne(param: DeepPartial<TEntity>, options?: FindOneOptions<TEntity>): Promise<TDto> {
+  async findOne(
+    param: DeepPartial<TEntity>,
+    options?: FindOneOptions<TEntity>,
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+  ): Promise<TDto> {
     options = options || {};
 
     options.relations = options.relations || getRelationsName(this.repository.metadata.columns);
 
     const result = await this.repository.findOne(param, options);
+
+    if (
+      permissions &&
+      permissions.indexOf(DefaultRoles.owner) >= 0 &&
+      SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+      result._dataOwner.id !== SessionUtil.getAccountId
+    ) {
+      throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can read`, 403);
+    }
 
     return this.mapper.entityToDto(result);
   }
@@ -81,6 +109,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       isShowDraft: false,
       isShowDeleted: false,
     },
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
   ): Promise<TDto[]> {
     const query = this.queryBuilder(filter);
 
@@ -90,13 +119,35 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     // convert entity to DTO before return
     return Promise.all(
       result.map(async entity => {
-        return this.mapper.entityToDto(entity);
+        if (
+          permissions &&
+          permissions.indexOf(DefaultRoles.owner) >= 0 &&
+          SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+          entity._dataOwner.id !== SessionUtil.getAccountId
+        ) {
+          throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can read`, 403);
+        } else {
+          return this.mapper.entityToDto(entity);
+        }
       }),
     );
   }
 
-  async fetchDraft(id: string): Promise<TDto> {
+  async fetchDraft(
+    id: string,
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+  ): Promise<TDto> {
     const result = await this.draftService.fetch(id, this.constructor.name);
+
+    if (
+      permissions &&
+      permissions.indexOf(DefaultRoles.owner) >= 0 &&
+      SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+      result.data._dataOwner.id !== SessionUtil.getAccountId
+    ) {
+      throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can read this draft`, 403);
+    }
+
     return result.data as TDto;
   }
 
@@ -144,25 +195,53 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return this.mapper.entityToDto(result);
   }
 
-  async update(id: string, data: TDto, doValidation: boolean = true): Promise<TDto> {
+  async update(
+    id: string,
+    data: TDto,
+    doValidation: boolean = true,
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+  ): Promise<TDto> {
     if (doValidation) {
       await data.validate();
     }
 
-    const toEntity = await this.mapper.dtoToEntity(data);
+    const entity = await this.mapper.dtoToEntity(data);
 
-    delete toEntity.id;
-    delete toEntity.updatedAt;
+    const beforeUpdate = await this.fetch(id);
 
-    await this.repository.update(id, toEntity);
+    if (
+      permissions &&
+      permissions.indexOf(DefaultRoles.owner) >= 0 &&
+      SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+      beforeUpdate._dataOwner.id !== SessionUtil.getAccountId
+    ) {
+      throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can update this data`, 403);
+    }
+
+    delete entity.id;
+    delete entity.updatedAt;
+
+    await this.repository.update(id, entity);
 
     const result = await this.fetch(id);
 
     return result;
   }
 
-  async destroy(id: string): Promise<boolean> {
+  async destroy(
+    id: string,
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+  ): Promise<boolean> {
     const entity = await this.repository.findOneOrFail(id);
+
+    if (
+      permissions &&
+      permissions.indexOf(DefaultRoles.owner) >= 0 &&
+      SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+      entity._dataOwner.id !== SessionUtil.getAccountId
+    ) {
+      throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can delete this data`, 403);
+    }
 
     if (this.softDelete && entity._dataStatus !== DataStatus.Draft && !entity.isDeleted) {
       // tslint:disable-next-line:no-any
@@ -178,20 +257,38 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return true;
   }
 
-  async destroyBulk(ids: string[]): Promise<{ [name: string]: boolean }> {
+  async destroyBulk(
+    ids: string[],
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+  ): Promise<{ [name: string]: boolean }> {
     const result: { [name: string]: boolean } = {};
 
     await Promise.all(
       ids.map(async id => {
-        result[id] = await this.destroy(id);
+        result[id] = await this.destroy(id, permissions);
       }),
     );
 
     return result;
   }
 
-  async destroyDraft(id: string): Promise<boolean> {
+  async destroyDraft(
+    id: string,
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+  ): Promise<boolean> {
+    const result = await this.draftService.fetch(id, this.constructor.name);
+
+    if (
+      permissions &&
+      permissions.indexOf(DefaultRoles.owner) >= 0 &&
+      SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+      result.data._dataOwner.id !== SessionUtil.getAccountId
+    ) {
+      throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can delete this draft`, 403);
+    }
+
     await this.draftService.delete(id);
+
     return true;
   }
 

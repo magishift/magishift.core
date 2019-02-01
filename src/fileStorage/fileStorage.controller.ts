@@ -11,7 +11,7 @@ import { IFileStorage, IFileStorageDto } from './interfaces/fileStorage.interfac
 
 @Controller(FILE_STORAGE_ENDPOINT)
 export class FileStorageController extends CrudControllerFactory<IFileStorageDto, IFileStorage>(FILE_STORAGE_ENDPOINT, {
-  default: [DefaultRoles.admin],
+  default: [DefaultRoles.superAdmin],
 }) {
   constructor(protected readonly service: FileStorageService, protected readonly mapper: FileStorageMapper) {
     super(service, mapper);

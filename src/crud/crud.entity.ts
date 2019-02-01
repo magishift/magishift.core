@@ -37,6 +37,9 @@ export abstract class CrudEntity extends BaseEntity implements ICrudEntity {
   })
   _dataStatus: DataStatus = DataStatus.Submitted;
 
+  @ManyToOne(_ => Account, account => account.id, { nullable: true })
+  _dataOwner: Account;
+
   getRepository(): Repository<ICrudEntity> {
     return _getRepository(this.constructor.name);
   }
@@ -44,12 +47,16 @@ export abstract class CrudEntity extends BaseEntity implements ICrudEntity {
   @BeforeUpdate()
   protected beforeUpdate(): void {
     this.updatedBy = { id: SessionUtil.getAccountId } as Account;
+
     delete this.updatedAt;
   }
 
   @BeforeInsert()
   protected beforeInsert(): void {
     this.createdBy = { id: SessionUtil.getAccountId } as Account;
+
+    this._dataOwner = this._dataOwner || this.createdBy;
+
     delete this.createdAt;
   }
 }
