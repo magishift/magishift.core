@@ -52,7 +52,7 @@ export class RoleService extends CrudService<IRole, IRoleDto> {
     protected readonly draftService: DraftService,
     protected readonly mapper: RoleMapper,
   ) {
-    super(repository, draftService, mapper, false);
+    super(repository, draftService, mapper);
   }
 
   async fetch(
@@ -80,6 +80,10 @@ export class RoleService extends CrudService<IRole, IRoleDto> {
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<IRoleDto[]> {
     const result = await super.findAll(filter, permissions);
+
+    if (filter.isShowDeleted) {
+      return result;
+    }
 
     return [...this.defaultRoles, ...result];
   }
