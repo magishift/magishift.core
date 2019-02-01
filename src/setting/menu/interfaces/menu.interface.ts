@@ -4,6 +4,7 @@ export interface IMenuItems {
   target?: string;
   icon?: string;
   title?: string;
+  roles?: string[];
 }
 
 export interface IMenu {
@@ -14,4 +15,5 @@ export interface IMenu {
   icon?: string;
   header?: string;
   items?: IMenuItems[];
+  roles?: string[];
 }

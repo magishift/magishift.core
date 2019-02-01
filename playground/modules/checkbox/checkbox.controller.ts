@@ -8,7 +8,7 @@ import { ICheckbox, ICheckboxDto } from './interfaces/checkbox.interface';
 
 @Controller(CHECKBOX_ENDPOINT)
 export class CheckboxController extends CrudControllerFactory<ICheckboxDto, ICheckbox>(CHECKBOX_ENDPOINT, {
-  default: [DefaultRoles.superAdmin],
+  default: [DefaultRoles.admin],
 }) {
   constructor(readonly checkboxService: CheckboxService, protected readonly mapper: CheckboxMapper) {
     super(checkboxService, mapper);

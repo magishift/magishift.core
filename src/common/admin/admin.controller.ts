@@ -9,7 +9,7 @@ import { IAdmin, IAdminDto } from './interfaces/admin.interface';
 
 @Controller(ADMIN_ENDPOINT)
 export class AdminController extends UserControllerFactory<IAdminDto, IAdmin>(ADMIN_ENDPOINT, {
-  default: [DefaultRoles.superAdmin],
+  default: [DefaultRoles.admin],
 }) {
   constructor(
     protected readonly service: AdminService,

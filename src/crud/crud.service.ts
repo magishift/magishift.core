@@ -51,7 +51,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
   async fetch(
     id: string,
     options?: FindOneOptions<TEntity>,
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<TDto> {
     options = options || {};
 
@@ -62,10 +62,10 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+      SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
       result._dataOwner.id !== SessionUtil.getAccountId
     ) {
-      throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can read`, 403);
+      throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, 403);
     }
 
     if (!result) {
@@ -82,7 +82,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
   async findOne(
     param: DeepPartial<TEntity>,
     options?: FindOneOptions<TEntity>,
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<TDto> {
     options = options || {};
 
@@ -93,10 +93,10 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+      SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
       result._dataOwner.id !== SessionUtil.getAccountId
     ) {
-      throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can read`, 403);
+      throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, 403);
     }
 
     return this.mapper.entityToDto(result);
@@ -109,7 +109,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       isShowDraft: false,
       isShowDeleted: false,
     },
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<TDto[]> {
     const query = this.queryBuilder(filter);
 
@@ -122,10 +122,10 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
         if (
           permissions &&
           permissions.indexOf(DefaultRoles.owner) >= 0 &&
-          SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+          SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
           entity._dataOwner.id !== SessionUtil.getAccountId
         ) {
-          throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can read`, 403);
+          throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, 403);
         } else {
           return this.mapper.entityToDto(entity);
         }
@@ -135,17 +135,17 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
 
   async fetchDraft(
     id: string,
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<TDto> {
     const result = await this.draftService.fetch(id, this.constructor.name);
 
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+      SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
       result.data._dataOwner.id !== SessionUtil.getAccountId
     ) {
-      throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can read this draft`, 403);
+      throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read this draft`, 403);
     }
 
     return result.data as TDto;
@@ -199,7 +199,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     id: string,
     data: TDto,
     doValidation: boolean = true,
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<TDto> {
     if (doValidation) {
       await data.validate();
@@ -212,10 +212,10 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+      SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
       beforeUpdate._dataOwner.id !== SessionUtil.getAccountId
     ) {
-      throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can update this data`, 403);
+      throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can update this data`, 403);
     }
 
     delete entity.id;
@@ -230,17 +230,17 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
 
   async destroy(
     id: string,
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<boolean> {
     const entity = await this.repository.findOneOrFail(id);
 
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+      SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
       entity._dataOwner.id !== SessionUtil.getAccountId
     ) {
-      throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can delete this data`, 403);
+      throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can delete this data`, 403);
     }
 
     if (this.softDelete && entity._dataStatus !== DataStatus.Draft && !entity.isDeleted) {
@@ -259,7 +259,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
 
   async destroyBulk(
     ids: string[],
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<{ [name: string]: boolean }> {
     const result: { [name: string]: boolean } = {};
 
@@ -274,17 +274,17 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
 
   async destroyDraft(
     id: string,
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<boolean> {
     const result = await this.draftService.fetch(id, this.constructor.name);
 
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+      SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
       result.data._dataOwner.id !== SessionUtil.getAccountId
     ) {
-      throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can delete this draft`, 403);
+      throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can delete this draft`, 403);
     }
 
     await this.draftService.delete(id);

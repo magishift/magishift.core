@@ -83,7 +83,7 @@ export class AuthService {
   async authorizeToken(
     jwtToken: string,
     operationName: string,
-    permissions: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.superAdmin | string)[],
+    permissions: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<boolean> {
     try {
       const isPublic = !permissions || permissions.length === 0 || permissions.indexOf(DefaultRoles.public) >= 0;

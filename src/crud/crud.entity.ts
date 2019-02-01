@@ -37,6 +37,20 @@ export abstract class CrudEntity extends BaseEntity implements ICrudEntity {
   })
   _dataStatus: DataStatus = DataStatus.Submitted;
 
+  @Column({
+    type: 'boolean',
+    nullable: true,
+    default: true,
+  })
+  _editable: boolean = true;
+
+  @Column({
+    type: 'boolean',
+    nullable: true,
+    default: true,
+  })
+  _deleteable: boolean = true;
+
   @ManyToOne(_ => Account, account => account.id, { nullable: true })
   _dataOwner: Account;
 

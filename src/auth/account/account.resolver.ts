@@ -20,7 +20,7 @@ const baseResolver = ResolverFactory<IAccountDto, IAccount>(ACCOUNT_ENDPOINT, {
   write: [DefaultRoles.public],
   update: [DefaultRoles.owner],
   read: [DefaultRoles.authenticated],
-  delete: [DefaultRoles.superAdmin],
+  delete: [DefaultRoles.admin],
 });
 
 @UseGuards(RolesGuard)
@@ -45,11 +45,11 @@ export class AccountResolver extends baseResolver {
       if (result && result.accountById) result.accountById.password = 'hidden';
 
       if (
-        SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0 &&
+        SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
         result.accountById &&
         result.accountById._dataOwner.id !== SessionUtil.getAccountId
       ) {
-        throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can read this data`, 403);
+        throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read this data`, 403);
       }
 
       return result.accountById;
@@ -59,7 +59,7 @@ export class AccountResolver extends baseResolver {
   }
 
   @Query('allAccounts')
-  @Roles(DefaultRoles.superAdmin)
+  @Roles(DefaultRoles.admin)
   async findAll(@Context() ctx: any): Promise<object> {
     try {
       const result: any = await GraphQLInstance.performQuery(ctx.bodyScope);

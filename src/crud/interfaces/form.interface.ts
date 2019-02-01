@@ -65,9 +65,7 @@ export interface IOptionalsOn {
   operator?: 'and' | 'or';
 }
 
-export declare interface IObjectType<T> {
-  new (): T;
-}
+export declare type IObjectType<T> = new () => T;
 
 export interface IFormField {
   label: string;

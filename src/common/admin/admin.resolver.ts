@@ -14,7 +14,7 @@ import { IAdmin, IAdminDto } from './interfaces/admin.interface';
 @UseGuards(RolesGuard)
 @Resolver(ADMIN_ENDPOINT)
 export class AdminResolver extends UserResolverFactory<IAdminDto, IAdmin>(ADMIN_ENDPOINT, {
-  default: [DefaultRoles.superAdmin],
+  default: [DefaultRoles.admin],
 }) {
   constructor(
     protected readonly service: AdminService,

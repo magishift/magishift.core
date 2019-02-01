@@ -32,13 +32,11 @@ import { UserService } from './user.service';
 export function UserControllerFactory<TDto extends IUserDto, TEntity extends IUser>(
   name: string,
   roles: IEndpointRoles,
-): {
-  new (
-    service: UserService<TEntity, TDto>,
-    fileService: FileStorageService,
-    mapper: CrudMapper<TEntity, TDto>,
-  ): IUserController<TDto>;
-} {
+): new (
+  service: UserService<TEntity, TDto>,
+  fileService: FileStorageService,
+  mapper: CrudMapper<TEntity, TDto>,
+) => IUserController<TDto> {
   @ApiUseTags(name)
   @UseGuards(RolesGuard)
   @Roles(...roles.default)

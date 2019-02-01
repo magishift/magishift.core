@@ -8,7 +8,7 @@ import { RoleService } from './Role.service';
 
 @Controller(ROLE_ENDPOINT)
 export class RoleController extends CrudControllerFactory<IRoleDto, IRole>(ROLE_ENDPOINT, {
-  default: [DefaultRoles.authenticated],
+  default: [DefaultRoles.admin],
 }) {
   constructor(protected readonly service: RoleService, protected readonly mapper: RoleMapper) {
     super(service, mapper);

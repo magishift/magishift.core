@@ -39,6 +39,14 @@ export abstract class CrudDto extends BaseDto implements ICrudDto {
   _dataStatus?: DataStatus;
 
   @ApiModelProperty()
+  @IsBoolean()
+  _editable?: boolean;
+
+  @ApiModelProperty()
+  @IsBoolean()
+  _deleteable?: boolean;
+
+  @ApiModelProperty()
   @Type(() => Date)
   @IsOptional()
   @IsDate()

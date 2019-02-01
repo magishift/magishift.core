@@ -8,7 +8,7 @@ import { SmsTemplateService } from './smsTemplate.service';
 
 @Controller(SMS_TEMPLATE_ENDPOINT)
 export class SmsTemplateController extends CrudControllerFactory<ISmsTemplateDto, ISmsTemplate>(SMS_TEMPLATE_ENDPOINT, {
-  default: [DefaultRoles.superAdmin],
+  default: [DefaultRoles.admin],
 }) {
   constructor(protected readonly smsTemplateService: SmsTemplateService, protected readonly mapper: SmsTemplateMapper) {
     super(smsTemplateService, mapper);

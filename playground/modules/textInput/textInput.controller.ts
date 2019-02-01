@@ -9,7 +9,7 @@ import { TextInputService } from './textInput.service';
 
 @Controller(TEXT_INPUT_ENDPOINT)
 export class TextInputController extends CrudControllerFactory<ITextInputDto, ITextInput>(TEXT_INPUT_ENDPOINT, {
-  default: [DefaultRoles.superAdmin],
+  default: [DefaultRoles.admin],
 }) {
   constructor(readonly textInputService: TextInputService, protected readonly mapper: TextInputMapper) {
     super(textInputService, mapper);

@@ -10,7 +10,7 @@ import { IAutocomplete, IAutocompleteDto } from './interfaces/autocomplete.inter
 export class AutocompleteController extends CrudControllerFactory<IAutocompleteDto, IAutocomplete>(
   AUTOCOMPLETE_ENDPOINT,
   {
-    default: [DefaultRoles.superAdmin],
+    default: [DefaultRoles.admin],
   },
 ) {
   constructor(readonly autocompleteService: AutocompleteService, protected readonly mapper: AutocompleteMapper) {

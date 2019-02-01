@@ -20,7 +20,7 @@ export class AuthInterceptor implements NestInterceptor {
         if (
           permissions &&
           permissions.indexOf(DefaultRoles.owner) >= 0 &&
-          SessionUtil.getUserRoles.indexOf(DefaultRoles.superAdmin) < 0
+          SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0
         ) {
           const findDataOwner: any = _.find(data, '_dataOwner');
 
@@ -30,7 +30,7 @@ export class AuthInterceptor implements NestInterceptor {
             findDataOwner._dataOwner.id &&
             findDataOwner._dataOwner.id !== SessionUtil.getAccountId
           ) {
-            throw new HttpException(`Only ${DefaultRoles.superAdmin} or owner of this data can access this data`, 403);
+            throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can access this data`, 403);
           }
         }
 

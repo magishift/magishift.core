@@ -6,4 +6,7 @@ import { ICrudEntity } from '../../crud/interfaces/crud.interface';
 export class Role extends CrudEntity implements ICrudEntity {
   @Column({ unique: true })
   title: string;
+
+  @Column({ unique: true })
+  description: string;
 }
