@@ -1,58 +1,14 @@
-import {
-  BeforeInsert,
-  BeforeUpdate,
-  Column,
-  CreateDateColumn,
-  getRepository as _getRepository,
-  ManyToOne,
-  Repository,
-  UpdateDateColumn,
-} from 'typeorm';
-import { Account } from '../auth/account/account.entity';
+import { BeforeInsert, BeforeUpdate, Column, getRepository as _getRepository, Repository } from 'typeorm';
 import { SessionUtil } from '../auth/session.util';
 import { BaseEntity } from '../base/base.entity';
-import { DataStatus } from '../base/interfaces/base.interface';
-import { ICrudEntity } from './interfaces/crud.interface';
+import { ICrudEntity, IDataMeta } from './interfaces/crud.interface';
 
 export abstract class CrudEntity extends BaseEntity implements ICrudEntity {
-  @ManyToOne(_ => Account, account => account.id)
-  createdBy: Account;
-
-  @ManyToOne(_ => Account, account => account.id)
-  updatedBy: Account;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Column({ type: 'simple-json', nullable: true })
+  __meta: IDataMeta = {};
 
   @Column({ default: false })
   isDeleted: boolean;
-
-  @Column({
-    type: 'text',
-    nullable: true,
-    default: DataStatus.Submitted,
-  })
-  _dataStatus: DataStatus = DataStatus.Submitted;
-
-  @Column({
-    type: 'boolean',
-    nullable: true,
-    default: true,
-  })
-  _editable: boolean = true;
-
-  @Column({
-    type: 'boolean',
-    nullable: true,
-    default: true,
-  })
-  _deleteable: boolean = true;
-
-  @ManyToOne(_ => Account, account => account.id, { nullable: true })
-  _dataOwner: Account;
 
   getRepository(): Repository<ICrudEntity> {
     return _getRepository(this.constructor.name);
@@ -60,17 +16,13 @@ export abstract class CrudEntity extends BaseEntity implements ICrudEntity {
 
   @BeforeUpdate()
   protected beforeUpdate(): void {
-    this.updatedBy = { id: SessionUtil.getAccountId } as Account;
-
-    delete this.updatedAt;
+    this.__meta.histories.push({ date: new Date(), action: 'updated', by: SessionUtil.getAccountId });
   }
 
   @BeforeInsert()
   protected beforeInsert(): void {
-    this.createdBy = { id: SessionUtil.getAccountId } as Account;
-
-    this._dataOwner = this._dataOwner || this.createdBy;
-
-    delete this.createdAt;
+    this.__meta.histories = [];
+    this.__meta.histories.push({ date: new Date(), action: 'created', by: SessionUtil.getAccountId });
+    this.__meta.dataOwner = SessionUtil.getAccountId;
   }
 }

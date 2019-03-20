@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as _ from 'lodash';
 import { Repository } from 'typeorm';
 import { CrudService } from '../../crud/crud.service';
 import { DraftService } from '../../crud/draft/draft.service';
@@ -15,6 +14,6 @@ export class DeviceService extends CrudService<IDevice, IDeviceDto> {
     protected readonly draftService: DraftService,
     protected readonly mapper: DeviceMapper,
   ) {
-    super(repository, draftService, mapper, false);
+    super(repository, draftService, mapper, { softDelete: false });
   }
 }

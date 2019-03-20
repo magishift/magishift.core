@@ -4,16 +4,15 @@ import { PubSub } from 'graphql-subscriptions';
 import { AuthService } from '../../auth/auth.service';
 import { DefaultRoles } from '../../auth/role/role.const';
 import { RolesGuard } from '../../auth/role/roles.guard';
-import { HttpService } from '../../http/http.service';
+import { IUser, IUserDto } from '../../user/interfaces/user.interface';
 import { UserResolverFactory } from '../../user/user.resolver';
 import { AdminMapper } from './admin.mapper';
 import { AdminService } from './admin.service';
 import { ADMIN_ENDPOINT } from './interfaces/admin.const';
-import { IAdmin, IAdminDto } from './interfaces/admin.interface';
 
 @UseGuards(RolesGuard)
 @Resolver(ADMIN_ENDPOINT)
-export class AdminResolver extends UserResolverFactory<IAdminDto, IAdmin>(ADMIN_ENDPOINT, {
+export class AdminResolver extends UserResolverFactory<IUserDto, IUser>(ADMIN_ENDPOINT, {
   default: [DefaultRoles.admin],
 }) {
   constructor(
@@ -21,8 +20,7 @@ export class AdminResolver extends UserResolverFactory<IAdminDto, IAdmin>(ADMIN_
     protected readonly authService: AuthService,
     protected readonly mapper: AdminMapper,
     @Inject('PubSub') protected readonly pubSub: PubSub,
-    protected readonly http: HttpService,
   ) {
-    super(service, authService, mapper, pubSub, http);
+    super(service, authService, mapper, pubSub);
   }
 }

@@ -14,7 +14,7 @@ export enum ColumnTypes {
   Image = 'image',
   File = 'file',
   Checkbox = 'checkbox',
-  Checkboxes = 'checkboxes',
+  Checkboxes = 'checkBoxes',
   Radio = 'radio',
   HTML = 'html',
   Info = 'info',
@@ -37,7 +37,7 @@ export interface IGridColumn {
 }
 
 export interface IGridColumns {
-  [name: string]: IGridColumn;
+  [key: string]: IGridColumn;
 }
 
 export interface ICustomGridAction {
@@ -55,6 +55,7 @@ export interface IGridOptions {
   readonly view?: boolean;
   readonly custom?: ICustomGridAction;
   readonly customs?: ICustomGridAction[];
+  readonly softDelete?: boolean;
 }
 
 export interface IFilterOptions {
@@ -64,7 +65,7 @@ export interface IFilterOptions {
 }
 
 export interface IGridFilters {
-  [name: string]: IFilterOptions;
+  [key: string]: IFilterOptions;
 }
 
 export interface IGrid {
@@ -75,7 +76,7 @@ export interface IGrid {
 }
 
 export interface IGridSchemas {
-  [name: string]: IGrid;
+  [key: string]: IGrid;
 }
 
 export interface IGridSchema {

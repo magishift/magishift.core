@@ -18,7 +18,7 @@ export enum FieldTypes {
   File = 'file',
   CSV = 'csv',
   Checkbox = 'checkbox',
-  Checkboxes = 'checkboxes',
+  Checkboxes = 'checkBoxes',
   Radio = 'radio',
   HTML = 'html',
   Hidden = 'hidden',
@@ -41,7 +41,7 @@ export interface IForm {
   inline: boolean;
   model: object;
   fields: {
-    [name: string]:
+    [key: string]:
       | IFormField
       | IFormFieldUpload
       | IFormFieldAutocomplete
@@ -73,6 +73,7 @@ export interface IFormField {
   required?: boolean;
   mode?: FieldModes;
   readonly?: boolean;
+  createOnly?: boolean;
   disabled?: boolean;
   optionalsOn?: IOptionalsOn[];
   group?: string;
@@ -142,7 +143,7 @@ export interface IFormFieldFk extends IFormField {
 export interface IAutocompleteDataSource {
   url: string;
   searchParams: string[];
-  filterBy?: { [name: string]: string };
+  filterBy?: { [key: string]: string };
 }
 
 export interface IFormSchema {

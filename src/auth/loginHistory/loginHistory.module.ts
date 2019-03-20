@@ -1,15 +1,12 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { LoginHistoryController } from './loginHistory.controller';
-import { LoginHistory } from './loginHistory.entity';
-import { LoginHistoryMapper } from './loginHistory.mapper';
+import { LoginHistory } from './loginHistory.entity.mongo';
 import { LoginHistoryService } from './loginHistory.service';
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([LoginHistory])],
-  providers: [LoginHistoryService, LoginHistoryMapper],
-  controllers: [LoginHistoryController],
-  exports: [LoginHistoryService, LoginHistoryMapper],
+  imports: [TypeOrmModule.forFeature([LoginHistory], 'mongodb')],
+  providers: [LoginHistoryService],
+  exports: [LoginHistoryService],
 })
 export class LoginHistoryModule {}

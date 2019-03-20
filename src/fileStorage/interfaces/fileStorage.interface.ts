@@ -17,6 +17,7 @@ export interface IFileStorage extends ICrudEntity {
   meta: string;
   permissions: string;
   storage: 'local' | 'S3';
+  dataStatus: 'temp' | 'submitted';
 }
 
 export interface IFileStorageDto extends ICrudDto {
@@ -28,4 +29,5 @@ export interface IFileStorageDto extends ICrudDto {
   meta: object;
   permissions: string[];
   storage: 'local' | 'S3';
+  dataStatus: 'temp' | 'submitted';
 }

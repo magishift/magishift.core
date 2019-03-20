@@ -3,7 +3,6 @@ import { Context, Query, Resolver } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { ResolverFactory } from '../../crud/crud.resolver';
 import { GraphQLInstance } from '../../graphql/graphql.instance';
-import { HttpService } from '../../http/http.service';
 import { ExceptionHandler } from '../../utils/error.utils';
 import { AuthService } from '../auth.service';
 import { DefaultRoles } from '../role/role.const';
@@ -15,25 +14,22 @@ import { AccountService } from './account.service';
 import { ACCOUNT_ENDPOINT } from './interfaces/account.const';
 import { IAccount, IAccountDto } from './interfaces/account.interface';
 
-const baseResolver = ResolverFactory<IAccountDto, IAccount>(ACCOUNT_ENDPOINT, {
+@UseGuards(RolesGuard)
+@Resolver(ACCOUNT_ENDPOINT)
+export class AccountResolver extends ResolverFactory<IAccountDto, IAccount>(ACCOUNT_ENDPOINT, {
   default: [DefaultRoles.authenticated],
   write: [DefaultRoles.public],
   update: [DefaultRoles.owner],
   read: [DefaultRoles.authenticated],
   delete: [DefaultRoles.admin],
-});
-
-@UseGuards(RolesGuard)
-@Resolver(ACCOUNT_ENDPOINT)
-export class AccountResolver extends baseResolver {
+}) {
   constructor(
     protected readonly service: AccountService,
     protected readonly authService: AuthService,
     protected readonly mapper: AccountMapper,
     @Inject('PubSub') protected readonly pubSub: PubSub,
-    protected readonly http: HttpService,
   ) {
-    super(service, authService, mapper, pubSub, http);
+    super(service, authService, mapper, pubSub);
   }
 
   @Query('accountById')

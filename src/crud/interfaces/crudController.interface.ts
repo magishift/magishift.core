@@ -4,7 +4,9 @@ import { ICrudDto } from './crud.interface';
 import { IFormSchema } from './form.interface';
 
 export interface ICrudController<TDto extends ICrudDto> {
-  getFormSchema(id?: string): Promise<IFormSchema>;
+  getFormSchema(id: string, isDraft: string, isDeleted: string): Promise<IFormSchema>;
+
+  getGridSchema(): object;
 
   openDeleted(filterArg?: string): Promise<{ items: TDto[]; totalCount: number }>;
 
@@ -18,20 +20,20 @@ export interface ICrudController<TDto extends ICrudDto> {
 
   fetchDraftById(id: string): Promise<TDto>;
 
-  create(data: TDto): Promise<TDto>;
+  create(data: TDto): Promise<void>;
 
   saveAsDraft(data: TDto): Promise<object>;
 
-  update(id: string, data: object): Promise<TDto>;
+  update(id: string, data: object): Promise<void>;
 
-  destroy(id: string): Promise<boolean>;
+  destroy(id: string): Promise<void>;
 
-  destroyDraft(id: string): Promise<boolean>;
+  destroyDraft(id: string): Promise<void>;
 
   destroyBulk(param: {
     ids: string;
   }): Promise<{
-    [name: string]: boolean;
+    [key: string]: string;
   }>;
 
   importCSV(file: IFile): Promise<TDto[]>;

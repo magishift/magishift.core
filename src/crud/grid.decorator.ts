@@ -10,7 +10,7 @@ import {
   IGridSchemas,
 } from './interfaces/grid.interface';
 
-const gridColumns: { [name: string]: IGridColumns } = {};
+const gridColumns: { [key: string]: IGridColumns } = {};
 
 const gridFilters: IGridFilters = {};
 

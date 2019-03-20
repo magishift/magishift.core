@@ -1,15 +1,17 @@
 import { IAccount, IAccountDto } from '../../auth/account/interfaces/account.interface';
 import { ILoginHistoryDto } from '../../auth/loginHistory/interfaces/loginHistory.interface';
+import { IRoleDto } from '../../auth/role/interfaces/role.interface';
 import { ICrudDto, ICrudEntity } from '../../crud/interfaces/crud.interface';
 import { IFileStorage, IFileStorageDto } from '../../fileStorage/interfaces/fileStorage.interface';
 import { IDevice, IDeviceDto } from '../device/interfaces/device.interface';
 import { INotification, INotificationDto } from '../notification/interfaces/notification.interface';
 
 export interface IUser extends ICrudEntity {
-  account?: IAccount;
+  account: IAccount;
   name: string;
   email: string;
   phoneNumber: string;
+  realm: string;
   photo: IFileStorage;
   notificationsSendTo: INotification[];
   notificationsSendFrom: INotification[];
@@ -17,8 +19,8 @@ export interface IUser extends ICrudEntity {
 }
 
 export interface IUserDto extends ICrudDto {
-  account?: IAccountDto;
   accountId: string;
+  account: IAccountDto;
   name: string;
   email: string;
   phoneNumber: string;
@@ -26,9 +28,8 @@ export interface IUserDto extends ICrudDto {
   username: string;
   password: string;
   passwordConfirm: string;
-  isActive: boolean;
   realm: string;
-  role: string;
+  roles: IRoleDto[];
   loginHistories?: ILoginHistoryDto[];
   notifications?: INotificationDto[];
   devices?: IDeviceDto[];

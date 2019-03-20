@@ -25,4 +25,7 @@ export class FileStorage extends CrudEntity implements IFileStorage {
 
   @Column({ default: 'local' })
   storage: 'local' | 'S3' = 'local';
+
+  @Column({ default: 'submitted' })
+  dataStatus: 'temp' | 'submitted';
 }

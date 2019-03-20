@@ -7,8 +7,8 @@ import { SettingService } from './setting.service';
 
 @Global()
 @Module({
-  imports: [Menu, TypeOrmModule.forFeature([Setting], 'mongodb')],
-  providers: [SettingService],
+  imports: [TypeOrmModule.forFeature([Setting], 'mongodb')],
+  providers: [SettingService, Menu],
   controllers: [SettingController],
   exports: [Menu, SettingService],
 })

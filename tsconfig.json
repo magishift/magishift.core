@@ -15,7 +15,7 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "types/**/*", "index.ts"],
   "exclude": ["./node_modules/*", "./node_modules/@types", "**/*.spec.ts", "clients", "e2e"],
   "buildOnSave": true
 }

@@ -18,6 +18,7 @@ import * as GraphQlJSON from 'graphql-type-json';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import * as helmet from 'helmet';
 import { fileLoader, mergeTypes } from 'merge-graphql-schemas';
+import { RedisModule } from 'nestjs-redis';
 import * as path from 'path';
 import 'reflect-metadata';
 import { AccountModule } from './auth/account/account.module';
@@ -94,6 +95,12 @@ export async function MagiApp(
     all: true,
   });
 
+  const redisConfig = {
+    host: process.env.MAGISHIFT_REDIS_HOST,
+    port: Number(process.env.MAGISHIFT_REDIS_PORT),
+    duration: 30000,
+  };
+
   const defaultImports = [
     BaseModule,
     HttpModule,
@@ -137,6 +144,7 @@ export async function MagiApp(
     GoogleFcmModule,
     NotificationModule,
     DeviceModule,
+    RedisModule.register(redisConfig),
   ];
 
   if (ConfigService.getConfig.email) {
@@ -246,8 +254,8 @@ export async function MagiApp(
 
     app.use(
       rateLimit({
-        windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 100, // limit each IP to 100 requests per windowMs
+        windowMs: 60 * 1000, // 1 minutes
+        max: 500, // limit each IP to 00 requests per windowMs
       }),
     );
 

@@ -15,8 +15,8 @@ import {
 } from './interfaces/form.interface';
 
 const formFields: {
-  [name: string]: {
-    [name: string]:
+  [key: string]: {
+    [key: string]:
       | IFormField
       | IFormFieldUpload
       | IFormFieldAutocomplete
@@ -30,7 +30,7 @@ const formFields: {
   };
 } = {};
 
-export const FormSchemas: { [name: string]: IForm } = {};
+export const FormSchemas: { [key: string]: IForm } = {};
 
 export const Form = (
   param: { inline?: boolean; type?: FormTypes } = { inline: false, type: FormTypes.Simple },

@@ -7,11 +7,11 @@ import { IUser } from './interfaces/user.interface';
 import { Notification } from './notification/notification.entity';
 
 export abstract class User extends CrudEntity implements IUser {
-  @OneToOne(_ => Account, account => account.id, { onDelete: 'CASCADE' })
+  @OneToOne(_ => Account, account => account.id, { onDelete: 'RESTRICT' })
   @JoinColumn()
   account: Account;
 
-  @ManyToOne(_ => FileStorage, fileStorage => fileStorage.ownerId, { onDelete: 'CASCADE' })
+  @ManyToOne(_ => FileStorage, fileStorage => fileStorage.ownerId, { onDelete: 'RESTRICT' })
   photo: FileStorage;
 
   @Column()
@@ -22,6 +22,9 @@ export abstract class User extends CrudEntity implements IUser {
 
   @Column({ unique: true, nullable: true })
   phoneNumber: string;
+
+  @Column()
+  realm: string;
 
   @OneToMany(_ => Notification, notification => notification.from)
   notificationsSendTo: Notification[];

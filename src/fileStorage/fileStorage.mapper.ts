@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DeepPartial } from 'typeorm';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { CrudMapper } from '../crud/crud.mapper';
 import { Dto2Entity, Entity2Dto } from '../utils/objectMapper.utils';
 import { FileStorageDto } from './fileStorage.dto';
@@ -12,7 +12,7 @@ export class FileStorageMapper extends CrudMapper<IFileStorage, IFileStorageDto>
     super(FileStorage, FileStorageDto);
   }
 
-  async dtoToEntity(dto: IFileStorageDto): Promise<DeepPartial<IFileStorage>> {
+  async dtoToEntity(dto: IFileStorageDto): Promise<QueryDeepPartialEntity<IFileStorage>> {
     const entity = await Dto2Entity(dto, new FileStorage());
 
     entity.meta = JSON.stringify(dto.file);

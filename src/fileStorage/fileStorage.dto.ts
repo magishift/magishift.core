@@ -25,4 +25,7 @@ export class FileStorageDto extends CrudDto implements IFileStorageDto {
   file: IFile;
 
   storage: 'local' | 'S3' = 'local';
+
+  @IsString()
+  dataStatus: 'temp' | 'submitted';
 }

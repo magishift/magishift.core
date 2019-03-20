@@ -11,13 +11,13 @@ import { IRoleDto } from './interfaces/role.interface';
 export class RoleDto extends CrudDto implements IRoleDto {
   @IsString()
   @ApiModelProperty()
-  @FormField({ label: 'Title', required: true })
-  @GridColumn({ text: 'Title', searchAble: true })
-  title: string;
+  @FormField({ label: 'Name', required: true, createOnly: true })
+  @GridColumn({ text: 'Name', searchAble: true })
+  name: string;
 
   @IsString()
   @ApiModelProperty()
-  @FormField({ label: 'Description', required: true, type: FieldTypes.Text })
+  @FormField({ label: 'Description', type: FieldTypes.Text })
   @GridColumn({ text: 'Description', searchAble: true })
   description: string;
 

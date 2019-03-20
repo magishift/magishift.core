@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import _ = require('lodash');
 import { ColumnType } from 'typeorm';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 

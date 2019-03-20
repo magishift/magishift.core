@@ -1,14 +1,16 @@
 import { ApiModelProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsOptional, IsString } from 'class-validator';
 import { ILoginHistoryDto } from '../../auth/loginHistory/interfaces/loginHistory.interface';
+import { ROLE_ENDPOINT } from '../../auth/role/interfaces/role.const';
+import { IRoleDto } from '../../auth/role/interfaces/role.interface';
 import { Form, FormField } from '../../crud/form.decorator';
 import { Grid, GridColumn } from '../../crud/grid.decorator';
 import { FieldModes, FieldTypes } from '../../crud/interfaces/form.interface';
 import { ColumnTypes } from '../../crud/interfaces/grid.interface';
 import { IFileStorageDto } from '../../fileStorage/interfaces/fileStorage.interface';
+import { IUserDto } from '../../user/interfaces/user.interface';
 import { UserDto } from '../../user/user.dto';
 import { ADMIN_ENDPOINT, ADMIN_REALM } from './interfaces/admin.const';
-import { IAdminDto } from './interfaces/admin.interface';
 
 const PASSWORD = 'Password';
 
@@ -23,12 +25,11 @@ const PASSWORD = 'Password';
   },
 })
 @Form()
-export class AdminDto extends UserDto implements IAdminDto {
+export class AdminDto extends UserDto implements IUserDto {
   @IsString()
   @ApiModelProperty()
   @FormField({
     label: 'Photo',
-    required: true,
     type: FieldTypes.Image,
     uploadUrl: ADMIN_ENDPOINT + '/photo',
   })
@@ -55,8 +56,19 @@ export class AdminDto extends UserDto implements IAdminDto {
 
   @IsString()
   @ApiModelProperty()
-  @FormField({ label: 'Username', required: true })
+  @FormField({ label: 'Username', required: true, createOnly: true })
   username: string;
+
+  @IsString()
+  @ApiModelProperty()
+  @FormField({
+    label: 'Role',
+    type: FieldTypes.Autocomplete,
+    dataSource: { url: ROLE_ENDPOINT, searchParams: ['name'] },
+    multiple: true,
+  })
+  @GridColumn({ text: 'Role', value: 'name' })
+  roles: IRoleDto[];
 
   @IsString()
   @ApiModelProperty()
@@ -81,10 +93,6 @@ export class AdminDto extends UserDto implements IAdminDto {
   })
   passwordConfirm: string;
 
-  @IsBoolean()
-  @ApiModelProperty()
-  isActive: boolean = false;
-
   @IsOptional()
   // @FormField({
   //   label: 'Login History',
@@ -96,8 +104,6 @@ export class AdminDto extends UserDto implements IAdminDto {
   //   mode: FieldModes.View,
   // })
   loginHistories: ILoginHistoryDto[];
-
-  role: 'admin' = ADMIN_REALM;
 
   realm: 'admin' = ADMIN_REALM;
 }

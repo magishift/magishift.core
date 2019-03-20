@@ -9,13 +9,13 @@ export interface ICrudResolver<TDto extends ICrudDto, TEntity extends ICrudEntit
 
   findAll(ctx: any): Promise<object>;
 
-  create(args: { input }): Promise<object>;
+  create(args: { input }): Promise<void>;
 
-  updateById(args: { input }): Promise<object>;
+  updateById(args: { input }): Promise<void>;
 
-  update(args: { input }): Promise<object>;
+  update(args: { input }): Promise<void>;
 
-  destroy(ctx: any): Promise<object>;
+  destroy(ctx: any): Promise<void>;
 
   destroyById(ctx: any): Promise<object>;
 

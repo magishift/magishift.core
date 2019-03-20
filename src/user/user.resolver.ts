@@ -8,7 +8,6 @@ import { IEndpointRoles } from '../auth/role/role.interface';
 import { Roles } from '../auth/role/roles.decorator';
 import { RolesGuard } from '../auth/role/roles.guard';
 import { ResolverFactory } from '../crud/crud.resolver';
-import { HttpService } from '../http/http.service';
 import { ExceptionHandler } from '../utils/error.utils';
 import { capitalizeFirstLetter } from '../utils/string.utils';
 import { IUser, IUserDto } from './interfaces/user.interface';
@@ -24,13 +23,10 @@ export function UserResolverFactory<TDto extends IUserDto, TEntity extends IUser
   authService: AuthService,
   mapper: UserMapper<TEntity, TDto>,
   pubSub: PubSub,
-  http: HttpService,
 ) => IUserResolver {
   const nameCapFirst = capitalizeFirstLetter(name);
   const login: string = `login${nameCapFirst}`;
   const logout: string = `logout${nameCapFirst}`;
-  const create: string = `create${nameCapFirst}`;
-  const updateById: string = `update${nameCapFirst}ById`;
 
   const baseResolverFactory = ResolverFactory<TDto, TEntity>(name, roles);
 
@@ -40,42 +36,9 @@ export function UserResolverFactory<TDto extends IUserDto, TEntity extends IUser
       protected readonly service: UserService<TEntity, TDto>,
       protected readonly authService: AuthService,
       protected readonly mapper: UserMapper<TEntity, TDto>,
-      @Inject('PubSub') protected readonly pubSub: PubSub,
-      protected readonly http: HttpService,
+      @Inject(PubSub) protected readonly pubSub: PubSub,
     ) {
-      super(service, authService, mapper, pubSub, http);
-    }
-
-    @Mutation(create)
-    @Roles(...(roles.write || roles.default))
-    async create(@Args() args: { input }): Promise<object> {
-      try {
-        const userDto = await this.mapper.dtoFromObject(args.input[name]);
-        await userDto.validate();
-
-        const result = await this.service.create(userDto);
-        return { [name]: result };
-      } catch (e) {
-        return ExceptionHandler(e);
-      }
-    }
-
-    @Mutation(updateById)
-    @Roles(...(roles.update || roles.write || roles.default))
-    async updateById(@Args() args: { input }): Promise<object> {
-      try {
-        const userDto = await this.mapper.dtoFromObject(args.input[`${name}Patch`]);
-        await userDto.validate();
-
-        const result = await this.service.update(args.input.id, userDto);
-
-        if (userDto.account.password) {
-          await this.service.changePassword(userDto.id, userDto.account.password, userDto.account.password);
-        }
-        return { [name]: result };
-      } catch (e) {
-        return ExceptionHandler(e);
-      }
+      super(service, authService, mapper, pubSub);
     }
 
     @Mutation(login)

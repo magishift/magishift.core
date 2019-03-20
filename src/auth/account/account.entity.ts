@@ -1,8 +1,5 @@
-import { BeforeInsert, Column, Entity, OneToMany } from 'typeorm';
-import { DataStatus } from '../../base/interfaces/base.interface';
+import { BeforeInsert, Column, Entity } from 'typeorm';
 import { CrudEntity } from '../../crud/crud.entity';
-import { LoginHistory } from '../loginHistory/loginHistory.entity';
-import { SessionUtil } from '../session.util';
 import { IAccount } from './interfaces/account.interface';
 
 @Entity()
@@ -10,30 +7,33 @@ export class Account extends CrudEntity implements IAccount {
   @Column({ unique: true })
   username: string;
 
-  @Column()
-  password: string;
+  @Column({ default: true })
+  enabled: boolean = true;
 
-  @Column({ nullable: true, default: false })
-  isActive: boolean = false;
+  @Column({ default: false })
+  emailVerified: boolean;
 
-  @Column()
-  realm: string;
+  @Column({ nullable: true })
+  email: string;
 
-  @Column({ type: 'simple-array', default: [] })
-  roles: string[];
+  @Column({ nullable: true })
+  firstName: string;
 
-  @Column({ default: DataStatus.Submitted })
-  _dataStatus: DataStatus;
+  @Column({ nullable: true })
+  lastName: string;
 
-  @OneToMany(_ => LoginHistory, loginHistory => loginHistory.account)
-  loginHistories: LoginHistory[];
+  @Column({ type: 'simple-array', nullable: true })
+  realmRoles: string[];
+
+  constructor(init?: Partial<Account>) {
+    super();
+    Object.assign(this, init);
+  }
 
   @BeforeInsert()
   protected beforeInsert(): void {
-    this.createdBy = { id: SessionUtil.getAccountId } as Account;
+    this.__meta.dataOwner = this.id;
 
-    this._dataOwner = this;
-
-    delete this.createdAt;
+    super.beforeInsert();
   }
 }

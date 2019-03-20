@@ -1,7 +1,6 @@
 import chalk from 'chalk';
 import * as env from 'dotenv';
 import { IMenuItems } from '../setting/menu/interfaces/menu.interface';
-import { Menu } from '../setting/menu/menu.utils';
 import { SnakeNamingStrategy } from './../database/snakeNaming';
 import { IAwsS3, IConfigOptions, IDBConfigs, IEmailConfig, IGraphQlConfig, NodeEnvType } from './config.interfaces';
 import { ConfigService } from './config.service';
@@ -27,7 +26,7 @@ export const ConfigLoaderHelper = (
 
   const appPort: number = Number(process.env.MAGISHIFT_PORT);
 
-  const appVersion = process.env.MAGISHIFT_APP_VERSION;
+  const appVersion = process.env.npm_package_version;
 
   const entities = [`${process.cwd()}/src/modules/**/*.entity{.ts,.js}`, `${__dirname}/../**/*.entity{.ts,.js}`];
 
@@ -57,7 +56,7 @@ export const ConfigLoaderHelper = (
         type: 'redis',
         options: {
           host: process.env.MAGISHIFT_REDIS_HOST,
-          port: process.env.MAGISHIFT_REDIS_PORT,
+          port: Number(process.env.MAGISHIFT_REDIS_PORT),
           duration: 30000,
         },
       },
@@ -68,7 +67,9 @@ export const ConfigLoaderHelper = (
       host: process.env.MAGISHIFT_MONGO_DB_HOST,
       password: process.env.MAGISHIFT_MONGO_DB_PASSWORD,
       username: process.env.MAGISHIFT_MONGO_DB_USER,
-      database: 'admin',
+      database: process.env.MAGISHIFT_MONGO_DB_NAME,
+      authSource: 'admin',
+      w: 1,
       port: Number(process.env.MAGISHIFT_MONGO_DB_PORT),
       synchronize: true,
       logging: envType !== 'production',
@@ -132,8 +133,6 @@ export const ConfigLoaderHelper = (
     ? Number(process.env.MAGISHIFT_FILE_UPLOAD_MAX_SIZE)
     : 2.5;
 
-  Menu.setMenu(appName, menuItems);
-
   ConfigService.setConfig = {
     envType,
     appName,
@@ -147,7 +146,7 @@ export const ConfigLoaderHelper = (
     twilio,
     googleApiKey,
     log: logger,
-    menuItems: Menu.getMenu,
+    menuItems,
     jwtSecret: process.env.MAGISHIFT_JWT_SECRET,
     jwtExpiresIn: process.env.MAGISHIFT_JWT_EXPIRES_IN,
     gql,

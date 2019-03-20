@@ -1,18 +1,22 @@
 import { HttpException } from '@nestjs/common';
-import * as _ from 'lodash';
-import { Brackets, DeepPartial, FindOneOptions, Repository, SelectQueryBuilder } from 'typeorm';
+import _ = require('lodash');
+import { Brackets, FindConditions, FindOneOptions, Repository, SelectQueryBuilder } from 'typeorm';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { v4 as uuid } from 'uuid';
 import { DefaultRoles } from '../auth/role/role.const';
 import { SessionUtil } from '../auth/session.util';
 import { BaseService } from '../base/base.service';
 import { DataStatus } from '../base/interfaces/base.interface';
 import { getPropertyType, getRelationsName, isPropertyTypeNumber } from '../database/utils.database';
+import { GetFormSchema, GetGridSchema } from './crud.util';
 import { Draft } from './draft/draft.entity.mongo';
 import { DraftService } from './draft/draft.service';
 import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
-import { ICrudService } from './interfaces/crudService.interface';
+import { ICrudService, IServiceConfig } from './interfaces/crudService.interface';
 import { IFilter } from './interfaces/filter.interface';
+import { IFormSchema } from './interfaces/form.interface';
 
 export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICrudDto> extends BaseService<TEntity>
   implements ICrudService<TEntity, TDto> {
@@ -20,9 +24,37 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     protected readonly repository: Repository<TEntity>,
     protected readonly draftService: DraftService,
     protected readonly mapper: ICrudMapper<TEntity, TDto>,
-    protected readonly softDelete: boolean = true,
+    protected readonly config: IServiceConfig = { softDelete: true },
   ) {
-    super(repository, softDelete);
+    super(repository, config);
+  }
+
+  async getFormSchema(id?: string, isDraft?: string, isDeleted?: string): Promise<IFormSchema> {
+    const result = Object.assign(GetFormSchema(this.constructor.name));
+    result.schema.model = null;
+
+    if (id) {
+      if (isDraft && isDraft !== 'false') {
+        result.schema.model = await this.fetchDraft(id);
+      } else if (isDeleted && isDeleted !== 'false') {
+        result.schema.model = await this.findOne({ id, isDeleted: true } as any);
+      } else {
+        result.schema.model = await this.fetch(id);
+      }
+    } else {
+      // on create, define form ID
+      // this ID will be used to mark owner ID for uploaded file
+      // and latter will be used as object ID
+      result.schema.model = {
+        id: uuid(),
+      };
+    }
+
+    return result;
+  }
+
+  getGridSchema(): object {
+    return Object.assign(GetGridSchema(this.constructor.name));
   }
 
   async isExist(id: string): Promise<boolean> {
@@ -42,7 +74,6 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     query.limit = undefined;
     query.offset = undefined;
 
-    // execute query
     const result = await query.getCount();
 
     return result;
@@ -63,24 +94,24 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
       SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
-      result._dataOwner.id !== SessionUtil.getAccountId
+      result.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
       throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, 403);
     }
 
     if (!result) {
-      throw new HttpException(`${this.constructor.name} FindById(${id}) Id Not Found`, 404);
+      throw new HttpException(`${this.constructor.name} FindById with id: (${id}) Not Found`, 404);
     }
 
     if (result.isDeleted) {
-      throw new HttpException(`${this.constructor.name} record with id:"${id}" has been deleted`, 404);
+      throw new HttpException(`${this.constructor.name} record with id: "${id}" Has Been Deleted`, 404);
     }
 
     return this.mapper.entityToDto(result);
   }
 
   async findOne(
-    param: DeepPartial<TEntity>,
+    param: QueryDeepPartialEntity<TEntity>,
     options?: FindOneOptions<TEntity>,
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<TDto> {
@@ -88,13 +119,15 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
 
     options.relations = options.relations || getRelationsName(this.repository.metadata.columns);
 
-    const result = await this.repository.findOne(param, options);
+    const conditions = { ...param } as FindConditions<TEntity>;
+
+    const result = await this.repository.findOne(conditions, options);
 
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
       SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
-      result._dataOwner.id !== SessionUtil.getAccountId
+      result.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
       throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, 403);
     }
@@ -123,7 +156,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
           permissions &&
           permissions.indexOf(DefaultRoles.owner) >= 0 &&
           SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
-          entity._dataOwner.id !== SessionUtil.getAccountId
+          entity.__meta.dataOwner !== SessionUtil.getAccountId
         ) {
           throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, 403);
         } else {
@@ -143,7 +176,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
       SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
-      result.data._dataOwner.id !== SessionUtil.getAccountId
+      result.data.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
       throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read this draft`, 403);
     }
@@ -177,22 +210,25 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return result.data as TDto;
   }
 
-  async create(data: TDto, doValidation: boolean = true): Promise<TDto> {
+  async create(data: TDto, doValidation: boolean = true): Promise<void> {
     if (doValidation) {
       await data.validate();
     }
 
-    data._dataStatus = DataStatus.Submitted;
+    if (!data.__meta) {
+      data.__meta = {};
+    }
+
+    data.__meta.dataStatus = DataStatus.Submitted;
     data.isDeleted = false;
 
-    const toEntity: DeepPartial<TEntity> = await this.mapper.dtoToEntity(data);
-    const result: DeepPartial<TEntity> = await this.repository.save(toEntity);
+    const toEntity = await this.mapper.dtoToEntity(data);
+
+    await this.repository.insert(toEntity);
 
     if (await this.draftService.isExist(data.id)) {
       this.draftService.delete(data.id);
     }
-
-    return this.mapper.entityToDto(result);
   }
 
   async update(
@@ -200,7 +236,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     data: TDto,
     doValidation: boolean = true,
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
-  ): Promise<TDto> {
+  ): Promise<void> {
     if (doValidation) {
       await data.validate();
     }
@@ -213,37 +249,33 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
       SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
-      beforeUpdate._dataOwner.id !== SessionUtil.getAccountId
+      beforeUpdate.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
       throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can update this data`, 403);
     }
 
+    // delete id to prevent id changed accidentally
     delete entity.id;
-    delete entity.updatedAt;
 
     await this.repository.update(id, entity);
-
-    const result = await this.fetch(id);
-
-    return result;
   }
 
   async destroy(
     id: string,
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
-  ): Promise<boolean> {
+  ): Promise<void> {
     const entity = await this.repository.findOneOrFail(id);
 
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
       SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
-      entity._dataOwner.id !== SessionUtil.getAccountId
+      entity.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
       throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can delete this data`, 403);
     }
 
-    if (this.softDelete && entity._dataStatus !== DataStatus.Draft && !entity.isDeleted) {
+    if (this.config.softDelete && entity.__meta.dataStatus !== DataStatus.Draft && !entity.isDeleted) {
       // tslint:disable-next-line:no-any
       const deletedObj: any = {
         isDeleted: true,
@@ -253,19 +285,21 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     } else {
       await this.repository.delete(id);
     }
-
-    return true;
   }
 
   async destroyBulk(
     ids: string[],
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
-  ): Promise<{ [name: string]: boolean }> {
-    const result: { [name: string]: boolean } = {};
+  ): Promise<{ [key: string]: string }> {
+    const result: { [key: string]: string } = {};
 
     await Promise.all(
       ids.map(async id => {
-        result[id] = await this.destroy(id, permissions);
+        try {
+          await this.destroy(id, permissions);
+        } catch (e) {
+          result[id] = e.messages;
+        }
       }),
     );
 
@@ -275,21 +309,19 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
   async destroyDraft(
     id: string,
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
-  ): Promise<boolean> {
+  ): Promise<void> {
     const result = await this.draftService.fetch(id, this.constructor.name);
 
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
       SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
-      result.data._dataOwner.id !== SessionUtil.getAccountId
+      result.data.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
       throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can delete this draft`, 403);
     }
 
     await this.draftService.delete(id);
-
-    return true;
   }
 
   private queryBuilder(filter: IFilter): SelectQueryBuilder<TEntity> {
@@ -302,9 +334,6 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
 
     // show deleted
     query.andWhere(`"${tableName}"."isDeleted" = ${!!filter.isShowDeleted}`);
-
-    // show draft
-    query.andWhere(`"${tableName}"."_dataStatus" = '${filter.isShowDraft ? DataStatus.Draft : DataStatus.Submitted}'`);
 
     // resolve relations
     if (!filter.relations) {

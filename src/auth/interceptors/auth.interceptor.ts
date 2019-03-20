@@ -24,12 +24,7 @@ export class AuthInterceptor implements NestInterceptor {
         ) {
           const findDataOwner: any = _.find(data, '_dataOwner');
 
-          if (
-            findDataOwner &&
-            findDataOwner._dataOwner &&
-            findDataOwner._dataOwner.id &&
-            findDataOwner._dataOwner.id !== SessionUtil.getAccountId
-          ) {
+          if (findDataOwner && findDataOwner._dataOwner && findDataOwner._dataOwner !== SessionUtil.getAccountId) {
             throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can access this data`, 403);
           }
         }

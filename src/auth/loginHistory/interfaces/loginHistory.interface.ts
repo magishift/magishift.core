@@ -1,16 +1,13 @@
-import { ICrudDto, ICrudEntity } from '../../../crud/interfaces/crud.interface';
-import { IAccount, IAccountDto } from '../../account/interfaces/account.interface';
-
-export interface ILoginHistory extends ICrudEntity {
-  account: IAccount;
-  loginTime: Date;
+export interface ILoginHistory {
+  id: string;
+  accountId: string;
   actions: string[];
   sessionId: string;
 }
 
-export interface ILoginHistoryDto extends ICrudDto {
-  account: IAccountDto;
-  loginTime: Date;
+export interface ILoginHistoryDto {
+  id: string;
+  accountId: string;
   actions: string[];
   sessionId: string;
 }

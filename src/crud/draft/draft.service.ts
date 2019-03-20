@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as _ from 'lodash';
+import _ = require('lodash');
 import { Repository } from 'typeorm';
 import { IFilter } from '../interfaces/filter.interface';
 import { Draft } from './draft.entity.mongo';

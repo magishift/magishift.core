@@ -1,32 +1,31 @@
 import { HttpException } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
 import { BaseDto } from '../../base/base.dto';
-import { IUserDto } from '../../user/interfaces/user.interface';
-import { ILoginHistoryDto } from '../loginHistory/interfaces/loginHistory.interface';
+import { IDataMeta } from '../../crud/interfaces/crud.interface';
 import { IAccountDto } from './interfaces/account.interface';
 
 export class AccountDto extends BaseDto implements IAccountDto {
-  user?: IUserDto;
-
   username: string;
 
-  password: string;
+  enabled: boolean = true;
 
-  passwordConfirm: string;
+  emailVerified: boolean;
 
-  realm: string;
+  email: string;
 
-  roles: string[];
+  firstName: string;
 
-  loginHistories: ILoginHistoryDto[];
+  lastName: string;
 
-  isActive: boolean = false;
+  realmRoles: string[];
 
-  createdBy: IAccountDto;
+  password?: string;
 
-  updatedBy: IAccountDto;
+  passwordConfirm?: string;
 
-  _dataOwner: IAccountDto;
+  isDeleted?: boolean;
+
+  __meta?: IDataMeta = {};
 
   constructor(init?: Partial<AccountDto>) {
     super();

@@ -2,7 +2,6 @@ import { ApiModelProperty } from '@nestjs/swagger';
 import { IsDate } from 'class-validator';
 import { CrudDto } from '../../crud/crud.dto';
 import { Grid, GridColumn } from '../../crud/grid.decorator';
-import { IAccountDto } from '../account/interfaces/account.interface';
 import { ColumnTypes } from './../../crud/interfaces/grid.interface';
 import { ILoginHistoryDto } from './interfaces/loginHistory.interface';
 
@@ -18,7 +17,11 @@ import { ILoginHistoryDto } from './interfaces/loginHistory.interface';
   },
 })
 export class LoginHistoryDto extends CrudDto implements ILoginHistoryDto {
-  account: IAccountDto;
+  @GridColumn({ text: 'Id' })
+  id: string;
+
+  @GridColumn({ text: 'Account Id' })
+  accountId: string;
 
   @IsDate()
   @ApiModelProperty()

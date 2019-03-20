@@ -1,12 +1,12 @@
 import { plainToClassFromExist } from 'class-transformer';
 import 'reflect-metadata';
-import { DeepPartial } from 'typeorm';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { IBaseDto, IBaseEntity } from '../base/interfaces/base.interface';
 
 export function Dto2Entity<TDto extends IBaseDto, TEntity extends IBaseEntity>(
   dto: TDto,
   entity: TEntity,
-): DeepPartial<TEntity> {
+): QueryDeepPartialEntity<TEntity> {
   if (!dto) {
     return undefined;
   }

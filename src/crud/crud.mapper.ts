@@ -1,7 +1,7 @@
 import { Validator } from 'class-validator';
-import * as _ from 'lodash';
-import { DeepPartial, getRepository, Repository } from 'typeorm';
+import { DeepPartial, getRepository, ObjectLiteral, Repository } from 'typeorm';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { getPropertyType } from '../database/utils.database';
 import { Dto2Entity, DtoFromObject, Entity2Dto } from '../utils/objectMapper.utils';
 import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
@@ -29,25 +29,14 @@ export abstract class CrudMapper<TEntity extends ICrudEntity, TDto extends ICrud
     return this.getNewEntity.getRepository();
   }
 
-  async dtoToEntity(dto: TDto): Promise<DeepPartial<TEntity>> {
-    delete dto.updatedAt;
-    delete dto.createdAt;
+  async dtoToEntity(dto: TDto): Promise<QueryDeepPartialEntity<TEntity>> {
+    delete dto.__meta;
 
     return Dto2Entity(dto, this.getNewEntity);
   }
 
-  async entityToDto(entity: DeepPartial<TEntity> | TEntity): Promise<TDto> {
+  async entityToDto(entity: DeepPartial<TEntity> | TEntity | ObjectLiteral): Promise<TDto> {
     const dto = Entity2Dto(entity as TEntity, this.getNewDto);
-
-    if (dto && dto.createdBy) {
-      delete dto.createdBy.password;
-      delete dto.createdBy.passwordConfirm;
-    }
-
-    if (dto && dto.updatedBy) {
-      delete dto.updatedBy.password;
-      delete dto.updatedBy.passwordConfirm;
-    }
 
     return dto;
   }

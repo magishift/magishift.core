@@ -1,23 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as _ from 'lodash';
+import _ = require('lodash');
 import { Repository } from 'typeorm';
-import { CrudService } from '../../crud/crud.service';
 import { DraftService } from '../../crud/draft/draft.service';
 import { IFilter } from '../../crud/interfaces/filter.interface';
-import { ILoginHistory, ILoginHistoryDto } from './interfaces/loginHistory.interface';
-import { LoginHistory } from './loginHistory.entity';
-import { LoginHistoryMapper } from './loginHistory.mapper';
+import { ILoginHistoryDto } from './interfaces/loginHistory.interface';
+import { LoginHistory } from './loginHistory.entity.mongo';
 
 @Injectable()
-export class LoginHistoryService extends CrudService<ILoginHistory, ILoginHistoryDto> {
+export class LoginHistoryService {
   constructor(
     @InjectRepository(LoginHistory) protected readonly repository: Repository<LoginHistory>,
     protected readonly draftService: DraftService,
-    protected readonly mapper: LoginHistoryMapper,
-  ) {
-    super(repository, draftService, mapper, false);
-  }
+  ) {}
 
   async findAll(
     filter: IFilter = {
@@ -30,18 +25,24 @@ export class LoginHistoryService extends CrudService<ILoginHistory, ILoginHistor
     if (!filter.where || _.isEmpty(filter.where)) {
       return [];
     }
-    return super.findAll(filter);
+    return this.repository.find(filter.where);
   }
 
-  async updateActions(sessionId: string, action: string): Promise<void> {
-    const loginHistory = await super.findOne({ sessionId });
+  async updateActions(accountId: string, sessionId: string, action: string): Promise<void> {
+    const loginHistory = await this.repository.findOne({ sessionId });
 
-    if (!loginHistory.actions) {
-      loginHistory.actions = [];
+    if (loginHistory) {
+      loginHistory.actions.push(action);
+
+      this.repository.update(loginHistory.id, loginHistory);
+    } else {
+      const newLoginHistory = new LoginHistory({
+        accountId,
+        sessionId,
+        actions: [action],
+      });
+
+      this.repository.create(newLoginHistory);
     }
-
-    loginHistory.actions.push(action);
-
-    super.update(loginHistory.id, loginHistory);
   }
 }

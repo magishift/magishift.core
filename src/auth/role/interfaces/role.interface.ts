@@ -1,11 +1,11 @@
 import { ICrudDto, ICrudEntity } from '../../../crud/interfaces/crud.interface';
 
 export interface IRole extends ICrudEntity {
-  title: string;
+  name: string;
   description: string;
 }
 
 export interface IRoleDto extends ICrudDto {
-  title: string;
+  name: string;
   description: string;
 }

@@ -4,15 +4,15 @@ import { IFormSchema } from './interfaces/form.interface';
 import { IGridSchema } from './interfaces/grid.interface';
 
 function replaceControllerToDTO(str: string): string {
-  return str.replace('Controller', 'Dto');
+  return str.replace('Service', 'Dto');
 }
 
-export function GetFormSchema(controllerName: string): IFormSchema {
-  const dtoName = replaceControllerToDTO(controllerName);
+export function GetFormSchema(serviceName: string): IFormSchema {
+  const dtoName = replaceControllerToDTO(serviceName);
   return { schema: { ...FormSchemas[dtoName] } };
 }
 
-export function GetGridSchema(controllerName: string): IGridSchema {
-  const dtoName = replaceControllerToDTO(controllerName);
+export function GetGridSchema(serviceName: string): IGridSchema {
+  const dtoName = replaceControllerToDTO(serviceName);
   return { schema: { ...GridSchemas[dtoName] } };
 }

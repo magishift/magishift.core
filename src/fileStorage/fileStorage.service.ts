@@ -91,12 +91,11 @@ export class FileStorageService extends CrudService<IFileStorage, IFileStorageDt
 
     if (findInDb) {
       file.id = findInDb.id;
-
       await this.update(findInDb.id, file);
-
       return file;
     } else {
-      return this.create(file);
+      await this.create(file);
+      return file;
     }
   }
 
@@ -129,12 +128,11 @@ export class FileStorageService extends CrudService<IFileStorage, IFileStorageDt
 
     if (findInDb) {
       file.id = findInDb.id;
-
       await this.update(findInDb.id, file);
-
       return file;
     } else {
-      return this.create(file);
+      await this.create(file);
+      return file;
     }
   }
 }

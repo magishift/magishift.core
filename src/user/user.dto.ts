@@ -1,5 +1,6 @@
 import { IAccountDto } from '../auth/account/interfaces/account.interface';
 import { ILoginHistoryDto } from '../auth/loginHistory/interfaces/loginHistory.interface';
+import { IRoleDto } from '../auth/role/interfaces/role.interface';
 import { CrudDto } from '../crud/crud.dto';
 import { IFileStorageDto } from '../fileStorage/interfaces/fileStorage.interface';
 import { IDeviceDto } from './device/interfaces/device.interface';
@@ -27,11 +28,9 @@ export abstract class UserDto extends CrudDto implements IUserDto {
 
   abstract phoneNumber: string;
 
-  abstract role: string;
+  abstract roles: IRoleDto[];
 
   abstract realm: string;
-
-  isActive: boolean = false;
 
   notifications: INotificationDto[];
 

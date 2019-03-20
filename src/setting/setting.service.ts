@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as _ from 'lodash';
 import { Repository } from 'typeorm';
 import { ISetting } from './interfaces/setting.interface';
 import { Setting } from './setting.entity.mongo';

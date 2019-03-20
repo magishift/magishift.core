@@ -7,7 +7,6 @@ import { IEndpointRoles } from '../auth/role/role.interface';
 import { Roles } from '../auth/role/roles.decorator';
 import { RolesGuard } from '../auth/role/roles.guard';
 import { GraphQLInstance } from '../graphql/graphql.instance';
-import { HttpService } from '../http/http.service';
 import { ExceptionHandler } from '../utils/error.utils';
 import { capitalizeFirstLetter } from '../utils/string.utils';
 import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
@@ -24,7 +23,6 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
   authService: AuthService,
   mapper: ICrudMapper<TEntity, TDto>,
   pubSub: PubSub,
-  http: HttpService,
 ) => ICrudResolver<TDto, TEntity> {
   const nameCapFirst = capitalizeFirstLetter(name);
 
@@ -53,7 +51,6 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
       protected readonly authService: AuthService,
       protected readonly mapper: ICrudMapper<TEntity, TDto>,
       protected readonly pubSub: PubSub,
-      protected readonly http: HttpService,
     ) {}
 
     @Query(findById)
@@ -81,7 +78,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
 
     @Mutation(create)
     @Roles(...(roles.write || roles.default))
-    async create(@Args() args: { input }): Promise<object> {
+    async create(@Args() args: { input }): Promise<void> {
       try {
         const dto = await this.mapper.dtoFromObject(args.input[name]);
         await dto.validate();
@@ -91,8 +88,6 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
         const subPayload = {};
         subPayload[subCreated] = result;
         this.pubSub.publish(subCreated, subPayload);
-
-        return { [name]: result };
       } catch (e) {
         return ExceptionHandler(e);
       }
@@ -100,7 +95,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
 
     @Mutation(updateById)
     @Roles(...(roles.update || roles.write || roles.default))
-    async updateById(@Args() args: { input }): Promise<object> {
+    async updateById(@Args() args: { input }): Promise<void> {
       try {
         const dto = await this.mapper.dtoFromObject(args.input[`${name}Patch`]);
         await dto.validate();
@@ -110,8 +105,6 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
         const subPayload = {};
         subPayload[subUpdated] = result;
         this.pubSub.publish(subUpdated, subPayload);
-
-        return { [name]: result };
       } catch (e) {
         return ExceptionHandler(e);
       }
@@ -119,7 +112,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
 
     @Mutation(update)
     @Roles(...(roles.update || roles.write || roles.default))
-    async update(@Args() args: { input }): Promise<object> {
+    async update(@Args() args: { input }): Promise<void> {
       try {
         const dto = await this.mapper.dtoFromObject(args.input[`${name}Patch`]);
         await dto.validate();
@@ -129,8 +122,6 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
         const subPayload = {};
         subPayload[subUpdated] = result;
         this.pubSub.publish(subUpdated, subPayload);
-
-        return { [name]: result };
       } catch (e) {
         return ExceptionHandler(e);
       }
@@ -138,23 +129,17 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
 
     @Mutation(destroy)
     @Roles(...(roles.delete || roles.default))
-    async destroy(@Args() args: { input }): Promise<object> {
+    async destroy(@Args() args: { input }): Promise<void> {
       try {
-        const dto = await this.mapper.dtoFromObject(args.input);
+        const dto = await this.mapper.dtoToEntity(await this.mapper.dtoFromObject(args.input));
 
-        const entity = await this.service.findOne(await this.mapper.dtoToEntity(dto));
+        const entity = await this.service.findOne(dto);
 
-        const result = await this.service.destroy(entity.id);
+        await this.service.destroy(entity.id);
 
-        if (result) {
-          const subPayload = {};
-          subPayload[subDestroyed] = entity;
-          this.pubSub.publish(subDestroyed, subPayload);
-
-          return { [name]: entity };
-        } else {
-          throw new HttpException(`Cannot delete ${name} with id ${dto.id}`, 400);
-        }
+        const subPayload = {};
+        subPayload[subDestroyed] = entity;
+        this.pubSub.publish(subDestroyed, subPayload);
       } catch (e) {
         return ExceptionHandler(e);
       }
@@ -168,17 +153,13 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
 
         const entity = await this.service.fetch(dto.id);
 
-        const result = await this.service.destroy(entity.id);
+        await this.service.destroy(entity.id);
 
-        if (result) {
-          const subPayload = {};
-          subPayload[subDestroyed] = entity;
-          this.pubSub.publish(subDestroyed, subPayload);
+        const subPayload = {};
+        subPayload[subDestroyed] = entity;
+        this.pubSub.publish(subDestroyed, subPayload);
 
-          return { [name]: entity };
-        } else {
-          throw new HttpException(`Cannot delete ${name} with id ${dto.id}`, 400);
-        }
+        return { [name]: entity };
       } catch (e) {
         return ExceptionHandler(e);
       }

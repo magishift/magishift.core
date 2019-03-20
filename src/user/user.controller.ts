@@ -55,7 +55,7 @@ export function UserControllerFactory<TDto extends IUserDto, TEntity extends IUs
       try {
         const user = await this.service.fetch(id);
 
-        const fields: { [name: string]: IFormField } = {
+        const fields: { [key: string]: IFormField } = {
           username: {
             label: 'Username',
             type: FieldTypes.Text,
@@ -137,6 +137,16 @@ export function UserControllerFactory<TDto extends IUserDto, TEntity extends IUs
         }
 
         return res.status(200).json(uploadResult);
+      } catch (e) {
+        return ExceptionHandler(e);
+      }
+    }
+
+    @Get('login')
+    @Roles(DefaultRoles.public)
+    async getLogin(@Body() data: LoginData): Promise<IToken> {
+      try {
+        return this.service.login(data);
       } catch (e) {
         return ExceptionHandler(e);
       }

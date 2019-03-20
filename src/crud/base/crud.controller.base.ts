@@ -1,13 +1,12 @@
 import { HttpException, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { parse as json2csv } from 'json2csv';
-import * as _ from 'lodash';
+import _ = require('lodash');
 import * as stream from 'stream';
 import { v4 as uuid } from 'uuid';
 import { IFile } from '../../fileStorage/interfaces/fileStorage.interface';
 import { csvtojson } from '../../utils/csvtojson';
 import { ExceptionHandler } from '../../utils/error.utils';
-import { GetFormSchema, GetGridSchema } from '../crud.util';
 import { ICrudDto, ICrudEntity } from '../interfaces/crud.interface';
 import { ICrudController } from '../interfaces/crudController.interface';
 import { ICrudMapper } from '../interfaces/crudMapper.Interface';
@@ -24,27 +23,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
 
   async getFormSchema(id?: string, isDraft?: string, isDeleted?: string): Promise<IFormSchema> {
     try {
-      const result = Object.assign(GetFormSchema(this.constructor.name));
-      result.schema.model = null;
-
-      if (id) {
-        if (isDraft && isDraft !== 'false') {
-          result.schema.model = await this.service.fetchDraft(id);
-        } else if (isDeleted && isDeleted !== 'false') {
-          result.schema.model = await this.service.findOne({ id, isDeleted: true } as any);
-        } else {
-          result.schema.model = await this.service.fetch(id);
-        }
-      } else {
-        // on create, define form ID
-        // this ID will be used to mark owner ID for uploaded file
-        // and latter will be used as object ID
-        result.schema.model = {
-          id: uuid(),
-        };
-      }
-
-      return result;
+      return this.service.getFormSchema(id, isDraft, isDeleted);
     } catch (e) {
       return ExceptionHandler(e);
     }
@@ -52,7 +31,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
 
   getGridSchema(): object {
     try {
-      return Object.assign(GetGridSchema(this.constructor.name));
+      return this.service.getGridSchema();
     } catch (e) {
       return ExceptionHandler(e);
     }
@@ -148,11 +127,10 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  async create(data: TDto): Promise<TDto> {
+  async create(data: TDto): Promise<void> {
     try {
       const param = await this.mapper.dtoFromObject(data);
-      const result = await this.service.create(param);
-      return result;
+      await this.service.create(param);
     } catch (e) {
       return ExceptionHandler(e);
     }
@@ -168,35 +146,32 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  async update(id: string, data: TDto): Promise<TDto> {
+  async update(id: string, data: TDto): Promise<void> {
     try {
       const param: TDto = await this.mapper.dtoFromObject(data);
-      const result = await this.service.update(id, param);
-      return result;
+      await this.service.update(id, param);
     } catch (e) {
       return ExceptionHandler(e);
     }
   }
 
-  async destroy(id: string): Promise<boolean> {
+  async destroy(id: string): Promise<void> {
     try {
-      const result = await this.service.destroy(id);
-      return result;
+      await this.service.destroy(id);
     } catch (e) {
       return ExceptionHandler(e);
     }
   }
 
-  async destroyDraft(id: string): Promise<boolean> {
+  async destroyDraft(id: string): Promise<void> {
     try {
-      const result = await this.service.destroyDraft(id);
-      return result;
+      await this.service.destroyDraft(id);
     } catch (e) {
       return ExceptionHandler(e);
     }
   }
 
-  async destroyBulk({ ids }: { ids: string }): Promise<{ [name: string]: boolean }> {
+  async destroyBulk({ ids }: { ids: string }): Promise<{ [key: string]: string }> {
     try {
       const result = await this.service.destroyBulk(JSON.parse(ids));
       return result;
@@ -265,7 +240,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
 
   async downloadCSVTemplate(@Res() res: Response): Promise<void> {
     try {
-      const headers = this.resolveCsvHeader();
+      const headers = await this.resolveCsvHeader();
 
       const bufferSchema = Buffer.from(_.join(headers, ';'));
 
@@ -284,8 +259,8 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  private resolveCsvHeader(): string[] {
-    const formSchema = GetFormSchema(this.constructor.name);
+  private async resolveCsvHeader(): Promise<string[]> {
+    const formSchema = await this.service.getFormSchema();
 
     const headers = [];
 

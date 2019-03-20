@@ -95,8 +95,8 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
 
     @Post()
     @Roles(...(roles.write || roles.default))
-    async create(@Body() data: TDto): Promise<TDto> {
-      return await super.create(data);
+    async create(@Body() data: TDto): Promise<void> {
+      await super.create(data);
     }
 
     @Post('draft')
@@ -107,26 +107,26 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
 
     @Patch(':id')
     @Roles(...(roles.update || roles.write || roles.default))
-    async update(@Param('id') id: string, @Body() data: TDto): Promise<TDto> {
-      return await super.update(id, data);
+    async update(@Param('id') id: string, @Body() data: TDto): Promise<void> {
+      await super.update(id, data);
     }
 
     @Delete(':id')
     @Roles(...(roles.delete || roles.default))
-    async destroy(@Param('id') id: string): Promise<boolean> {
+    async destroy(@Param('id') id: string): Promise<void> {
       return await super.destroy(id);
     }
 
     @Delete('draft/:id')
     @Roles(...(roles.delete || roles.default))
-    async destroyDraft(@Param('id') id: string): Promise<boolean> {
+    async destroyDraft(@Param('id') id: string): Promise<void> {
       return await super.destroyDraft(id);
     }
 
     @Delete('multi/:ids')
     @Roles(...(roles.delete || roles.default))
     async destroyBulk(@Param() { ids }: { ids: string }): Promise<{
-      [name: string]: boolean;
+      [key: string]: string;
     }> {
       return await super.destroyBulk({ ids });
     }

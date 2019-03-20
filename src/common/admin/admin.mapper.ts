@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { AccountMapper } from '../../auth/account/account.mapper';
+import { IUser, IUserDto } from '../../user/interfaces/user.interface';
 import { UserMapper } from '../../user/user.mapper';
 import { AdminDto } from './admin.dto';
 import { Admin } from './admin.entity';
-import { IAdmin, IAdminDto } from './interfaces/admin.interface';
 
 @Injectable()
-export class AdminMapper extends UserMapper<IAdmin, IAdminDto> {
-  constructor(protected readonly accountMapper: AccountMapper) {
-    super(accountMapper, Admin, AdminDto);
+export class AdminMapper extends UserMapper<IUser, IUserDto> {
+  constructor() {
+    super(Admin, AdminDto);
   }
 }

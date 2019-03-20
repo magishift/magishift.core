@@ -1,17 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, LoggerService } from '@nestjs/common';
-import { AxiosError } from 'axios';
 
-export function ExceptionHandler(e: Error | AxiosError, httpCode?: number): never {
-  if (httpCode) {
-    throw new HttpException(e.message, httpCode);
-  }
-
-  // check if error is postgres error
-  if ((e as any).code && (e as any).query) {
-    throw new HttpException(e.message, 400);
-  }
-
-  throw e;
+export function ExceptionHandler(e: any, httpCode?: number): never {
+  throw new HttpException(e.message, httpCode || 400);
 }
 
 @Catch()
