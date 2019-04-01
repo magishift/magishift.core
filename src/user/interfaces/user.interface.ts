@@ -5,10 +5,6 @@ import { IDevice, IDeviceDto } from '../device/interfaces/device.interface';
 import { INotification, INotificationDto } from '../notification/interfaces/notification.interface';
 import { IUserRole, IUserRoleDto } from '../userRole/interfaces/userRole.interface';
 
-export interface IUserServiceConfig {
-  realm: string;
-}
-
 export interface IUser extends ICrudEntity {
   accountId: string;
   email: string;

@@ -84,6 +84,8 @@ export async function MagiApp(
 
   if (existsSync('node_modules/@mandalalabs/magishift.core')) {
     graphqlPaths.push('node_modules/@mandalalabs/magishift.core/dist/**/*.graphql');
+  } else if (existsSync('playground/modules')) {
+    graphqlPaths.push('playground/modules/**/*.graphql');
   }
 
   const typesArray = graphqlPaths.map(graphqlPath => {

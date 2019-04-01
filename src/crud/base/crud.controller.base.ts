@@ -68,8 +68,6 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
         filter = JSON.parse(filterArg);
       }
 
-      filter.isShowDraft = true;
-
       const items = await this.service.findAllDrafts(filter);
 
       const totalCount = 0;

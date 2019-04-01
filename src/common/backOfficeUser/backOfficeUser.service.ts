@@ -9,6 +9,7 @@ import { UserService } from '../../user/user.service';
 import { BackOfficeRoleService } from './backOfficeRole/backOfficeRole.service';
 import { BackOfficeUser } from './backOfficeUser.entity';
 import { BackOfficeUserMapper } from './backOfficeUser.mapper';
+import { BO_USER_REALM } from './interfaces/backOfficeUser.const';
 
 @Injectable()
 export class BackOfficeUserService extends UserService<IUser, IUserDto> {
@@ -20,8 +21,6 @@ export class BackOfficeUserService extends UserService<IUser, IUserDto> {
     protected readonly mapper: BackOfficeUserMapper,
     protected readonly draftService: DraftService,
   ) {
-    super(repository, authService, keycloakAdminService, backOfficeRoleService, draftService, mapper, {
-      realm: process.env.KEYCLOAK_REALM_MASTER,
-    });
+    super(repository, authService, keycloakAdminService, backOfficeRoleService, draftService, mapper, BO_USER_REALM);
   }
 }

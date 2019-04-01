@@ -5,7 +5,7 @@ import { CrudService } from '../../crud/crud.service';
 import { DraftService } from '../../crud/draft/draft.service';
 import { ICrudService } from '../../crud/interfaces/crudService.interface';
 import { ExceptionHandler } from '../../utils/error.utils';
-import { IUserRole, IUserRoleDto, IUserRoleServiceConfig } from './interfaces/userRole.interface';
+import { IUserRole, IUserRoleDto } from './interfaces/userRole.interface';
 import { UserRoleMapper } from './UserRole.mapper';
 
 export abstract class UserRoleService<TEntity extends IUserRole, TDto extends IUserRoleDto>
@@ -16,11 +16,11 @@ export abstract class UserRoleService<TEntity extends IUserRole, TDto extends IU
     protected readonly draftService: DraftService,
     protected readonly mapper: UserRoleMapper<TEntity, TDto>,
     protected readonly keycloakAdminService: KeycloakAdminService,
-    protected readonly serviceConfig: IUserRoleServiceConfig,
+    protected readonly realm: string,
   ) {
     super(repository, draftService, mapper, { softDelete: false });
 
-    if (!serviceConfig.realm) {
+    if (!realm) {
       return ExceptionHandler('Must set realm for Role Service', 500);
     }
   }
@@ -35,9 +35,9 @@ export abstract class UserRoleService<TEntity extends IUserRole, TDto extends IU
     await queryRunner.startTransaction();
 
     try {
-      await this.keycloakAdminService.createRole({ name, description }, this.serviceConfig.realm);
+      await this.keycloakAdminService.createRole({ name, description }, this.realm);
 
-      const role = await this.keycloakAdminService.getRoleByName(name, this.serviceConfig.realm);
+      const role = await this.keycloakAdminService.getRoleByName(name, this.realm);
 
       data.id = role.id;
 
@@ -47,10 +47,10 @@ export abstract class UserRoleService<TEntity extends IUserRole, TDto extends IU
       await queryRunner.commitTransaction();
 
       return result;
-    } catch (err) {
+    } catch (e) {
       await queryRunner.rollbackTransaction();
 
-      return ExceptionHandler(err);
+      return ExceptionHandler(e.response || e, e.response.status || e.status);
     } finally {
       await queryRunner.release();
     }
@@ -74,17 +74,17 @@ export abstract class UserRoleService<TEntity extends IUserRole, TDto extends IU
           name,
           description,
         },
-        this.serviceConfig.realm,
+        this.realm,
       );
 
       // commit transaction now:
       await queryRunner.commitTransaction();
 
       return result;
-    } catch (err) {
+    } catch (e) {
       await queryRunner.rollbackTransaction();
 
-      return ExceptionHandler(err);
+      return ExceptionHandler(e.response || e, e.response.status || e.status);
     } finally {
       await queryRunner.release();
     }
@@ -100,21 +100,21 @@ export abstract class UserRoleService<TEntity extends IUserRole, TDto extends IU
     try {
       await super.destroy(id);
 
-      await this.keycloakAdminService.deleteRole(id, this.serviceConfig.realm);
+      await this.keycloakAdminService.deleteRole(id, this.realm);
 
       // commit transaction now:
       await queryRunner.commitTransaction();
-    } catch (err) {
+    } catch (e) {
       await queryRunner.rollbackTransaction();
 
-      return ExceptionHandler(err);
+      return ExceptionHandler(e.response || e, e.response.status || e.status);
     } finally {
       await queryRunner.release();
     }
   }
 
   async updateRepository(): Promise<void> {
-    const userRoles = await this.keycloakAdminService.rolesList(this.serviceConfig.realm);
+    const userRoles = await this.keycloakAdminService.rolesList(this.realm);
 
     const existing = await this.repository.find();
 

@@ -6,9 +6,8 @@ export interface IFilter {
   whereOr?: object;
   order?: string[];
   limit?: number;
-  isShowDraft?: boolean;
   isShowDeleted?: boolean;
-  relations?: { key: string; isManyToMany?: boolean }[];
+  relations?: string[];
   operator?: string;
 }
 

@@ -1,5 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
-import { FindConditions, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import _ = require('lodash');
+import { FindConditions, FindManyOptions, FindOneOptions, Like, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { DefaultRoles } from '../auth/role/defaultRoles';
 import { SessionUtil } from '../auth/session.util';
@@ -63,7 +64,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     filter: IFilter = {
       offset: 0,
       limit: -1,
-      isShowDraft: false,
+
       isShowDeleted: false,
     },
   ): Promise<number> {
@@ -81,8 +82,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
   ): Promise<TDto> {
     options = options || {};
 
-    options.relations =
-      options.relations || getRelationsTableName(this.repository.metadata).map(relation => relation.key);
+    options.relations = options.relations || getRelationsTableName(this.repository.metadata);
 
     const result = await this.repository.findOne(id, options);
 
@@ -113,8 +113,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
   ): Promise<TDto> {
     options = options || {};
 
-    options.relations =
-      options.relations || getRelationsTableName(this.repository.metadata).map(relation => relation.key);
+    options.relations = options.relations || getRelationsTableName(this.repository.metadata);
 
     const conditions: FindConditions<TEntity> = { ...param } as any;
 
@@ -136,7 +135,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     filter: IFilter = {
       offset: 0,
       limit: 10,
-      isShowDraft: false,
+
       isShowDeleted: false,
     },
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
@@ -188,7 +187,6 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     filter: IFilter = {
       offset: 0,
       limit: -1,
-      isShowDraft: false,
       isShowDeleted: false,
     },
   ): Promise<TDto[]> {
@@ -342,10 +340,55 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       filter.relations = getRelationsTableName(this.repository.metadata);
     }
 
+    const where: FindConditions<TEntity> = filter.where;
+
+    if (where) {
+      Object.keys(where).map(w => {
+        if (typeof where[w] === 'object' && where[w].plain) {
+          where[w] = Like('%' + where[w].plain + '%');
+        }
+      });
+    }
+
+    const whereOr: FindConditions<TEntity>[] = [];
+
+    if (filter.whereOr) {
+      if (!_.isEmpty(where)) {
+        whereOr.push(where);
+      }
+
+      Object.keys(filter.whereOr).map(w => {
+        if (typeof filter.whereOr[w] === 'object' && filter.whereOr[w].plain) {
+          const or = {};
+          or[w] = Like('%' + filter.whereOr[w].plain + '%');
+
+          whereOr.push(or);
+        }
+      });
+    }
+
+    const order: { [P in keyof TEntity]?: 'ASC' | 'DESC' | 1 | -1 } = {};
+
+    if (filter.order) {
+      filter.order.map(ord => {
+        const orders = ord.split(' ');
+        if (orders.length === 2) {
+          order[orders[0]] = orders[1];
+        }
+      });
+    }
+
+    if (filter.isShowDeleted) {
+      (where as any).isDeleted = true;
+    }
+
     const result: FindManyOptions = {
-      relations: filter.relations.map(relation => relation.key),
+      relations: filter.relations,
+      where: whereOr && whereOr.length > 0 ? whereOr : where,
+      order,
       skip: filter.offset,
       take: filter.limit,
+      cache: true,
     };
 
     return result;

@@ -48,6 +48,7 @@ export class AuthService {
 
         const decryptedToken = jwt.decode(jwtToken) as ITokenPayload;
 
+        SessionUtil.setCurrentToken = jwtToken;
         SessionUtil.setAccountId = decryptedToken.sub;
         SessionUtil.setAccountRealm = realm;
         SessionUtil.setAccountRoles = decryptedToken.realm_access

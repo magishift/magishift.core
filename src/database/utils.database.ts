@@ -14,15 +14,15 @@ export const getPropertyType = (columns: ColumnMetadata[], propertyName: string)
   }
 };
 
-export const getRelationsTableName = (metadata: EntityMetadata): { key: string; isManyToMany?: boolean }[] => {
+export const getRelationsTableName = (metadata: EntityMetadata): string[] => {
   const relations = [];
 
   _.filter(metadata.columns, 'relationMetadata').map(relation => {
-    relations.push({ key: relation.relationMetadata.propertyName, isManyToMany: false });
+    relations.push(relation.relationMetadata.propertyName);
   });
 
   _.filter(metadata.relations, 'isManyToManyOwner').map(relation => {
-    relations.push({ key: relation.propertyName, isManyToMany: true });
+    relations.push(relation.propertyName);
   });
 
   return relations;

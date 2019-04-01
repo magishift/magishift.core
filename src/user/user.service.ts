@@ -13,7 +13,7 @@ import { CrudService } from '../crud/crud.service';
 import { DraftService } from '../crud/draft/draft.service';
 import { ICrudService } from '../crud/interfaces/crudService.interface';
 import { ExceptionHandler } from '../utils/error.utils';
-import { IUser, IUserDto, IUserServiceConfig } from './interfaces/user.interface';
+import { IUser, IUserDto } from './interfaces/user.interface';
 import { IUserRole, IUserRoleDto } from './userRole/interfaces/userRole.interface';
 import { UserRoleService } from './userRole/userRole.service';
 
@@ -26,15 +26,15 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
     protected readonly userRoleService: UserRoleService<IUserRole, IUserRoleDto>,
     protected readonly draftService: DraftService,
     protected readonly mapper: CrudMapper<TEntity, TDto>,
-    protected readonly serviceConfig: IUserServiceConfig,
+    protected readonly realm: string,
   ) {
     super(repository, draftService, mapper);
 
-    if (!serviceConfig.realm) {
+    if (!realm) {
       return ExceptionHandler('Must set realm for User Service', 500);
     }
 
-    UserService.updateRepository(keycloakAdminService, userRoleService, repository, serviceConfig.realm);
+    UserService.updateRepository(keycloakAdminService, userRoleService, repository, realm);
   }
 
   async create(user: TDto): Promise<TDto> {
@@ -56,12 +56,9 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
         credentials: [{ value: user.password, type: 'password' }],
       };
 
-      await this.keycloakAdminService.createAccount(keycloakUser, this.serviceConfig.realm);
+      await this.keycloakAdminService.createAccount(keycloakUser, this.realm);
 
-      const keycloak = await this.keycloakAdminService.getAccountByName(
-        keycloakUser.username,
-        this.serviceConfig.realm,
-      );
+      const keycloak = await this.keycloakAdminService.getAccountByName(keycloakUser.username, this.realm);
 
       user.accountId = keycloak.id;
 
@@ -76,15 +73,17 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
 
       return result;
     } catch (e) {
-      const keycloak = await this.keycloakAdminService.getAccountByName(user.username, this.serviceConfig.realm);
-
-      if (keycloak) {
-        await this.keycloakAdminService.deleteUserById(keycloak.id, this.serviceConfig.realm);
-      }
-
       await queryRunner.rollbackTransaction();
 
-      return ExceptionHandler(e, e.status);
+      if (!e.response || (e.response && e.response.status === 401)) {
+        const keycloak = await this.keycloakAdminService.getAccountByName(user.username, this.realm);
+
+        if (keycloak) {
+          await this.keycloakAdminService.deleteUserById(keycloak.id, this.realm);
+        }
+      }
+
+      return ExceptionHandler(e.response || e, e.response.status || e.status);
     } finally {
       await queryRunner.release();
     }
@@ -114,9 +113,9 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
         keycloakUser.credentials = [{ value: user.password, type: 'password' }];
       }
 
-      await this.keycloakAdminService.updateAccount(result.accountId, keycloakUser, this.serviceConfig.realm);
+      await this.keycloakAdminService.updateAccount(result.accountId, keycloakUser, this.realm);
 
-      await this.keycloakAdminService.updateAccountRoles(result.accountId, user.realmRoles, this.serviceConfig.realm);
+      await this.keycloakAdminService.updateAccountRoles(result.accountId, user.realmRoles, this.realm);
 
       // commit transaction now:
       await queryRunner.commitTransaction();
@@ -125,7 +124,7 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
     } catch (e) {
       await queryRunner.rollbackTransaction();
 
-      return ExceptionHandler(e, e.status);
+      return ExceptionHandler(e.response || e, e.response.status || e.status);
     } finally {
       await queryRunner.release();
     }
@@ -145,14 +144,14 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
 
       const softDelete = this.config.softDelete && user.__meta.dataStatus !== DataStatus.Draft && !user.isDeleted;
 
-      await this.keycloakAdminService.deleteUserById(user.accountId, this.serviceConfig.realm, softDelete);
+      await this.keycloakAdminService.deleteUserById(user.accountId, this.realm, softDelete);
 
       // commit transaction now:
       await queryRunner.commitTransaction();
     } catch (e) {
       await queryRunner.rollbackTransaction();
 
-      return ExceptionHandler(e, e.status);
+      return ExceptionHandler(e.response || e, e.response.status || e.status);
     } finally {
       await queryRunner.release();
     }

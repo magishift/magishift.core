@@ -18,7 +18,7 @@ export class LoginHistoryService {
     filter: IFilter = {
       offset: 0,
       limit: 10,
-      isShowDraft: false,
+
       isShowDeleted: false,
     },
   ): Promise<ILoginHistoryDto[]> {

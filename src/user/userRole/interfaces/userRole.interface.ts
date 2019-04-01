@@ -1,9 +1,5 @@
 import { ICrudDto, ICrudEntity } from '../../../crud/interfaces/crud.interface';
 
-export interface IUserRoleServiceConfig {
-  realm: string;
-}
-
 export interface IUserRole extends ICrudEntity {
   id: string;
   name: string;

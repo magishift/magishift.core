@@ -1,9 +1,18 @@
 import { DefaultRoles } from './role/defaultRoles';
 
 export class SessionUtil {
+  private static currentToken: string = null;
   private static currentAccountId: string = null;
   private static currentAccountRealm: string = null;
   private static currentUserRoles: string[] = [DefaultRoles.public];
+
+  static set setCurrentToken(token: string) {
+    SessionUtil.currentToken = token;
+  }
+
+  static get getCurrentToken(): string {
+    return SessionUtil.currentToken;
+  }
 
   static set setAccountId(accountId: string) {
     SessionUtil.currentAccountId = accountId;

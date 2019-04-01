@@ -4,17 +4,20 @@ import { v4 as uuid } from 'uuid';
 import { RedisService } from '../../database/redis/redis.service';
 import { HttpService } from '../../http/http.service';
 
+export interface IKeycloakRealm {
+  realm: string;
+  resource: string;
+  authServerUrl: string;
+  public: boolean;
+}
+
 @Injectable()
 export class KeyCloakService {
   entitlementUrl: string;
   keyCloakProtect: any;
   keyCloak: KeycloakConnect;
 
-  //   UserQuery & {
-  //     realm?: string;
-  // }
-
-  private configs: { master: KeycloakConnect.KeycloakConfig } & { [key: string]: KeycloakConnect.KeycloakConfig };
+  private configs: { master: IKeycloakRealm } & { [key: string]: IKeycloakRealm };
   private defaultAuthServerUrl: string;
 
   constructor(protected readonly httpService: HttpService, protected readonly redisService: RedisService) {
@@ -26,7 +29,7 @@ export class KeyCloakService {
     masterConfig.authServerUrl = this.configs.master.authServerUrl || this.defaultAuthServerUrl;
     masterConfig.public = this.configs.master.public || true;
 
-    this.keyCloak = new KeycloakConnect({}, this.configs.master);
+    this.keyCloak = new KeycloakConnect({}, { ...this.configs.master });
     this.keyCloakProtect = this.keyCloak.protect();
     // this.entitlementUrl = KeyCloakService.createEntitlementUrl(this.keyCloak);
   }
