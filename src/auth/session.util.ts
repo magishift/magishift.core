@@ -1,4 +1,4 @@
-import { DefaultRoles } from './role/role.const';
+import { DefaultRoles } from './role/defaultRoles';
 
 export class SessionUtil {
   private static currentAccountId: string = null;
@@ -26,6 +26,6 @@ export class SessionUtil {
   }
 
   static get getUserRoles(): string[] {
-    return SessionUtil.currentUserRoles;
+    return SessionUtil.currentUserRoles || [];
   }
 }

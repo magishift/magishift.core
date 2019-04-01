@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { DefaultRoles } from '../../auth/role/role.const';
+import { DefaultRoles } from '../../auth/role/defaultRoles';
 import { CrudControllerFactory } from '../../crud/crud.controller';
 import { EmailTemplateMapper } from './emailTemplate.mapper';
 import { EmailTemplateService } from './emailTemplate.service';

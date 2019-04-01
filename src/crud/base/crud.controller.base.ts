@@ -1,4 +1,4 @@
-import { HttpException, Res } from '@nestjs/common';
+import { Res } from '@nestjs/common';
 import { Response } from 'express';
 import { parse as json2csv } from 'json2csv';
 import _ = require('lodash');
@@ -127,10 +127,10 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  async create(data: TDto): Promise<void> {
+  async create(data: TDto): Promise<TDto> {
     try {
       const param = await this.mapper.dtoFromObject(data);
-      await this.service.create(param);
+      return await this.service.create(param);
     } catch (e) {
       return ExceptionHandler(e);
     }
@@ -146,10 +146,10 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  async update(id: string, data: TDto): Promise<void> {
+  async update(id: string, data: TDto): Promise<TDto> {
     try {
       const param: TDto = await this.mapper.dtoFromObject(data);
-      await this.service.update(id, param);
+      return await this.service.update(id, param);
     } catch (e) {
       return ExceptionHandler(e);
     }
@@ -200,7 +200,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
         return importResults;
       }
 
-      throw new HttpException('Invalid or empty CSV file', 400);
+      return ExceptionHandler('Invalid or empty CSV file', 400);
     } catch (e) {
       return ExceptionHandler(e);
     }

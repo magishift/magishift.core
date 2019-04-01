@@ -8,7 +8,7 @@ export interface IFilter {
   limit?: number;
   isShowDraft?: boolean;
   isShowDeleted?: boolean;
-  relations?: string[];
+  relations?: { key: string; isManyToMany?: boolean }[];
   operator?: string;
 }
 

@@ -1,5 +1,5 @@
 import _ = require('lodash');
-import { ColumnType } from 'typeorm';
+import { ColumnType, EntityMetadata } from 'typeorm';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 
 export const getPropertyType = (columns: ColumnMetadata[], propertyName: string): ColumnType | void => {
@@ -14,28 +14,18 @@ export const getPropertyType = (columns: ColumnMetadata[], propertyName: string)
   }
 };
 
-export const getRelationsName = (columns: ColumnMetadata[]): string[] => {
-  const relations: ColumnMetadata[] = _.filter(columns, 'relationMetadata');
+export const getRelationsTableName = (metadata: EntityMetadata): { key: string; isManyToMany?: boolean }[] => {
+  const relations = [];
 
-  const relationsName = [];
-
-  relations.map(relation => {
-    relationsName.push(relation.relationMetadata.propertyName);
+  _.filter(metadata.columns, 'relationMetadata').map(relation => {
+    relations.push({ key: relation.relationMetadata.propertyName, isManyToMany: false });
   });
 
-  return relationsName;
-};
-
-export const getRelationsTableName = (columns: ColumnMetadata[]): string[] => {
-  const relations: ColumnMetadata[] = _.filter(columns, 'relationMetadata');
-
-  const relationsTableName = [];
-
-  relations.map(relation => {
-    relationsTableName.push(relation.relationMetadata.inverseEntityMetadata.name);
+  _.filter(metadata.relations, 'isManyToManyOwner').map(relation => {
+    relations.push({ key: relation.propertyName, isManyToMany: true });
   });
 
-  return relationsTableName;
+  return relations;
 };
 
 export const isPropertyTypeNumber = (propertyType: ColumnType): boolean => {

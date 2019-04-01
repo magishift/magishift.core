@@ -1,7 +1,6 @@
 import {
   Body,
   Delete,
-  FileInterceptor,
   Get,
   Param,
   Patch,
@@ -12,13 +11,14 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiUseTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { DefaultRoles } from '../auth/role/role.const';
-import { IEndpointRoles } from '../auth/role/role.interface';
+import { DefaultRoles } from '../auth/role/defaultRoles';
 import { Roles } from '../auth/role/roles.decorator';
 import { RolesGuard } from '../auth/role/roles.guard';
 import { IFile } from '../fileStorage/interfaces/fileStorage.interface';
+import { IEndpointUserRoles } from '../user/userRole/interfaces/userRoleEndpoint.interface';
 import { CrudController } from './base/crud.controller.base';
 import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudController } from './interfaces/crudController.interface';
@@ -28,7 +28,7 @@ import { IFormSchema } from './interfaces/form.interface';
 
 export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICrudEntity>(
   name: string,
-  roles: IEndpointRoles,
+  roles: IEndpointUserRoles,
 ): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>) => CrudController<TDto, TEntity> {
   @ApiUseTags(name)
   @UseGuards(RolesGuard)
@@ -95,8 +95,8 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
 
     @Post()
     @Roles(...(roles.write || roles.default))
-    async create(@Body() data: TDto): Promise<void> {
-      await super.create(data);
+    async create(@Body() data: TDto): Promise<TDto> {
+      return await super.create(data);
     }
 
     @Post('draft')
@@ -107,8 +107,8 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
 
     @Patch(':id')
     @Roles(...(roles.update || roles.write || roles.default))
-    async update(@Param('id') id: string, @Body() data: TDto): Promise<void> {
-      await super.update(id, data);
+    async update(@Param('id') id: string, @Body() data: TDto): Promise<TDto> {
+      return await super.update(id, data);
     }
 
     @Delete(':id')

@@ -1,7 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, LoggerService } from '@nestjs/common';
 
 export function ExceptionHandler(e: any, httpCode?: number): never {
-  throw new HttpException(e.message, httpCode || 400);
+  throw new HttpException(e.message || e, httpCode || 500);
 }
 
 @Catch()

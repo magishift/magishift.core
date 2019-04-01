@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { DefaultRoles } from '../../auth/role/role.const';
+import { DefaultRoles } from '../../auth/role/defaultRoles';
 import { CrudControllerFactory } from '../../crud/crud.controller';
 import { SMS_TEMPLATE_ENDPOINT } from './interfaces/smsTemplate.const';
 import { ISmsTemplate, ISmsTemplateDto } from './interfaces/smsTemplate.interface';

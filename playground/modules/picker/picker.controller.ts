@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { DefaultRoles } from '../../../src/auth/role/role.const';
+import { DefaultRoles } from '../../../src/auth/role/defaultRoles';
 import { CrudControllerFactory } from '../../../src/crud/crud.controller';
 import { PICKER_ENDPOINT } from './interfaces/picker.const';
 import { IPicker, IPickerDto } from './interfaces/picker.interface';

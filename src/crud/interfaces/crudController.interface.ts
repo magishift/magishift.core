@@ -20,11 +20,11 @@ export interface ICrudController<TDto extends ICrudDto> {
 
   fetchDraftById(id: string): Promise<TDto>;
 
-  create(data: TDto): Promise<void>;
+  create(data: TDto): Promise<TDto>;
 
   saveAsDraft(data: TDto): Promise<object>;
 
-  update(id: string, data: object): Promise<void>;
+  update(id: string, data: object): Promise<TDto>;
 
   destroy(id: string): Promise<void>;
 

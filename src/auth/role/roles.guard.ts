@@ -1,13 +1,14 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, HttpStatus, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import * as lodash from 'lodash';
 import { ExceptionHandler } from '../../utils/error.utils';
 import { AuthService } from '../auth.service';
-import { DefaultRoles } from './role.const';
+import { SessionUtil } from '../session.util';
+import { DefaultRoles } from './defaultRoles';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private readonly authService: AuthService, private readonly reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
@@ -21,27 +22,36 @@ export class RolesGuard implements CanActivate {
       // Get request data
       const request = context.switchToHttp().getRequest();
 
-      let authHeader: string[];
+      // resolve realm
+      const headerRealm: string =
+        request.headers.realm || request.headers['x-realm'] || lodash.find(context.getArgs(), 'authRealm');
 
+      if (!headerRealm) {
+        return ExceptionHandler('No realm found in request header', 400);
+      }
+
+      SessionUtil.setAccountRealm = headerRealm;
+
+      let headerAuth: string[];
+      // if request doesn't exist use authScope
       if (request && request.headers && request.headers.authorization) {
-        authHeader = request.headers.authorization.split(' ');
+        headerAuth = request.headers.authorization.split(' ');
       } else {
-        // if request doesn't exist use authScope
         const authScope = lodash.find(context.getArgs(), 'authScope');
         if (authScope) {
-          authHeader = authScope.authScope.split(' ');
+          headerAuth = authScope.authScope.split(' ');
         }
       }
 
-      if (authHeader && authHeader.length > 0) {
-        const jwtToken = authHeader[authHeader.length - 1] || request.query.token;
+      if (headerAuth && headerAuth.length > 0) {
+        const jwtToken = headerAuth[headerAuth.length - 1] || request.query.token;
 
-        return await this.authService.authorizeToken(jwtToken, context.getHandler().name, permissions);
+        return await AuthService.authorizeToken(jwtToken, context.getHandler().name, headerRealm, permissions);
       }
 
       return isPublic;
     } catch (e) {
-      return ExceptionHandler(e, 401);
+      return ExceptionHandler(e, e.status || HttpStatus.UNAUTHORIZED);
     }
   }
 }

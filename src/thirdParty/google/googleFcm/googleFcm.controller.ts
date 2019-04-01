@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { DefaultRoles } from '../../../auth/role/role.const';
+import { DefaultRoles } from '../../../auth/role/defaultRoles';
 import { Roles } from '../../../auth/role/roles.decorator';
 import { RolesGuard } from '../../../auth/role/roles.guard';
 import { ExceptionHandler } from '../../../utils/error.utils';

@@ -1,6 +1,7 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { calendar_v3, google } from 'googleapis';
 import { ConfigService } from '../../../config/config.service';
+import { ExceptionHandler } from '../../../utils/error.utils';
 import { GoogleConfigService } from '../google.service';
 
 const TIMEZONE_JAKARTA = `Asia/Jakarta`;
@@ -38,7 +39,7 @@ export class GoogleCalendarService {
         return 'No upcoming events found.';
       }
     } catch (e) {
-      throw new HttpException(e.message || e, 500);
+      return ExceptionHandler(e.message || e, 500);
     }
   }
 

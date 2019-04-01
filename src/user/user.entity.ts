@@ -1,23 +1,31 @@
-import { Column, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
-import { Account } from '../auth/account/account.entity';
+import { Column, ManyToOne, OneToMany } from 'typeorm';
 import { CrudEntity } from '../crud/crud.entity';
 import { FileStorage } from '../fileStorage/fileStorage.entity';
 import { Device } from './device/device.entity';
 import { IUser } from './interfaces/user.interface';
 import { Notification } from './notification/notification.entity';
+import { IUserRole } from './userRole/interfaces/userRole.interface';
 
 export abstract class User extends CrudEntity implements IUser {
-  @OneToOne(_ => Account, account => account.id, { onDelete: 'RESTRICT' })
-  @JoinColumn()
-  account: Account;
-
-  @ManyToOne(_ => FileStorage, fileStorage => fileStorage.ownerId, { onDelete: 'RESTRICT' })
-  photo: FileStorage;
+  @Column()
+  accountId: string;
 
   @Column()
-  name: string;
+  username: string;
 
-  @Column({ unique: true })
+  @Column()
+  enabled: boolean;
+
+  @Column()
+  emailVerified: boolean;
+
+  @Column({ nullable: true })
+  firstName: string;
+
+  @Column({ nullable: true })
+  lastName: string;
+
+  @Column({ unique: true, nullable: true })
   email: string;
 
   @Column({ unique: true, nullable: true })
@@ -25,6 +33,9 @@ export abstract class User extends CrudEntity implements IUser {
 
   @Column()
   realm: string;
+
+  @ManyToOne(_ => FileStorage, fileStorage => fileStorage.ownerId, { onDelete: 'RESTRICT' })
+  photo: FileStorage;
 
   @OneToMany(_ => Notification, notification => notification.from)
   notificationsSendTo: Notification[];
@@ -34,4 +45,6 @@ export abstract class User extends CrudEntity implements IUser {
 
   @OneToMany(_ => Device, device => device.ownerId)
   devices: Device[];
+
+  abstract realmRoles: IUserRole[];
 }

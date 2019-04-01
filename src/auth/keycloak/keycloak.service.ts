@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as KeycloakConnect from 'keycloak-connect';
-import { RedisService } from 'nestjs-redis';
 import { v4 as uuid } from 'uuid';
+import { RedisService } from '../../database/redis/redis.service';
 import { HttpService } from '../../http/http.service';
 
 @Injectable()
@@ -10,17 +10,23 @@ export class KeyCloakService {
   keyCloakProtect: any;
   keyCloak: KeycloakConnect;
 
-  private config: KeycloakConnect.KeycloakConfig;
+  //   UserQuery & {
+  //     realm?: string;
+  // }
+
+  private configs: { master: KeycloakConnect.KeycloakConfig } & { [key: string]: KeycloakConnect.KeycloakConfig };
+  private defaultAuthServerUrl: string;
 
   constructor(protected readonly httpService: HttpService, protected readonly redisService: RedisService) {
-    this.config = {
-      realm: process.env.KEYCLOAK_REALM,
-      resource: process.env.KEYCLOAK_CLIENT,
-      authServerUrl: `http://${process.env.KEYCLOAK_BASE_URL}:${process.env.KEYCLOAK_PORT}/auth`,
-      public: true,
-    };
+    this.configs = JSON.parse(process.env.KEYCLOAK_REALMS);
 
-    this.keyCloak = new KeycloakConnect({}, this.config);
+    this.defaultAuthServerUrl = `http://${process.env.KEYCLOAK_BASE_URL}:${process.env.KEYCLOAK_PORT}/auth`;
+
+    const masterConfig = this.configs.master;
+    masterConfig.authServerUrl = this.configs.master.authServerUrl || this.defaultAuthServerUrl;
+    masterConfig.public = this.configs.master.public || true;
+
+    this.keyCloak = new KeycloakConnect({}, this.configs.master);
     this.keyCloakProtect = this.keyCloak.protect();
     // this.entitlementUrl = KeyCloakService.createEntitlementUrl(this.keyCloak);
   }
@@ -62,41 +68,41 @@ export class KeyCloakService {
   //   return `${keycloak.config.realmUrl}/authz/entitlement/${keycloak.config.clientId}`;
   // }
 
-  getConfig(): object {
+  getConfig(realm: string): object {
     return {
-      realm: this.config.realm,
-      resource: this.config.resource,
-      authServerUrl: this.config.authServerUrl,
-      public: this.config.public,
-      authRealm: this.config.realm,
-      authUrl: this.config.authServerUrl,
-      authClientId: this.config.resource,
+      realm: this.configs[realm].realm,
+      authRealm: this.configs[realm].realm,
+      resource: this.configs[realm].resource,
+      authClientId: this.configs[realm].resource,
+      authServerUrl: this.configs[realm].authServerUrl || this.defaultAuthServerUrl,
+      authUrl: this.configs[realm].authServerUrl || this.defaultAuthServerUrl,
+      public: this.configs[realm].public || true,
     };
   }
 
-  async loginUrl(redirectUri: string): Promise<string> {
+  async loginUrl(redirectUri: string, realm: string): Promise<string> {
     const result = await this.keyCloak.loginUrl(uuid(), redirectUri);
     return result;
   }
 
-  async logoutUrl(redirectUri: string): Promise<string> {
+  async logoutUrl(redirectUri: string, realm: string): Promise<string> {
     const result = await this.keyCloak.logoutUrl(redirectUri);
     return result;
   }
 
-  login(username: string, password: string): any {
+  login(username: string, password: string, realm: string): any {
     return this.keyCloak.grantManager.obtainDirectly(username, password).then((grant: KeycloakConnect.Grant) => {
       return grant;
     });
   }
 
-  async logout(accessToken: string): Promise<void> {
-    await this.verifyToken(accessToken);
+  async logout(accessToken: string, realm: string): Promise<void> {
+    await this.verifyToken(accessToken, realm);
 
     await this.httpService.Post(
-      `${this.config.authServerUrl}/realms/${this.config.realm}/protocol/openid-connect/logout`,
+      `${this.configs.authServerUrl}/realms/${this.configs.realm}/protocol/openid-connect/logout`,
       {
-        client_id: this.config.clientId,
+        client_id: this.configs.clientId,
       },
       {
         headers: {
@@ -106,15 +112,17 @@ export class KeyCloakService {
     );
   }
 
-  async verifyToken(accessToken: string): Promise<void> {
+  async verifyToken(accessToken: string, realm: string): Promise<void> {
     const client = await this.redisService.getClient();
 
     if (await client.get(accessToken)) {
       return;
     }
 
-    await this.httpService.Get(
-      `${this.config.authServerUrl}/realms/${this.config.realm}/protocol/openid-connect/userinfo`,
+    const userInfo = await this.httpService.Get(
+      `${this.configs[realm].authServerUrl || this.defaultAuthServerUrl}/realms/${
+        this.configs[realm].realm
+      }/protocol/openid-connect/userinfo`,
       {
         headers: {
           Authorization: 'Bearer ' + accessToken,
@@ -122,7 +130,7 @@ export class KeyCloakService {
       },
     );
 
-    client.set(accessToken, true);
+    client.set(accessToken, userInfo);
   }
 
   // private postOptions(path?: string): any {

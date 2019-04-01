@@ -1,26 +1,14 @@
-import {
-  Body,
-  FileInterceptor,
-  Get,
-  HttpException,
-  Post,
-  Query,
-  Req,
-  Res,
-  UploadedFile,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Post, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiUseTags } from '@nestjs/swagger';
 import { IToken } from '../auth/interfaces/auth.interface';
 import { LoginData } from '../auth/loginData.dto';
-import { DefaultRoles } from '../auth/role/role.const';
-import { IEndpointRoles } from '../auth/role/role.interface';
+import { DefaultRoles } from '../auth/role/defaultRoles';
 import { Roles } from '../auth/role/roles.decorator';
 import { RolesGuard } from '../auth/role/roles.guard';
+import { SessionUtil } from '../auth/session.util';
 import { CrudControllerFactory } from '../crud/crud.controller';
 import { CrudMapper } from '../crud/crud.mapper';
-import { FieldTypes, IForm, IFormField, IFormSchema } from '../crud/interfaces/form.interface';
 import { FileStorageDto } from '../fileStorage/fileStorage.dto';
 import { FileStorageService } from '../fileStorage/fileStorage.service';
 import { IFileStorageDto } from '../fileStorage/interfaces/fileStorage.interface';
@@ -28,10 +16,11 @@ import { ExceptionHandler } from '../utils/error.utils';
 import { IUser, IUserDto } from './interfaces/user.interface';
 import { IUserController } from './interfaces/userController.interface';
 import { UserService } from './user.service';
+import { IEndpointUserRoles } from './userRole/interfaces/userRoleEndpoint.interface';
 
 export function UserControllerFactory<TDto extends IUserDto, TEntity extends IUser>(
   name: string,
-  roles: IEndpointRoles,
+  roles: IEndpointUserRoles,
 ): new (
   service: UserService<TEntity, TDto>,
   fileService: FileStorageService,
@@ -49,68 +38,13 @@ export function UserControllerFactory<TDto extends IUserDto, TEntity extends IUs
       super(service, mapper);
     }
 
-    @Get('changePasswordForm')
-    @Roles(DefaultRoles.authenticated)
-    async changePasswordForm(@Query('id') id: string): Promise<IFormSchema> {
-      try {
-        const user = await this.service.fetch(id);
-
-        const fields: { [key: string]: IFormField } = {
-          username: {
-            label: 'Username',
-            type: FieldTypes.Text,
-            required: true,
-            isFullWidth: true,
-          },
-          newPassword: {
-            label: 'New password',
-            type: FieldTypes.Password,
-            required: true,
-          },
-          confirmNewPassword: {
-            label: 'Confirm new password',
-            type: FieldTypes.Password,
-            required: true,
-          },
-        };
-
-        const form: IForm = {
-          inline: true,
-          model: user,
-          fields,
-        };
-
-        const schema: IFormSchema = {
-          schema: form,
-        };
-
-        return schema;
-      } catch (e) {
-        return ExceptionHandler(e);
-      }
-    }
-
-    @Post('changePassword')
-    @Roles(...(roles.write || roles.default))
-    async changePassword(@Body() param: { id: string; confirmNewPassword: string; newPassword: string }): Promise<
-      boolean
-    > {
-      try {
-        const { id, newPassword, confirmNewPassword } = param;
-
-        return this.service.changePassword(id, newPassword, confirmNewPassword);
-      } catch (e) {
-        return ExceptionHandler(e);
-      }
-    }
-
     @Post('photo')
     @UseInterceptors(FileInterceptor('file'))
     @Roles(...(roles.write || roles.default))
-    async photo(@UploadedFile() file, @Body() { id }: { id }, @Res() res): Promise<IFileStorageDto> {
+    async photo(@UploadedFile() file: any, @Body() { id }: { id }, @Res() res: any): Promise<IFileStorageDto> {
       try {
         if (!id) {
-          throw new HttpException('Object ID is required', 400);
+          return ExceptionHandler('Object ID is required', 400);
         }
 
         const data = new FileStorageDto();
@@ -142,21 +76,11 @@ export function UserControllerFactory<TDto extends IUserDto, TEntity extends IUs
       }
     }
 
-    @Get('login')
-    @Roles(DefaultRoles.public)
-    async getLogin(@Body() data: LoginData): Promise<IToken> {
-      try {
-        return this.service.login(data);
-      } catch (e) {
-        return ExceptionHandler(e);
-      }
-    }
-
     @Post('login')
     @Roles(DefaultRoles.public)
     async login(@Body() data: LoginData): Promise<IToken> {
       try {
-        return this.service.login(data);
+        return this.service.login(data, SessionUtil.getAccountRealm);
       } catch (e) {
         return ExceptionHandler(e);
       }
@@ -166,7 +90,7 @@ export function UserControllerFactory<TDto extends IUserDto, TEntity extends IUs
     @Roles(DefaultRoles.authenticated)
     async logout(@Req() request: { headers }): Promise<void> {
       try {
-        return this.service.logout(request.headers.authorization);
+        return this.service.logout(request.headers.authorization, SessionUtil.getAccountRealm);
       } catch (e) {
         return ExceptionHandler(e);
       }

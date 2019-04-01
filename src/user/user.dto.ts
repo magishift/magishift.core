@@ -1,36 +1,39 @@
-import { IAccountDto } from '../auth/account/interfaces/account.interface';
 import { ILoginHistoryDto } from '../auth/loginHistory/interfaces/loginHistory.interface';
-import { IRoleDto } from '../auth/role/interfaces/role.interface';
 import { CrudDto } from '../crud/crud.dto';
 import { IFileStorageDto } from '../fileStorage/interfaces/fileStorage.interface';
 import { IDeviceDto } from './device/interfaces/device.interface';
 import { IUserDto } from './interfaces/user.interface';
 import { INotificationDto } from './notification/interfaces/notification.interface';
+import { IUserRoleDto } from './userRole/interfaces/userRole.interface';
 
 export abstract class UserDto extends CrudDto implements IUserDto {
-  accountId: string;
+  abstract accountId: string;
 
-  account: IAccountDto;
+  abstract enabled: boolean;
 
-  username: string;
+  abstract emailVerified: boolean;
 
-  password: string;
+  abstract firstName: string;
 
-  passwordConfirm: string;
+  abstract lastName: string;
 
-  loginHistories?: ILoginHistoryDto[];
+  abstract realmRoles: IUserRoleDto[];
+
+  abstract username: string;
+
+  abstract password: string;
+
+  abstract passwordConfirm: string;
 
   abstract photo: IFileStorageDto;
-
-  abstract name: string;
 
   abstract email: string;
 
   abstract phoneNumber: string;
 
-  abstract roles: IRoleDto[];
+  realm: string;
 
-  abstract realm: string;
+  loginHistories?: ILoginHistoryDto[];
 
   notifications: INotificationDto[];
 

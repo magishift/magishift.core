@@ -1,6 +1,6 @@
 import { FindOneOptions } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
-import { DefaultRoles } from '../../auth/role/role.const';
+import { DefaultRoles } from '../../auth/role/defaultRoles';
 import { ICrudDto, ICrudEntity } from './crud.interface';
 import { IFilter } from './filter.interface';
 import { IFormSchema } from './form.interface';
@@ -30,7 +30,7 @@ export interface ICrudService<TEntity extends ICrudEntity, TDto extends ICrudDto
   ): Promise<TDto>;
 
   findOne(
-    param: QueryDeepPartialEntity<TEntity>,
+    param: TEntity,
     options?: FindOneOptions<TEntity>,
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<TDto>;
@@ -45,14 +45,14 @@ export interface ICrudService<TEntity extends ICrudEntity, TDto extends ICrudDto
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<TDto[]>;
 
-  create(data: TDto, doValidation?: boolean): Promise<void>;
+  create(data: TDto, doValidation?: boolean): Promise<TDto>;
 
   update(
     id: string,
     data: TDto,
     doValidation?: boolean,
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
-  ): Promise<void>;
+  ): Promise<TDto>;
 
   saveAsDraft(data: TDto, doValidation?: boolean): Promise<TDto>;
 

@@ -1,6 +1,7 @@
 import { MailerModule } from '@nest-modules/mailer';
-import { DynamicModule, ForwardReference, Module, Provider, Type } from '@nestjs/common';
+import { CacheInterceptor, CacheModule, DynamicModule, ForwardReference, Module, Provider, Type } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { GraphQLModule } from '@nestjs/graphql';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -18,17 +19,13 @@ import * as GraphQlJSON from 'graphql-type-json';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import * as helmet from 'helmet';
 import { fileLoader, mergeTypes } from 'merge-graphql-schemas';
-import { RedisModule } from 'nestjs-redis';
 import * as path from 'path';
 import 'reflect-metadata';
-import { AccountModule } from './auth/account/account.module';
 import { AuthModule } from './auth/auth.module';
-import { AuthInterceptor } from './auth/interceptors/auth.interceptor';
 import { LoginHistoryModule } from './auth/loginHistory/loginHistory.module';
-import { RoleModule } from './auth/role/role.module';
 import { BaseModule } from './base/base.module';
 import { DateScalar } from './base/base.scalar';
-import { AdminModule } from './common/admin/admin.module';
+import { BackOfficeUserModule } from './common/backOfficeUser/backOfficeUser.module';
 import { EmailTemplateModule } from './common/emailTemplate/emailTemplate.module';
 import { SmsTemplateModule } from './common/smsTemplate/smsTemplate.module';
 import { IConfigOptions } from './config/config.interfaces';
@@ -37,6 +34,8 @@ import { ConfigService } from './config/config.service';
 import { CronModule } from './cron/cron.module';
 import { DraftModule } from './crud/draft/draft.module';
 import { PubSubList, PubSubProvider } from './crud/providers/pubSub.provider';
+import { IRedisModuleOptions } from './database/redis/redis.interface';
+import { RedisModule } from './database/redis/redis.module';
 import { FileStorageModule } from './fileStorage/fileStorage.module';
 import { GraphQLInstance } from './graphql/graphql.instance';
 import { HttpModule } from './http/http.module';
@@ -95,10 +94,9 @@ export async function MagiApp(
     all: true,
   });
 
-  const redisConfig = {
+  const redisConfig: IRedisModuleOptions = {
     host: process.env.MAGISHIFT_REDIS_HOST,
     port: Number(process.env.MAGISHIFT_REDIS_PORT),
-    duration: 30000,
   };
 
   const defaultImports = [
@@ -120,6 +118,7 @@ export async function MagiApp(
           return {
             ...data.req,
             authScope: data.req.headers.authorization,
+            authRealm: data.req.headers.realm || data.req.headers['x-realm'],
             bodyScope: data.req.body,
           };
         }
@@ -134,10 +133,8 @@ export async function MagiApp(
     EmailTemplateModule,
     SmsTemplateModule,
     AuthModule,
-    RoleModule,
-    AccountModule,
     LoginHistoryModule,
-    AdminModule,
+    BackOfficeUserModule,
     DraftModule,
     GoogleConfigModule,
     GoogleCalendarModule,
@@ -145,6 +142,7 @@ export async function MagiApp(
     NotificationModule,
     DeviceModule,
     RedisModule.register(redisConfig),
+    CacheModule.register(),
   ];
 
   if (ConfigService.getConfig.email) {
@@ -163,6 +161,7 @@ export async function MagiApp(
 
   providers.push(DateScalar);
   providers.push(PubSubProvider);
+  providers.push({ provide: APP_INTERCEPTOR, useClass: CacheInterceptor });
 
   if (!exports) {
     exports = [];
@@ -175,7 +174,7 @@ export async function MagiApp(
     controllers,
     providers,
     exports,
-    components,
+    // components,
   })
   class ApplicationModule {
     static AgendaInstance: Agenda;
@@ -240,7 +239,7 @@ export async function MagiApp(
 
     app.useGlobalFilters(new ErrorFilter(appLogger));
 
-    app.useGlobalInterceptors(new AuthInterceptor(ApplicationModule.ReflectorInstance));
+    // app.useGlobalInterceptors(new AuthInterceptor(ApplicationModule.ReflectorInstance));
 
     app.use(json({ limit: '50mb' }));
 

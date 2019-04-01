@@ -14,8 +14,8 @@ export interface IFileStorage extends ICrudEntity {
   object: string;
   type: string;
   url: string;
-  meta: string;
-  permissions: string;
+  meta: IFile;
+  permissions: string[];
   storage: 'local' | 'S3';
   dataStatus: 'temp' | 'submitted';
 }

@@ -8,6 +8,7 @@ import { SelectModule } from './modules/select/select.module';
 import { TextInputModule } from './modules/textInput/textInput.module';
 
 const modules = [TextInputModule, SelectModule, AutocompleteModule, PickerModule, CheckboxModule];
+
 const config = ConfigLoaderHelper(
   'Magishift Playground',
   'Magishift ^ Playground',

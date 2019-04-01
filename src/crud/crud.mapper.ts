@@ -1,9 +1,8 @@
+import { plainToClassFromExist } from 'class-transformer';
 import { Validator } from 'class-validator';
 import { DeepPartial, getRepository, ObjectLiteral, Repository } from 'typeorm';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { getPropertyType } from '../database/utils.database';
-import { Dto2Entity, DtoFromObject, Entity2Dto } from '../utils/objectMapper.utils';
 import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
 
@@ -29,20 +28,34 @@ export abstract class CrudMapper<TEntity extends ICrudEntity, TDto extends ICrud
     return this.getNewEntity.getRepository();
   }
 
-  async dtoToEntity(dto: TDto): Promise<QueryDeepPartialEntity<TEntity>> {
+  async dtoToEntity(dto: TDto): Promise<TEntity> {
     delete dto.__meta;
 
-    return Dto2Entity(dto, this.getNewEntity);
+    const entity: DeepPartial<TEntity> = {};
+
+    Object.keys(dto).map(key => {
+      entity[key] = dto[key];
+    });
+
+    return this.repository.create(entity);
   }
 
   async entityToDto(entity: DeepPartial<TEntity> | TEntity | ObjectLiteral): Promise<TDto> {
-    const dto = Entity2Dto(entity as TEntity, this.getNewDto);
+    const dto: TDto = this.getNewDto;
+
+    Object.keys(entity).map(key => {
+      dto[key] = entity[key];
+    });
 
     return dto;
   }
 
   async dtoFromObject(obj: TDto): Promise<TDto> {
-    const result = DtoFromObject(obj, this.getNewDto);
+    if (!obj) {
+      return undefined;
+    }
+
+    const result = plainToClassFromExist(this.getNewDto, obj);
 
     await Promise.all(
       this.repository.metadata.columns.map(async (column: ColumnMetadata) => {

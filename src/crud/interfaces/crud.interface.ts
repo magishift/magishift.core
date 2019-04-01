@@ -18,16 +18,12 @@ export interface IDataMeta {
 
 export interface ICrudEntity extends IBaseEntity {
   getRepository: () => Repository<any>;
-
   isDeleted: boolean;
-
   __meta: IDataMeta;
 }
 
 export interface ICrudDto extends IBaseDto {
   isDeleted?: boolean;
-
   __meta?: IDataMeta;
-
   validate(): Promise<ValidationError[]>;
 }

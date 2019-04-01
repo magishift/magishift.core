@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import * as env from 'dotenv';
+import dotenv = require('dotenv');
 import { IMenuItems } from '../setting/menu/interfaces/menu.interface';
 import { SnakeNamingStrategy } from './../database/snakeNaming';
 import { IAwsS3, IConfigOptions, IDBConfigs, IEmailConfig, IGraphQlConfig, NodeEnvType } from './config.interfaces';
@@ -12,7 +12,7 @@ export const ConfigLoaderHelper = (
   envPath?: string,
   cwd?: string,
 ): IConfigOptions => {
-  const { parsed } = env.config({
+  const { parsed } = dotenv.config({
     path: envPath || process.cwd() + '/.env',
   });
 

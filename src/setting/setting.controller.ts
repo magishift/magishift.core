@@ -1,6 +1,6 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiUseTags } from '@nestjs/swagger';
-import { DefaultRoles } from '../auth/role/role.const';
+import { DefaultRoles } from '../auth/role/defaultRoles';
 import { Roles } from '../auth/role/roles.decorator';
 import { RolesGuard } from '../auth/role/roles.guard';
 import { SETTING_ENDPOINT } from './interfaces/setting.const';

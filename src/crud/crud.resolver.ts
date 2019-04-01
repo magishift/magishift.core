@@ -1,12 +1,12 @@
-import { HttpException, UseGuards } from '@nestjs/common';
+import { HttpStatus, UseGuards } from '@nestjs/common';
 import { Args, Context, Mutation, Query, Subscription } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import * as pluralize from 'pluralize';
 import { AuthService } from '../auth/auth.service';
-import { IEndpointRoles } from '../auth/role/role.interface';
 import { Roles } from '../auth/role/roles.decorator';
 import { RolesGuard } from '../auth/role/roles.guard';
 import { GraphQLInstance } from '../graphql/graphql.instance';
+import { IEndpointUserRoles } from '../user/userRole/interfaces/userRoleEndpoint.interface';
 import { ExceptionHandler } from '../utils/error.utils';
 import { capitalizeFirstLetter } from '../utils/string.utils';
 import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
@@ -17,13 +17,11 @@ import { PubSubList } from './providers/pubSub.provider';
 
 export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEntity>(
   name: string,
-  roles: IEndpointRoles,
-): new (
-  service: ICrudService<TEntity, TDto>,
-  authService: AuthService,
-  mapper: ICrudMapper<TEntity, TDto>,
-  pubSub: PubSub,
-) => ICrudResolver<TDto, TEntity> {
+  roles: IEndpointUserRoles,
+): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>, pubSub: PubSub) => ICrudResolver<
+  TDto,
+  TEntity
+> {
   const nameCapFirst = capitalizeFirstLetter(name);
 
   // graphql query name template
@@ -48,7 +46,6 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
   class CrudResolverBuilder implements ICrudResolver<TDto, TEntity> {
     constructor(
       protected readonly service: ICrudService<TEntity, TDto>,
-      protected readonly authService: AuthService,
       protected readonly mapper: ICrudMapper<TEntity, TDto>,
       protected readonly pubSub: PubSub,
     ) {}
@@ -131,7 +128,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
     @Roles(...(roles.delete || roles.default))
     async destroy(@Args() args: { input }): Promise<void> {
       try {
-        const dto = await this.mapper.dtoToEntity(await this.mapper.dtoFromObject(args.input));
+        const dto: TEntity = (await this.mapper.dtoToEntity(await this.mapper.dtoFromObject(args.input))) as TEntity;
 
         const entity = await this.service.findOne(dto);
 
@@ -172,13 +169,15 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
           try {
             const ws = args[2];
             const token = ws.connection.context.authorization;
-            const canAccess = await this.authService.authorizeToken(token, subCreated, roles.write || roles.default);
+            const realm = ws.connection.context.realm || ws.connection.context['x-realm'];
+
+            const canAccess = await AuthService.authorizeToken(token, subCreated, realm, roles.write || roles.default);
 
             if (canAccess) {
               return this.pubSub.asyncIterator(subCreated);
             }
 
-            throw new HttpException(`You don't have have permission to subscribe`, 403);
+            return ExceptionHandler(`You don't have have permission to subscribe`, HttpStatus.FORBIDDEN);
           } catch (e) {
             return ExceptionHandler(e);
           }
@@ -193,9 +192,12 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
           try {
             const ws = args[2];
             const token = ws.connection.context.authorization;
-            const canAccess = await this.authService.authorizeToken(
+            const realm = ws.connection.context.realm || ws.connection.context['x-realm'];
+
+            const canAccess = await AuthService.authorizeToken(
               token,
               subUpdated,
+              realm,
               roles.update || roles.write || roles.default,
             );
 
@@ -203,7 +205,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
               return this.pubSub.asyncIterator(subUpdated);
             }
 
-            throw new HttpException(`You don't have have permission to subscribe`, 403);
+            return ExceptionHandler(`You don't have have permission to subscribe`, HttpStatus.FORBIDDEN);
           } catch (e) {
             return ExceptionHandler(e);
           }
@@ -218,13 +220,20 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
           try {
             const ws = args[2];
             const token = ws.connection.context.authorization;
-            const canAccess = await this.authService.authorizeToken(token, subDestroyed, roles.delete || roles.default);
+            const realm = ws.connection.context.realm || ws.connection.context['x-realm'];
+
+            const canAccess = await AuthService.authorizeToken(
+              token,
+              subDestroyed,
+              realm,
+              roles.delete || roles.default,
+            );
 
             if (canAccess) {
               return this.pubSub.asyncIterator(subDestroyed);
             }
 
-            throw new HttpException(`You don't have have permission to subscribe`, 403);
+            return ExceptionHandler(`You don't have have permission to subscribe`, HttpStatus.FORBIDDEN);
           } catch (e) {
             return ExceptionHandler(e);
           }

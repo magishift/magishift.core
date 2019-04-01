@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { DefaultRoles } from '../../../src/auth/role/role.const';
+import { DefaultRoles } from '../../../src/auth/role/defaultRoles';
 import { CrudControllerFactory } from '../../../src/crud/crud.controller';
 import { ExceptionHandler } from '../../../src/utils/error.utils';
 import { TEXT_INPUT_ENDPOINT } from './interfaces/textInput.const';

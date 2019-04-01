@@ -70,7 +70,7 @@ export declare type IObjectType<T> = new () => T;
 export interface IFormField {
   label: string;
   type?: FieldTypes;
-  required?: boolean;
+  required?: boolean | { create?: boolean; update?: boolean };
   mode?: FieldModes;
   readonly?: boolean;
   createOnly?: boolean;

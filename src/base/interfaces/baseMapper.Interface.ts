@@ -1,8 +1,7 @@
 import { DeepPartial } from 'typeorm';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 export interface IBaseMapper {
-  dtoToEntity(dto: any): Promise<QueryDeepPartialEntity<any>>;
+  dtoToEntity(dto: any): Promise<any>;
 
   entityToDto(entity: DeepPartial<any> | any): Promise<any>;
 

@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { DefaultRoles } from '../../../src/auth/role/role.const';
+import { DefaultRoles } from '../../../src/auth/role/defaultRoles';
 import { CrudControllerFactory } from '../../../src/crud/crud.controller';
 import { CheckboxMapper } from './checkbox.mapper';
 import { CheckboxService } from './checkbox.service';
