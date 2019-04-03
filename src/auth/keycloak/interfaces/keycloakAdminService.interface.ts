@@ -9,6 +9,8 @@ export interface IKeycloakAdminService {
 
   getAccountByName(name: string, realm: string): Promise<UserRepresentation>;
 
+  getAccountByName(email: string, realm: string): Promise<UserRepresentation>;
+
   getAccountRoles(id: string, realm: string): Promise<RoleRepresentation[]>;
 
   accountsList(realm: string): Promise<UserRepresentation[]>;

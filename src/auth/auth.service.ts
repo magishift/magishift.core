@@ -1,7 +1,6 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 import { RedisService } from '../database/redis/redis.service';
-import { ExceptionHandler } from '../utils/error.utils';
 import { ITokenPayload } from './interfaces/auth.interface';
 import { KeyCloakService } from './keycloak/keycloak.service';
 import { KeycloakAdminService } from './keycloak/keycloakAdmin.service';
@@ -78,7 +77,7 @@ export class AuthService {
 
       return isPublic;
     } catch (e) {
-      return ExceptionHandler(e, e.status || HttpStatus.UNAUTHORIZED);
+      throw new HttpException(e, e.status || HttpStatus.UNAUTHORIZED);
     }
   }
 }

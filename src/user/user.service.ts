@@ -1,4 +1,4 @@
-import { HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 import UserRepresentation from 'keycloak-admin/lib/defs/userRepresentation';
 import _ = require('lodash');
 import { Repository } from 'typeorm';
@@ -12,7 +12,6 @@ import { CrudMapper } from '../crud/crud.mapper';
 import { CrudService } from '../crud/crud.service';
 import { DraftService } from '../crud/draft/draft.service';
 import { ICrudService } from '../crud/interfaces/crudService.interface';
-import { ExceptionHandler } from '../utils/error.utils';
 import { IUser, IUserDto } from './interfaces/user.interface';
 import { IUserRole, IUserRoleDto } from './userRole/interfaces/userRole.interface';
 import { UserRoleService } from './userRole/userRole.service';
@@ -31,7 +30,7 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
     super(repository, draftService, mapper);
 
     if (!realm) {
-      return ExceptionHandler('Must set realm for User Service', 500);
+      throw new HttpException('Must set realm for User Service', 500);
     }
 
     UserService.updateRepository(keycloakAdminService, userRoleService, repository, realm);
@@ -45,6 +44,9 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
     await queryRunner.startTransaction();
 
     try {
+      // check if username already used
+      await this.keycloakAdminService.getAccountByName(user.username, this.realm);
+
       const keycloakUser: UserRepresentation = {
         username: user.username,
         enabled: true,
@@ -61,6 +63,7 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
       const keycloak = await this.keycloakAdminService.getAccountByName(keycloakUser.username, this.realm);
 
       user.accountId = keycloak.id;
+      user.realm = this.realm;
 
       const result = await super.create(user);
 
@@ -75,15 +78,20 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
     } catch (e) {
       await queryRunner.rollbackTransaction();
 
-      if (!e.response || (e.response && e.response.status === 401)) {
-        const keycloak = await this.keycloakAdminService.getAccountByName(user.username, this.realm);
+      if (e.response && e.response.status === 409) {
+        throw new HttpException('Account already exist, please use different username and email', 409);
+      }
 
-        if (keycloak) {
-          await this.keycloakAdminService.deleteUserById(keycloak.id, this.realm);
+      if (e.response || (e.response && e.response.status !== 401)) {
+        // check if user already created
+        const kyCreatedUser = await this.keycloakAdminService.getAccountByName(user.username, this.realm);
+
+        if (kyCreatedUser) {
+          await this.keycloakAdminService.deleteUserById(kyCreatedUser.id, this.realm);
         }
       }
 
-      return ExceptionHandler(e.response || e, e.response.status || e.status);
+      throw new HttpException(e.response || e, e.response.status || e.status);
     } finally {
       await queryRunner.release();
     }
@@ -124,7 +132,7 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
     } catch (e) {
       await queryRunner.rollbackTransaction();
 
-      return ExceptionHandler(e.response || e, e.response.status || e.status);
+      throw new HttpException(e.response || e, e.response.status || e.status);
     } finally {
       await queryRunner.release();
     }
@@ -151,7 +159,7 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
     } catch (e) {
       await queryRunner.rollbackTransaction();
 
-      return ExceptionHandler(e.response || e, e.response.status || e.status);
+      throw new HttpException(e.response || e, e.response.status || e.status);
     } finally {
       await queryRunner.release();
     }
@@ -163,7 +171,7 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
     const userData = await super.findOne({ account: grant } as any);
 
     if (!userData) {
-      return ExceptionHandler('Account is not allowed to login from this service', HttpStatus.FORBIDDEN);
+      throw new HttpException('Account is not allowed to login from this service', HttpStatus.FORBIDDEN);
     }
 
     return grant;

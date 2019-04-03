@@ -1,7 +1,6 @@
-import { CanActivate, ExecutionContext, HttpStatus, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import * as lodash from 'lodash';
-import { ExceptionHandler } from '../../utils/error.utils';
 import { AuthService } from '../auth.service';
 import { SessionUtil } from '../session.util';
 import { DefaultRoles } from './defaultRoles';
@@ -26,11 +25,9 @@ export class RolesGuard implements CanActivate {
       const headerRealm: string =
         request.headers.realm || request.headers['x-realm'] || lodash.find(context.getArgs(), 'authRealm');
 
-      if (!headerRealm) {
-        return ExceptionHandler('No realm found in request header', 400);
+      if (!headerRealm && !isPublic) {
+        throw new HttpException('No realm found in request header', 400);
       }
-
-      SessionUtil.setAccountRealm = headerRealm;
 
       let headerAuth: string[];
       // if request doesn't exist use authScope
@@ -43,15 +40,17 @@ export class RolesGuard implements CanActivate {
         }
       }
 
-      if (headerAuth && headerAuth.length > 0) {
+      if (((headerAuth && headerAuth.length > 0) || request.query.token) && headerRealm) {
         const jwtToken = headerAuth[headerAuth.length - 1] || request.query.token;
+
+        SessionUtil.setAccountRealm = headerRealm;
 
         return await AuthService.authorizeToken(jwtToken, context.getHandler().name, headerRealm, permissions);
       }
 
       return isPublic;
     } catch (e) {
-      return ExceptionHandler(e, e.status || HttpStatus.UNAUTHORIZED);
+      throw new HttpException(e, e.status || HttpStatus.UNAUTHORIZED);
     }
   }
 }

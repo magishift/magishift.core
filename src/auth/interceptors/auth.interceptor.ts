@@ -1,4 +1,4 @@
-import { ExecutionContext, HttpStatus, Inject, Injectable, NestInterceptor } from '@nestjs/common';
+import { ExecutionContext, HttpException, HttpStatus, Inject, Injectable, NestInterceptor } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import _ = require('lodash');
 import { Observable } from 'rxjs';
@@ -26,7 +26,7 @@ export class AuthInterceptor implements NestInterceptor {
           const findDataOwner: any = _.find(data, '_dataOwner');
 
           if (findDataOwner && findDataOwner._dataOwner && findDataOwner._dataOwner !== SessionUtil.getAccountId) {
-            return ExceptionHandler(
+            throw new HttpException(
               `Only ${DefaultRoles.admin} or owner of this data can access this data`,
               HttpStatus.FORBIDDEN,
             );

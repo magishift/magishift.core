@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common';
 import KeycloakAdminClient from 'keycloak-admin';
 import RealmRepresentation from 'keycloak-admin/lib/defs/realmRepresentation';
 import RoleRepresentation, { RoleMappingPayload } from 'keycloak-admin/lib/defs/roleRepresentation';
 import UserRepresentation from 'keycloak-admin/lib/defs/userRepresentation';
 import _ = require('lodash');
-import { ExceptionHandler } from '../../utils/error.utils';
 import { IKeycloakAdminService } from './interfaces/keycloakAdminService.interface';
 
 export interface IKeycloakAdminConfig {
@@ -28,7 +27,7 @@ export class KeycloakAdminService implements IKeycloakAdminService {
       user_master: process.env.KEYCLOAK_USER_MASTER,
       password_master: process.env.KEYCLOAK_PASSWORD_MASTER,
       client_master: process.env.KEYCLOAK_CLIENT_MASTER,
-      baseUrl: `http://${process.env.KEYCLOAK_BASE_URL}:${process.env.KEYCLOAK_PORT}/auth`,
+      baseUrl: `${process.env.KEYCLOAK_BASE_URL}/auth`,
       grant_type: 'password',
     };
 
@@ -58,6 +57,12 @@ export class KeycloakAdminService implements IKeycloakAdminService {
 
   async getAccountByName(username: string, realm: string): Promise<UserRepresentation> {
     const result = await (await this.auth()).users.find({ username, realm });
+
+    return result[0];
+  }
+
+  async getAccountByEmail(email: string, realm: string): Promise<UserRepresentation> {
+    const result = await (await this.auth()).users.find({ email, realm });
 
     return result[0];
   }
@@ -115,7 +120,7 @@ export class KeycloakAdminService implements IKeycloakAdminService {
       const result = await (await this.auth()).roles.find({ realm } as any);
       return result;
     } catch (e) {
-      return ExceptionHandler(e);
+      throw new HttpException(e, (e.response && e.response.status) || e.status || 500);
     }
   }
 
@@ -124,7 +129,7 @@ export class KeycloakAdminService implements IKeycloakAdminService {
       const result = await (await this.auth()).roles.updateById({ id, realm }, role);
       return result;
     } catch (e) {
-      return ExceptionHandler(e);
+      throw new HttpException(e, (e.response && e.response.status) || e.status || 500);
     }
   }
 
@@ -165,7 +170,7 @@ export class KeycloakAdminService implements IKeycloakAdminService {
 
       return keycloakAdminClient;
     } catch (e) {
-      return ExceptionHandler(
+      throw new HttpException(
         `Cannot login to keycloak server, on realm ${realm} ${JSON.stringify(e.response.data)}`,
         e.response.status || HttpStatus.UNAUTHORIZED,
       );

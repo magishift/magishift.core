@@ -1,7 +1,7 @@
 import { MailerModule } from '@nest-modules/mailer';
 import { CacheInterceptor, CacheModule, DynamicModule, ForwardReference, Module, Provider, Type } from '@nestjs/common';
-import { NestFactory, Reflector } from '@nestjs/core';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { GraphQLModule } from '@nestjs/graphql';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -27,6 +27,7 @@ import { BaseModule } from './base/base.module';
 import { DateScalar } from './base/base.scalar';
 import { BackOfficeUserModule } from './common/backOfficeUser/backOfficeUser.module';
 import { EmailTemplateModule } from './common/emailTemplate/emailTemplate.module';
+import { ReportModule } from './common/report/report.module';
 import { SmsTemplateModule } from './common/smsTemplate/smsTemplate.module';
 import { IConfigOptions } from './config/config.interfaces';
 import { ConfigModule } from './config/config.module';
@@ -143,6 +144,7 @@ export async function MagiApp(
     GoogleFcmModule,
     NotificationModule,
     DeviceModule,
+    ReportModule,
     RedisModule.register(redisConfig),
     CacheModule.register(),
   ];

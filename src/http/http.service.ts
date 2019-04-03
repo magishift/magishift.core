@@ -3,7 +3,7 @@ import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 @Injectable()
 export class HttpService {
-  async Post(url: string, payload?: any, config?: AxiosRequestConfig): Promise<object> {
+  async Post(url: string, payload?: any, config?: AxiosRequestConfig): Promise<any> {
     try {
       const result: AxiosResponse<{ errors; rows }> = await axios.post(url, payload, config);
 
@@ -25,7 +25,7 @@ export class HttpService {
     }
   }
 
-  async Get(url: string, config?: AxiosRequestConfig): Promise<object> {
+  async Get(url: string, config?: AxiosRequestConfig): Promise<any> {
     try {
       const result: AxiosResponse<{ errors; rows }> = await axios.get(url, config);
 

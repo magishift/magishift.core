@@ -13,10 +13,10 @@ export abstract class User extends CrudEntity implements IUser {
   @Column()
   username: string;
 
-  @Column()
+  @Column({ default: true })
   enabled: boolean;
 
-  @Column()
+  @Column({ default: true })
   emailVerified: boolean;
 
   @Column({ nullable: true })

@@ -2,6 +2,7 @@ import { DefaultRoles } from '../../auth/role/defaultRoles';
 import { BO_ROLE_ENDPOINT } from '../../common/backOfficeUser/backOfficeRole/interfaces/backOfficeUser.const';
 import { BO_USER_ENDPOINT } from '../../common/backOfficeUser/interfaces/backOfficeUser.const';
 import { EMAIL_TEMPLATE_ENDPOINT } from '../../common/emailTemplate/interfaces/emailTemplate.const';
+import { REPORT_ENDPOINT } from '../../common/report/interfaces/report.const';
 import { GOOGLE_CONFIG_ENDPOINT } from '../../thirdParty/google/interfaces/google.const';
 import { IMenu } from './interfaces/menu.interface';
 
@@ -29,6 +30,18 @@ export const MenuFactory = (appTitle: string, items: IMenu[]): IMenu[] => {
       href: '/crud/notifications',
       title: 'Notifications',
       icon: 'notifications',
+    },
+
+    {
+      title: 'Report',
+      icon: 'dashboard',
+      roles: [DefaultRoles.admin],
+      items: [
+        {
+          href: '/crud/' + REPORT_ENDPOINT,
+          title: 'Manage Dashboard',
+        },
+      ],
     },
 
     { header: 'Systems', roles: [DefaultRoles.admin] },

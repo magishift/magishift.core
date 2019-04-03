@@ -87,23 +87,6 @@ services:
     depends_on:
       - postgres
 
-  ldap-host:
-    image: osixia/openldap
-    environment:
-      - LDAP_ORGANISATION=${LDAP_ORGANISATION}
-      - LDAP_DOMAIN=${LDAP_DOMAIN}
-    ports:
-      - ${LDAP_PORT}:389
-
-  phpldapadmin-service:
-    image: osixia/phpldapadmin
-    environment:
-      - PHPLDAPADMIN_LDAP_HOSTS=ldap-host
-    ports:
-      - ${LDAP_PHPLDAPADMIN_PORT}:443
-    depends_on:
-      - ldap-host
-
   maildev:
     image: djfarrelly/maildev
     ports:

@@ -1,4 +1,4 @@
-import { HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 import _ = require('lodash');
 import { FindConditions, FindManyOptions, FindOneOptions, Like, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
@@ -6,8 +6,7 @@ import { DefaultRoles } from '../auth/role/defaultRoles';
 import { SessionUtil } from '../auth/session.util';
 import { BaseService } from '../base/base.service';
 import { DataStatus } from '../base/interfaces/base.interface';
-import { getRelationsTableName } from '../database/utils.database';
-import { ExceptionHandler } from '../utils/error.utils';
+import { getPropertyType, getRelationsTableName, isPropertyTypeNumber } from '../database/utils.database';
 import { GetFormSchema, GetGridSchema } from './crud.util';
 import { Draft } from './draft/draft.entity.mongo';
 import { DraftService } from './draft/draft.service';
@@ -81,6 +80,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<TDto> {
     options = options || {};
+    options.cache = true;
 
     options.relations = options.relations || getRelationsTableName(this.repository.metadata);
 
@@ -92,15 +92,15 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
       result.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
-      return ExceptionHandler(`Only ${DefaultRoles.admin} or owner of this data can read`, HttpStatus.FORBIDDEN);
+      throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, HttpStatus.FORBIDDEN);
     }
 
     if (!result) {
-      return ExceptionHandler(`${this.constructor.name} FindById with id: (${id}) Not Found`, 404);
+      throw new HttpException(`${this.constructor.name} FindById with id: (${id}) Not Found`, 404);
     }
 
     if (result.isDeleted) {
-      return ExceptionHandler(`${this.constructor.name} record with id: "${id}" Has Been Deleted`, 404);
+      throw new HttpException(`${this.constructor.name} record with id: "${id}" Has Been Deleted`, 404);
     }
 
     return this.mapper.entityToDto(result);
@@ -112,6 +112,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<TDto> {
     options = options || {};
+    options.cache = true;
 
     options.relations = options.relations || getRelationsTableName(this.repository.metadata);
 
@@ -125,7 +126,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
       result.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
-      return ExceptionHandler(`Only ${DefaultRoles.admin} or owner of this data can read`, HttpStatus.FORBIDDEN);
+      throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, HttpStatus.FORBIDDEN);
     }
 
     return this.mapper.entityToDto(result);
@@ -154,7 +155,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
           SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
           entity.__meta.dataOwner !== SessionUtil.getAccountId
         ) {
-          return ExceptionHandler(`Only ${DefaultRoles.admin} or owner of this data can read`, HttpStatus.FORBIDDEN);
+          throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, HttpStatus.FORBIDDEN);
         } else {
           return this.mapper.entityToDto(entity);
         }
@@ -174,7 +175,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
       result.data.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
-      return ExceptionHandler(
+      throw new HttpException(
         `Only ${DefaultRoles.admin} or owner of this data can read this draft`,
         HttpStatus.FORBIDDEN,
       );
@@ -222,7 +223,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
 
     const entity = await this.mapper.dtoToEntity(data);
 
-    this.repository.save(entity as any);
+    await this.repository.save(entity as any);
 
     if (await this.draftService.isExist(data.id)) {
       this.draftService.delete(data.id);
@@ -251,7 +252,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
       beforeUpdate.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
-      return ExceptionHandler(
+      throw new HttpException(
         `Only ${DefaultRoles.admin} or owner of this data can update this data`,
         HttpStatus.FORBIDDEN,
       );
@@ -277,7 +278,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
       entity.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
-      return ExceptionHandler(
+      throw new HttpException(
         `Only ${DefaultRoles.admin} or owner of this data can delete this data`,
         HttpStatus.FORBIDDEN,
       );
@@ -326,7 +327,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
       result.data.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
-      return ExceptionHandler(
+      throw new HttpException(
         `Only ${DefaultRoles.admin} or owner of this data can delete this draft`,
         HttpStatus.FORBIDDEN,
       );
@@ -340,14 +341,10 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       filter.relations = getRelationsTableName(this.repository.metadata);
     }
 
-    const where: FindConditions<TEntity> = filter.where;
+    let where: FindConditions<TEntity> = {};
 
-    if (where) {
-      Object.keys(where).map(w => {
-        if (typeof where[w] === 'object' && where[w].plain) {
-          where[w] = Like('%' + where[w].plain + '%');
-        }
-      });
+    if (filter.where) {
+      where = this.resolveWhereOperator(filter.where);
     }
 
     const whereOr: FindConditions<TEntity>[] = [];
@@ -357,14 +354,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
         whereOr.push(where);
       }
 
-      Object.keys(filter.whereOr).map(w => {
-        if (typeof filter.whereOr[w] === 'object' && filter.whereOr[w].plain) {
-          const or = {};
-          or[w] = Like('%' + filter.whereOr[w].plain + '%');
-
-          whereOr.push(or);
-        }
-      });
+      whereOr.push(this.resolveWhereOperator(filter.whereOr));
     }
 
     const order: { [P in keyof TEntity]?: 'ASC' | 'DESC' | 1 | -1 } = {};
@@ -380,6 +370,8 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
 
     if (filter.isShowDeleted) {
       (where as any).isDeleted = true;
+    } else {
+      (where as any).isDeleted = false;
     }
 
     const result: FindManyOptions = {
@@ -390,6 +382,34 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       take: filter.limit,
       cache: true,
     };
+
+    return result;
+  }
+
+  private resolveWhereOperator(source: object): FindConditions<TEntity> {
+    const result: FindConditions<TEntity> = {};
+
+    Object.keys(source).map(w => {
+      let value: string;
+      if (typeof source[w] === 'object' && source[w].plain) {
+        value = source[w].plain;
+      } else {
+        value = source[w];
+      }
+
+      const propertyType = getPropertyType(this.repository.metadata.columns, w);
+      if (
+        propertyType &&
+        (propertyType === 'boolean' ||
+          propertyType === 'bool' ||
+          propertyType === 'uuid' ||
+          isPropertyTypeNumber(propertyType))
+      ) {
+        result[w] = value;
+      } else {
+        result[w] = Like('%' + value + '%');
+      }
+    });
 
     return result;
   }

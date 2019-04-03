@@ -6,18 +6,32 @@ import { Grid, GridColumn } from '../../../src/crud/grid.decorator';
 import { FieldTypes } from '../../../src/crud/interfaces/form.interface';
 import { ColumnTypes } from '../../../src/crud/interfaces/grid.interface';
 import { IFileStorageDto } from '../../../src/fileStorage/interfaces/fileStorage.interface';
-import { IUserDto } from '../../../src/user/interfaces/user.interface';
 import { UserDto } from '../../../src/user/user.dto';
 import { IUserRoleDto } from '../../../src/user/userRole/interfaces/userRole.interface';
+import { ITenantDto } from '../tenant/interfaces/tenant.interface';
 import { CLIENT_ROLE_ENDPOINT } from './clientUserRole/interfaces/clientUser.const';
 import { CLIENT_USER_ENDPOINT } from './interfaces/clientUser.const';
+import { IClientUserDto } from './interfaces/clientUser.interface';
 
 const CREDENTIAL = 'Credentials';
 
-@Grid()
+@Grid({
+  foreignKey: {
+    tenant: 'tenant',
+  },
+})
 @Form()
-export class ClientUserDto extends UserDto implements IUserDto {
+export class ClientUserDto extends UserDto implements IClientUserDto {
+  tenant: ITenantDto;
+
   accountId: string;
+
+  @FormField({
+    label: 'Tenant',
+    type: FieldTypes.Fk,
+    fk: { tenant: 'id' },
+  })
+  tenantId: string;
 
   @IsString()
   @ApiModelProperty()

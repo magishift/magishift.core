@@ -23,7 +23,7 @@ export class KeyCloakService {
   constructor(protected readonly httpService: HttpService, protected readonly redisService: RedisService) {
     this.configs = JSON.parse(process.env.KEYCLOAK_REALMS);
 
-    this.defaultAuthServerUrl = `http://${process.env.KEYCLOAK_BASE_URL}:${process.env.KEYCLOAK_PORT}/auth`;
+    this.defaultAuthServerUrl = `${process.env.KEYCLOAK_BASE_URL}/auth`;
 
     const masterConfig = this.configs.master;
     masterConfig.authServerUrl = this.configs.master.authServerUrl || this.defaultAuthServerUrl;

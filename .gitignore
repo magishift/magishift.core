@@ -19,7 +19,6 @@ package.lock
 
 .DS_Store
 
-
 clients/**
 .history
 
@@ -39,6 +38,6 @@ nohup.out
 
 logger/*
 
-.env
+.env.local*
 
 dist

@@ -6,9 +6,18 @@ import { CheckboxModule } from './modules/checkbox/checkbox.module';
 import { ClientUserModule } from './modules/clientUser/clientUser.module';
 import { PickerModule } from './modules/picker/picker.module';
 import { SelectModule } from './modules/select/select.module';
+import { TenantModule } from './modules/tenant/tenant.module';
 import { TextInputModule } from './modules/textInput/textInput.module';
 
-const modules = [ClientUserModule, TextInputModule, SelectModule, AutocompleteModule, PickerModule, CheckboxModule];
+const modules = [
+  ClientUserModule,
+  TextInputModule,
+  SelectModule,
+  AutocompleteModule,
+  PickerModule,
+  CheckboxModule,
+  TenantModule,
+];
 
 const config = ConfigLoaderHelper(
   'Magishift Playground',

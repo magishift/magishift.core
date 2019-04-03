@@ -1,10 +1,10 @@
+import { HttpException } from '@nestjs/common';
 import _ = require('lodash');
 import { Repository } from 'typeorm';
 import { KeycloakAdminService } from '../../auth/keycloak/keycloakAdmin.service';
 import { CrudService } from '../../crud/crud.service';
 import { DraftService } from '../../crud/draft/draft.service';
 import { ICrudService } from '../../crud/interfaces/crudService.interface';
-import { ExceptionHandler } from '../../utils/error.utils';
 import { IUserRole, IUserRoleDto } from './interfaces/userRole.interface';
 import { UserRoleMapper } from './UserRole.mapper';
 
@@ -21,7 +21,7 @@ export abstract class UserRoleService<TEntity extends IUserRole, TDto extends IU
     super(repository, draftService, mapper, { softDelete: false });
 
     if (!realm) {
-      return ExceptionHandler('Must set realm for Role Service', 500);
+      throw new HttpException('Must set realm for Role Service', 500);
     }
   }
 
@@ -50,7 +50,7 @@ export abstract class UserRoleService<TEntity extends IUserRole, TDto extends IU
     } catch (e) {
       await queryRunner.rollbackTransaction();
 
-      return ExceptionHandler(e.response || e, e.response.status || e.status);
+      throw new HttpException(e.response || e, e.response.status || e.status);
     } finally {
       await queryRunner.release();
     }
@@ -84,7 +84,7 @@ export abstract class UserRoleService<TEntity extends IUserRole, TDto extends IU
     } catch (e) {
       await queryRunner.rollbackTransaction();
 
-      return ExceptionHandler(e.response || e, e.response.status || e.status);
+      throw new HttpException(e.response || e, e.response.status || e.status);
     } finally {
       await queryRunner.release();
     }
@@ -107,7 +107,7 @@ export abstract class UserRoleService<TEntity extends IUserRole, TDto extends IU
     } catch (e) {
       await queryRunner.rollbackTransaction();
 
-      return ExceptionHandler(e.response || e, e.response.status || e.status);
+      throw new HttpException(e.response || e, e.response.status || e.status);
     } finally {
       await queryRunner.release();
     }
