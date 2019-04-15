@@ -1,4 +1,4 @@
 type Mutation {
   loginBackOfficeUser(username: String, password: String): Token
-  logoutBackOfficeUser: Boolean
+  logoutBackOfficeUser(sessionId: String): Boolean
 }

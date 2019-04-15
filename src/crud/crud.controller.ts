@@ -15,24 +15,28 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiUseTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { DefaultRoles } from '../auth/role/defaultRoles';
+import { Realms } from '../auth/role/realms.decorator';
 import { Roles } from '../auth/role/roles.decorator';
 import { RolesGuard } from '../auth/role/roles.guard';
 import { IFile } from '../fileStorage/interfaces/fileStorage.interface';
 import { IEndpointUserRoles } from '../user/userRole/interfaces/userRoleEndpoint.interface';
 import { CrudController } from './base/crud.controller.base';
-import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
+import { ICrudConfig, ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudController } from './interfaces/crudController.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
 import { ICrudService } from './interfaces/crudService.interface';
 import { IFormSchema } from './interfaces/form.interface';
+import { IGridSchema } from './interfaces/grid.interface';
 
 export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICrudEntity>(
   name: string,
   roles: IEndpointUserRoles,
+  realms?: string[],
 ): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>) => CrudController<TDto, TEntity> {
   @ApiUseTags(name)
   @UseGuards(RolesGuard)
   @Roles(...roles.default)
+  @Realms(...(realms || []))
   class CrudControllerBuilder extends CrudController<TDto, TEntity> implements ICrudController<TDto> {
     constructor(
       protected readonly service: ICrudService<TEntity, TDto>,
@@ -41,19 +45,21 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
       super(service, mapper);
     }
 
+    @Get('/crudConfig')
+    @Roles(DefaultRoles.authenticated)
+    getConfig(): ICrudConfig {
+      return super.getConfig();
+    }
+
     @Get('/form')
     @Roles(DefaultRoles.authenticated)
-    async getFormSchema(
-      @Query('id') id?: string,
-      @Query('isDraft') isDraft?: string,
-      @Query('isDeleted') isDeleted?: string,
-    ): Promise<IFormSchema> {
-      return super.getFormSchema(id, isDraft, isDeleted);
+    getFormSchema(): IFormSchema {
+      return super.getFormSchema();
     }
 
     @Get('/grid')
     @Roles(DefaultRoles.authenticated)
-    getGridSchema(): object {
+    getGridSchema(): IGridSchema {
       return super.getGridSchema();
     }
 

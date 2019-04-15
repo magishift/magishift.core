@@ -23,7 +23,10 @@ export class FileStorageController extends CrudControllerFactory<IFileStorageDto
   async fileFindById(@Param('id') id: string, @Res() res: Response): Promise<void> {
     const file = await this.service.fetch(id);
 
-    if (!file.permissions.some(permission => SessionUtil.getUserRoles.indexOf(permission) >= 0)) {
+    if (
+      file.permissions.length > 0 &&
+      !file.permissions.some(permission => SessionUtil.getAccountRoles.indexOf(permission) >= 0)
+    ) {
       return ExceptionHandler(`You don't have access for this file`, HttpStatus.FORBIDDEN);
     }
 

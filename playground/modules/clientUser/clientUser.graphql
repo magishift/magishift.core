@@ -1,4 +1,4 @@
 type Mutation {
   loginClientUser(username: String, password: String): Token
-  logoutClientUser: Boolean
+  logoutClientUser(refreshToken: String): Boolean
 }

@@ -2,7 +2,12 @@ import { CrudDto } from '../crud.dto';
 
 export interface IFilter {
   offset?: number;
-  where?: object;
+  where?: {
+    [key: string]: {
+      plain: string;
+      regex: string;
+    };
+  };
   whereOr?: object;
   order?: string[];
   limit?: number;

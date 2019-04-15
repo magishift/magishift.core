@@ -52,8 +52,8 @@ export class DraftService {
 
     const query = {};
     if (where && !_.isEmpty(where)) {
-      Object.keys(where).map(key => {
-        query[`data.${key}`] = new RegExp(where[key].plain);
+      _.forEach(where, (val, key) => {
+        query[`data.${key}`] = new RegExp(val.plain);
       });
     }
 

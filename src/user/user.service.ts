@@ -1,18 +1,21 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
+import * as jwt from 'jsonwebtoken';
+import { RoleMappingPayload } from 'keycloak-admin/lib/defs/roleRepresentation';
 import UserRepresentation from 'keycloak-admin/lib/defs/userRepresentation';
 import _ = require('lodash');
-import { Repository } from 'typeorm';
+import { FindConditions, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { AuthService } from '../auth/auth.service';
-import { ILoginData } from '../auth/interfaces/auth.interface';
-import { IKeycloakAdminService } from '../auth/keycloak/interfaces/keycloakAdminService.interface';
-import { KeycloakAdminService } from '../auth/keycloak/keycloakAdmin.service';
+import { ILoginData, ITokenPayload, ITokenUser } from '../auth/interfaces/auth.interface';
+import { IKeycloakService } from '../auth/keycloak/interfaces/keycloakAdminService.interface';
+import { KeycloakService } from '../auth/keycloak/keycloak.service';
+import { SessionUtil } from '../auth/session.util';
 import { DataStatus } from '../base/interfaces/base.interface';
-import { CrudMapper } from '../crud/crud.mapper';
 import { CrudService } from '../crud/crud.service';
 import { DraftService } from '../crud/draft/draft.service';
 import { ICrudService } from '../crud/interfaces/crudService.interface';
 import { IUser, IUserDto } from './interfaces/user.interface';
+import { UserMapper } from './user.mapper';
 import { IUserRole, IUserRoleDto } from './userRole/interfaces/userRole.interface';
 import { UserRoleService } from './userRole/userRole.service';
 
@@ -21,10 +24,10 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
   constructor(
     protected readonly repository: Repository<TEntity>,
     protected readonly authService: AuthService,
-    protected readonly keycloakAdminService: KeycloakAdminService,
+    protected readonly keycloakAdminService: KeycloakService,
     protected readonly userRoleService: UserRoleService<IUserRole, IUserRoleDto>,
     protected readonly draftService: DraftService,
-    protected readonly mapper: CrudMapper<TEntity, TDto>,
+    protected readonly mapper: UserMapper<TEntity, TDto>,
     protected readonly realm: string,
   ) {
     super(repository, draftService, mapper);
@@ -33,7 +36,7 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
       throw new HttpException('Must set realm for User Service', 500);
     }
 
-    UserService.updateRepository(keycloakAdminService, userRoleService, repository, realm);
+    UserService.updateRepository(keycloakAdminService, userRoleService, repository as Repository<IUser>, realm);
   }
 
   async create(user: TDto): Promise<TDto> {
@@ -62,6 +65,12 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
 
       const keycloak = await this.keycloakAdminService.getAccountByName(keycloakUser.username, this.realm);
 
+      const keycloakRoles: RoleMappingPayload[] = user.realmRoles.map(role => {
+        return { id: role.id, name: role.name };
+      });
+
+      await this.keycloakAdminService.updateAccountRoles(keycloak.id, keycloakRoles, this.realm);
+
       user.accountId = keycloak.id;
       user.realm = this.realm;
 
@@ -78,11 +87,7 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
     } catch (e) {
       await queryRunner.rollbackTransaction();
 
-      if (e.response && e.response.status === 409) {
-        throw new HttpException('Account already exist, please use different username and email', 409);
-      }
-
-      if (e.response || (e.response && e.response.status !== 401)) {
+      if (e.response || (e.response && (e.response.status !== 401 && e.response.status !== 409))) {
         // check if user already created
         const kyCreatedUser = await this.keycloakAdminService.getAccountByName(user.username, this.realm);
 
@@ -91,7 +96,7 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
         }
       }
 
-      throw new HttpException(e.response || e, e.response.status || e.status);
+      throw new HttpException(e.response || e, e.response ? e.response.status : e.status);
     } finally {
       await queryRunner.release();
     }
@@ -123,7 +128,11 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
 
       await this.keycloakAdminService.updateAccount(result.accountId, keycloakUser, this.realm);
 
-      await this.keycloakAdminService.updateAccountRoles(result.accountId, user.realmRoles, this.realm);
+      const keycloakRoles: RoleMappingPayload[] = user.realmRoles.map(role => {
+        return { id: role.id, name: role.name };
+      });
+
+      await this.keycloakAdminService.updateAccountRoles(result.accountId, keycloakRoles, this.realm);
 
       // commit transaction now:
       await queryRunner.commitTransaction();
@@ -132,7 +141,7 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
     } catch (e) {
       await queryRunner.rollbackTransaction();
 
-      throw new HttpException(e.response || e, e.response.status || e.status);
+      throw new HttpException(e.response || e, e.response ? e.response.status : e.status);
     } finally {
       await queryRunner.release();
     }
@@ -159,30 +168,35 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
     } catch (e) {
       await queryRunner.rollbackTransaction();
 
-      throw new HttpException(e.response || e, e.response.status || e.status);
+      throw new HttpException(e.response || e, e.response ? e.response.status : e.status);
     } finally {
       await queryRunner.release();
     }
   }
 
-  async login(loginData: ILoginData, realm: string): Promise<any> {
-    const grant = this.authService.login(loginData.password, loginData.username, realm);
+  async login(loginData: ILoginData): Promise<ITokenUser> {
+    const grant = await this.keycloakAdminService.login(loginData.username, loginData.password, this.realm);
 
-    const userData = await super.findOne({ account: grant } as any);
+    const user = await this.repository.findOne({ username: loginData.username } as FindConditions<TEntity>);
 
-    if (!userData) {
-      throw new HttpException('Account is not allowed to login from this service', HttpStatus.FORBIDDEN);
-    }
+    const decryptedToken: ITokenPayload = jwt.decode(grant.accessToken) as ITokenPayload;
 
-    return grant;
+    return {
+      accessToken: grant.accessToken,
+      refreshToken: grant.refreshToken,
+      ttl: decryptedToken.exp,
+      userData: await this.mapper.entityToDto(user),
+      accountId: user.id,
+      realm: this.realm,
+    };
   }
 
-  async logout(token: string, realm: string): Promise<void> {
-    return this.authService.logout(token, realm);
+  async logout(): Promise<boolean> {
+    return await this.keycloakAdminService.logout(SessionUtil.getCurrentToken, this.realm);
   }
 
   private static async updateRepository(
-    keycloakAdminService: IKeycloakAdminService,
+    keycloakAdminService: IKeycloakService,
     userRoleService: UserRoleService<IUserRole, IUserRoleDto>,
     repository: Repository<IUser>,
     realm: string,

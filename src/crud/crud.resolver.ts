@@ -1,8 +1,9 @@
-import { HttpStatus, UseGuards } from '@nestjs/common';
+import { HttpException, HttpStatus, UseGuards } from '@nestjs/common';
 import { Args, Context, Mutation, Query, Subscription } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import * as pluralize from 'pluralize';
 import { AuthService } from '../auth/auth.service';
+import { Realms } from '../auth/role/realms.decorator';
 import { Roles } from '../auth/role/roles.decorator';
 import { RolesGuard } from '../auth/role/roles.guard';
 import { GraphQLInstance } from '../graphql/graphql.instance';
@@ -18,6 +19,7 @@ import { PubSubList } from './providers/pubSub.provider';
 export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEntity>(
   name: string,
   roles: IEndpointUserRoles,
+  realms?: string[],
 ): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>, pubSub: PubSub) => ICrudResolver<
   TDto,
   TEntity
@@ -43,6 +45,8 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
   PubSubList.RegisterPubsub(subDestroyed, nameCapFirst);
 
   @UseGuards(RolesGuard)
+  @Roles(...roles.default)
+  @Realms(...(realms || []))
   class CrudResolverBuilder implements ICrudResolver<TDto, TEntity> {
     constructor(
       protected readonly service: ICrudService<TEntity, TDto>,
@@ -54,7 +58,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
     @Roles(...(roles.read || roles.default))
     async findById(@Context() ctx: any): Promise<object> {
       try {
-        const result = await GraphQLInstance.performQuery(ctx.bodyScope);
+        const result = await GraphQLInstance.performQuery(ctx.req.body);
         return result[findById];
       } catch (e) {
         return ExceptionHandler(e);
@@ -65,8 +69,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
     @Roles(...(roles.read || roles.default))
     async findAll(@Context() ctx: any): Promise<object> {
       try {
-        const result = await GraphQLInstance.performQuery(ctx.bodyScope);
-
+        const result = await GraphQLInstance.performQuery(ctx.req.body);
         return result[findAll];
       } catch (e) {
         return ExceptionHandler(e);
@@ -177,7 +180,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
               return this.pubSub.asyncIterator(subCreated);
             }
 
-            return ExceptionHandler(`You don't have have permission to subscribe`, HttpStatus.FORBIDDEN);
+            throw new HttpException(`You don't have have permission to subscribe`, HttpStatus.FORBIDDEN);
           } catch (e) {
             return ExceptionHandler(e);
           }
@@ -205,7 +208,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
               return this.pubSub.asyncIterator(subUpdated);
             }
 
-            return ExceptionHandler(`You don't have have permission to subscribe`, HttpStatus.FORBIDDEN);
+            throw new HttpException(`You don't have have permission to subscribe`, HttpStatus.FORBIDDEN);
           } catch (e) {
             return ExceptionHandler(e);
           }
@@ -233,7 +236,7 @@ export function ResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEnti
               return this.pubSub.asyncIterator(subDestroyed);
             }
 
-            return ExceptionHandler(`You don't have have permission to subscribe`, HttpStatus.FORBIDDEN);
+            throw new HttpException(`You don't have have permission to subscribe`, HttpStatus.FORBIDDEN);
           } catch (e) {
             return ExceptionHandler(e);
           }

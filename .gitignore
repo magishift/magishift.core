@@ -29,15 +29,17 @@ files/*
 yarn-error.log
 
 # log
-
-*.log
-
-main.schema.graphql
-
+*.lo
+logger/*
 nohup.out
 
-logger/*
+main.schema.graphql
 
 .env.local*
 
 dist
+
+# Docker
+.docker-files
+
+zk-single-kafka-single

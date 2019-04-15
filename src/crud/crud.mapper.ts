@@ -1,5 +1,6 @@
 import { plainToClassFromExist } from 'class-transformer';
 import { Validator } from 'class-validator';
+import _ = require('lodash');
 import { DeepPartial, getRepository, ObjectLiteral, Repository } from 'typeorm';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 import { getPropertyType } from '../database/utils.database';
@@ -33,8 +34,8 @@ export abstract class CrudMapper<TEntity extends ICrudEntity, TDto extends ICrud
 
     const entity: DeepPartial<TEntity> = {};
 
-    Object.keys(dto).map(key => {
-      entity[key] = dto[key];
+    _.forEach(dto, (value, key) => {
+      entity[key] = value;
     });
 
     return this.repository.create(entity);
@@ -43,8 +44,8 @@ export abstract class CrudMapper<TEntity extends ICrudEntity, TDto extends ICrud
   async entityToDto(entity: DeepPartial<TEntity> | TEntity | ObjectLiteral): Promise<TDto> {
     const dto: TDto = this.getNewDto;
 
-    Object.keys(entity).map(key => {
-      dto[key] = entity[key];
+    _.forEach(entity, (value, key) => {
+      dto[key] = value;
     });
 
     return dto;

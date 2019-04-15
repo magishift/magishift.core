@@ -1,11 +1,9 @@
-import { Inject, UseGuards } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { Args, Mutation } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
-import { ILoginData, IToken } from '../auth/interfaces/auth.interface';
+import { ILoginData, ITokenUser } from '../auth/interfaces/auth.interface';
 import { DefaultRoles } from '../auth/role/defaultRoles';
 import { Roles } from '../auth/role/roles.decorator';
-import { RolesGuard } from '../auth/role/roles.guard';
-import { SessionUtil } from '../auth/session.util';
 import { ResolverFactory } from '../crud/crud.resolver';
 import { ExceptionHandler } from '../utils/error.utils';
 import { capitalizeFirstLetter } from '../utils/string.utils';
@@ -18,14 +16,14 @@ import { IEndpointUserRoles } from './userRole/interfaces/userRoleEndpoint.inter
 export function UserResolverFactory<TDto extends IUserDto, TEntity extends IUser>(
   name: string,
   roles: IEndpointUserRoles,
+  realms?: string[],
 ): new (service: UserService<TEntity, TDto>, mapper: UserMapper<TEntity, TDto>, pubSub: PubSub) => IUserResolver {
   const nameCapFirst = capitalizeFirstLetter(name);
   const login: string = `login${nameCapFirst}`;
   const logout: string = `logout${nameCapFirst}`;
 
-  const baseResolverFactory = ResolverFactory<TDto, TEntity>(name, roles);
+  const baseResolverFactory = ResolverFactory<TDto, TEntity>(name, roles, realms);
 
-  @UseGuards(RolesGuard)
   class UserResolverProduct extends baseResolverFactory implements IUserResolver {
     constructor(
       protected readonly service: UserService<TEntity, TDto>,
@@ -37,9 +35,10 @@ export function UserResolverFactory<TDto extends IUserDto, TEntity extends IUser
 
     @Mutation(login)
     @Roles(DefaultRoles.public)
-    async login(@Args() args: ILoginData): Promise<IToken> {
+    async login(@Args() args: ILoginData): Promise<ITokenUser> {
       try {
-        return this.service.login(args, SessionUtil.getAccountRealm);
+        const result = await this.service.login(args);
+        return result;
       } catch (e) {
         return ExceptionHandler(e);
       }
@@ -47,9 +46,10 @@ export function UserResolverFactory<TDto extends IUserDto, TEntity extends IUser
 
     @Mutation(logout)
     @Roles(DefaultRoles.authenticated)
-    async logout(@Args() args: { input }): Promise<void> {
+    async logout(): Promise<boolean> {
       try {
-        return this.service.logout(args.input.token, SessionUtil.getAccountRealm);
+        await this.service.logout();
+        return true;
       } catch (e) {
         return ExceptionHandler(e);
       }

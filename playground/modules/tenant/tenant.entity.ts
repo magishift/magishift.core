@@ -1,5 +1,6 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { CrudEntity } from '../../../src/crud/crud.entity';
+import { FileStorage } from '../../../src/fileStorage/fileStorage.entity';
 import { ClientUser } from '../clientUser/clientUser.entity';
 import { ITenant } from './interfaces/tenant.interface';
 
@@ -16,4 +17,7 @@ export class Tenant extends CrudEntity implements ITenant {
 
   @OneToMany(_ => ClientUser, clientUser => clientUser.tenant)
   clientUsers: ClientUser[];
+
+  @ManyToOne(_ => FileStorage, fileStorage => fileStorage.ownerId, { onDelete: 'RESTRICT' })
+  logo: FileStorage;
 }

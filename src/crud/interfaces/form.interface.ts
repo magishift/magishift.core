@@ -38,8 +38,6 @@ export enum FormTypes {
 }
 
 export interface IForm {
-  inline: boolean;
-  model: object;
   fields: {
     [key: string]:
       | IFormField
@@ -90,6 +88,11 @@ export interface IFormField {
   multiple?: boolean;
 }
 
+export interface IFormFieldTextArea extends IFormField {
+  label: string;
+  type?: FieldTypes.Textarea;
+}
+
 export interface IFormFieldUpload extends IFormField {
   type: FieldTypes.Image | FieldTypes.File;
   uploadUrl: string;
@@ -99,51 +102,59 @@ export interface IFormFieldUpload extends IFormField {
 }
 
 export interface IFormFieldSelect extends IFormField {
-  type: FieldTypes.Select;
+  type?: FieldTypes.Select;
   choices: string[] | object[];
 }
 
 export interface IFormFieldAutocomplete extends IFormField {
-  type: FieldTypes.Autocomplete;
+  type?: FieldTypes.Autocomplete;
   dataSource: IAutocompleteDataSource;
-  showTopRecord: boolean | number;
+  showTopRecord?: boolean | number;
 }
 
 export interface IFormFieldButton extends IFormField {
-  type: FieldTypes.ButtonCallback;
+  type?: FieldTypes.ButtonCallback;
   actionUrl: string;
 }
 
 export interface IFormFieldCheckbox extends IFormField {
-  type: FieldTypes.Checkbox;
+  type?: FieldTypes.Checkbox;
 }
 
 export interface IFormFieldCheckboxes extends IFormField {
-  type: FieldTypes.Checkboxes;
+  type?: FieldTypes.Checkboxes;
   choices: { [key: string]: any };
 }
 
 export interface IFormFieldRadio extends IFormField {
-  type: FieldTypes.Radio;
+  type?: FieldTypes.Radio;
   choices: { value: string; text: string }[];
 }
 
 export interface IFormFieldTable extends IFormField {
-  type: FieldTypes.Table;
+  type?: FieldTypes.Table;
   fk?: { [key: string]: string };
   model?: string;
   data?: object[];
 }
 
 export interface IFormFieldFk extends IFormField {
-  type: FieldTypes.Fk;
+  type?: FieldTypes.Fk;
   fk?: { [key: string]: string };
 }
 
 export interface IAutocompleteDataSource {
   url: string;
   searchParams: string[];
-  filterBy?: { [key: string]: string };
+
+  /**
+   * Filter autocomplete data source by given model property.
+   * model property will be mapped to target property based on given object value
+   *
+   * @type {{ [modelProperty: string]: string }}
+   * @memberof IAutocompleteDataSource
+   */
+  filterBy?: { [modelProperty: string]: string };
 }
 
 export interface IFormSchema {

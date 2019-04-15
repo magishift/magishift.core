@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../../auth/auth.module';
-import { KeycloakAdminService } from '../../auth/keycloak/keycloakAdmin.service';
+import { KeycloakService } from '../../auth/keycloak/keycloak.service';
 import { DraftModule } from '../../crud/draft/draft.module';
 import { PubSubProvider } from '../../crud/providers/pubSub.provider';
 import { FileStorageModule } from '../../fileStorage/fileStorage.module';
@@ -30,7 +30,7 @@ import { BackOfficeUserService } from './backOfficeUser.service';
     BackOfficeRoleService,
     BackOfficeRoleMapper,
     PubSubProvider,
-    KeycloakAdminService,
+    KeycloakService,
   ],
   controllers: [BackOfficeUserController, BackOfficeRoleController],
   exports: [BackOfficeUserService, BackOfficeRoleService],

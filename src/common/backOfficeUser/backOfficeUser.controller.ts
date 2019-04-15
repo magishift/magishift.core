@@ -5,12 +5,16 @@ import { IUser, IUserDto } from '../../user/interfaces/user.interface';
 import { UserControllerFactory } from '../../user/user.controller';
 import { BackOfficeUserMapper } from './backOfficeUser.mapper';
 import { BackOfficeUserService } from './backOfficeUser.service';
-import { BO_USER_ENDPOINT } from './interfaces/backOfficeUser.const';
+import { BO_USER_ENDPOINT, BO_USER_REALM } from './interfaces/backOfficeUser.const';
 
 @Controller(BO_USER_ENDPOINT)
-export class BackOfficeUserController extends UserControllerFactory<IUserDto, IUser>(BO_USER_ENDPOINT, {
-  default: [DefaultRoles.admin],
-}) {
+export class BackOfficeUserController extends UserControllerFactory<IUserDto, IUser>(
+  BO_USER_ENDPOINT,
+  {
+    default: [DefaultRoles.admin],
+  },
+  [BO_USER_REALM],
+) {
   constructor(
     protected readonly service: BackOfficeUserService,
     protected readonly fileService: FileStorageService,

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuthService } from '../../auth/auth.service';
-import { KeycloakAdminService } from '../../auth/keycloak/keycloakAdmin.service';
+import { KeycloakService } from '../../auth/keycloak/keycloak.service';
 import { DraftService } from '../../crud/draft/draft.service';
 import { IUser, IUserDto } from '../../user/interfaces/user.interface';
 import { UserService } from '../../user/user.service';
@@ -17,7 +17,7 @@ export class BackOfficeUserService extends UserService<IUser, IUserDto> {
     @InjectRepository(BackOfficeUser) protected readonly repository: Repository<BackOfficeUser>,
     protected readonly authService: AuthService,
     protected readonly backOfficeRoleService: BackOfficeRoleService,
-    protected readonly keycloakAdminService: KeycloakAdminService,
+    protected readonly keycloakAdminService: KeycloakService,
     protected readonly mapper: BackOfficeUserMapper,
     protected readonly draftService: DraftService,
   ) {

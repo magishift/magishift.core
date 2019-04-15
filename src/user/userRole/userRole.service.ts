@@ -1,7 +1,7 @@
 import { HttpException } from '@nestjs/common';
 import _ = require('lodash');
 import { Repository } from 'typeorm';
-import { KeycloakAdminService } from '../../auth/keycloak/keycloakAdmin.service';
+import { KeycloakService } from '../../auth/keycloak/keycloak.service';
 import { CrudService } from '../../crud/crud.service';
 import { DraftService } from '../../crud/draft/draft.service';
 import { ICrudService } from '../../crud/interfaces/crudService.interface';
@@ -15,13 +15,13 @@ export abstract class UserRoleService<TEntity extends IUserRole, TDto extends IU
     protected readonly repository: Repository<TEntity>,
     protected readonly draftService: DraftService,
     protected readonly mapper: UserRoleMapper<TEntity, TDto>,
-    protected readonly keycloakAdminService: KeycloakAdminService,
+    protected readonly keycloakAdminService: KeycloakService,
     protected readonly realm: string,
   ) {
     super(repository, draftService, mapper, { softDelete: false });
 
     if (!realm) {
-      throw new HttpException('Must set realm for Role Service', 500);
+      throw new HttpException(`Must set realm for ${this.constructor.name}`, 500);
     }
   }
 

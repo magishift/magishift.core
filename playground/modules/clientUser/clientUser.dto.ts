@@ -1,7 +1,7 @@
 import { ApiModelProperty } from '@nestjs/swagger';
 import { IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
 import { ILoginHistoryDto } from '../../../src/auth/loginHistory/interfaces/loginHistory.interface';
-import { Form, FormField } from '../../../src/crud/form.decorator';
+import { Form, FormField, FormFieldFk, FormFieldUpload } from '../../../src/crud/form.decorator';
 import { Grid, GridColumn } from '../../../src/crud/grid.decorator';
 import { FieldTypes } from '../../../src/crud/interfaces/form.interface';
 import { ColumnTypes } from '../../../src/crud/interfaces/grid.interface';
@@ -15,27 +15,22 @@ import { IClientUserDto } from './interfaces/clientUser.interface';
 
 const CREDENTIAL = 'Credentials';
 
-@Grid({
-  foreignKey: {
-    tenant: 'tenant',
-  },
-})
+@Grid()
 @Form()
 export class ClientUserDto extends UserDto implements IClientUserDto {
   tenant: ITenantDto;
 
   accountId: string;
 
-  @FormField({
+  @FormFieldFk({
     label: 'Tenant',
-    type: FieldTypes.Fk,
     fk: { tenant: 'id' },
   })
   tenantId: string;
 
   @IsString()
   @ApiModelProperty()
-  @FormField({
+  @FormFieldUpload({
     label: 'Photo',
     type: FieldTypes.Image,
     uploadUrl: CLIENT_USER_ENDPOINT + '/photo',

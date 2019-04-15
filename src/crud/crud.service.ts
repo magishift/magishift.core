@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import _ = require('lodash');
-import { FindConditions, FindManyOptions, FindOneOptions, Like, Repository } from 'typeorm';
-import { v4 as uuid } from 'uuid';
+import { FindConditions, FindManyOptions, FindOneOptions, Like, ObjectLiteral, Repository } from 'typeorm';
 import { DefaultRoles } from '../auth/role/defaultRoles';
 import { SessionUtil } from '../auth/session.util';
 import { BaseService } from '../base/base.service';
@@ -10,11 +9,12 @@ import { getPropertyType, getRelationsTableName, isPropertyTypeNumber } from '..
 import { GetFormSchema, GetGridSchema } from './crud.util';
 import { Draft } from './draft/draft.entity.mongo';
 import { DraftService } from './draft/draft.service';
-import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
+import { ICrudConfig, ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
 import { ICrudService, IServiceConfig } from './interfaces/crudService.interface';
 import { IFilter } from './interfaces/filter.interface';
 import { IFormSchema } from './interfaces/form.interface';
+import { IGridSchema } from './interfaces/grid.interface';
 
 export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICrudDto> extends BaseService<TEntity>
   implements ICrudService<TEntity, TDto> {
@@ -27,32 +27,40 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     super(repository, config);
   }
 
-  async getFormSchema(id?: string, isDraft?: string, isDeleted?: string): Promise<IFormSchema> {
-    const result = Object.assign(GetFormSchema(this.constructor.name));
-    result.schema.model = null;
+  getCrudConfig(): ICrudConfig {
+    return {
+      kanban: null,
+      grid: this.getGridSchema(),
+      form: this.getFormSchema(),
+      softDelete: this.config.softDelete,
+      enableDraft: !!this.draftService,
+    };
+  }
 
-    if (id) {
-      if (isDraft && isDraft !== 'false') {
-        result.schema.model = await this.fetchDraft(id);
-      } else if (isDeleted && isDeleted !== 'false') {
-        result.schema.model = await this.findOne({ id, isDeleted: true } as any);
-      } else {
-        result.schema.model = await this.fetch(id);
-      }
-    } else {
-      // on create, define form ID
-      // this ID will be used to mark owner ID for uploaded file
-      // and latter will be used as object ID
-      result.schema.model = {
-        id: uuid(),
-      };
-    }
+  getFormSchema(): IFormSchema {
+    const result = GetFormSchema(this.constructor.name);
 
     return result;
   }
 
-  getGridSchema(): object {
-    return Object.assign(GetGridSchema(this.constructor.name));
+  getGridSchema(): IGridSchema {
+    const result = GetGridSchema(this.constructor.name);
+
+    const relations = getRelationsTableName(this.repository.metadata);
+
+    if (relations && relations.length > 0) {
+      result.schema.foreignKey = {};
+
+      relations.map(relation => {
+        result.schema.foreignKey[relation] = relation;
+      });
+    }
+
+    if (result && _.isEmpty(result.schema)) {
+      return null;
+    }
+
+    return result;
   }
 
   async isExist(id: string): Promise<boolean> {
@@ -89,7 +97,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
+      SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0 &&
       result.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
       throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, HttpStatus.FORBIDDEN);
@@ -107,23 +115,20 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
   }
 
   async findOne(
-    param: TEntity,
+    param: ObjectLiteral,
     options?: FindOneOptions<TEntity>,
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<TDto> {
     options = options || {};
     options.cache = true;
-
     options.relations = options.relations || getRelationsTableName(this.repository.metadata);
 
-    const conditions: FindConditions<TEntity> = { ...param } as any;
-
-    const result = await this.repository.findOne(conditions, options);
+    const result = await this.repository.findOne({ ...param } as FindConditions<TEntity>, options);
 
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
+      SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0 &&
       result.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
       throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, HttpStatus.FORBIDDEN);
@@ -136,7 +141,6 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     filter: IFilter = {
       offset: 0,
       limit: 10,
-
       isShowDeleted: false,
     },
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
@@ -152,7 +156,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
         if (
           permissions &&
           permissions.indexOf(DefaultRoles.owner) >= 0 &&
-          SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
+          SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0 &&
           entity.__meta.dataOwner !== SessionUtil.getAccountId
         ) {
           throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, HttpStatus.FORBIDDEN);
@@ -163,16 +167,13 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     );
   }
 
-  async fetchDraft(
-    id: string,
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
-  ): Promise<TDto> {
+  async fetchDraft(id: string, permissions?: string[]): Promise<TDto> {
     const result = await this.draftService.fetch(id, this.constructor.name);
 
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
+      SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0 &&
       result.data.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
       throw new HttpException(
@@ -232,24 +233,19 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return this.mapper.entityToDto(entity);
   }
 
-  async update(
-    id: string,
-    data: TDto,
-    doValidation: boolean = true,
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
-  ): Promise<TDto> {
+  async update(id: string, data: TDto, doValidation: boolean = true, permissions?: string[]): Promise<TDto> {
     if (doValidation) {
       await data.validate();
     }
 
     const toEntity = await this.mapper.dtoToEntity(data);
 
-    const beforeUpdate = await this.fetch(id);
+    const beforeUpdate = await this.findOne({ id } as any);
 
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
+      SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0 &&
       beforeUpdate.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
       throw new HttpException(
@@ -266,16 +262,13 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return this.mapper.entityToDto(toEntity);
   }
 
-  async destroy(
-    id: string,
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
-  ): Promise<void> {
+  async destroy(id: string, permissions?: string[]): Promise<void> {
     const entity = await this.repository.findOneOrFail(id);
 
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
+      SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0 &&
       entity.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
       throw new HttpException(
@@ -296,10 +289,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     }
   }
 
-  async destroyBulk(
-    ids: string[],
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
-  ): Promise<{ [key: string]: string }> {
+  async destroyBulk(ids: string[], permissions?: string[]): Promise<{ [key: string]: string }> {
     const result: { [key: string]: string } = {};
 
     await Promise.all(
@@ -315,16 +305,13 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return result;
   }
 
-  async destroyDraft(
-    id: string,
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
-  ): Promise<void> {
+  async destroyDraft(id: string, permissions?: string[]): Promise<void> {
     const result = await this.draftService.fetch(id, this.constructor.name);
 
     if (
       permissions &&
       permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0 &&
+      SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0 &&
       result.data.__meta.dataOwner !== SessionUtil.getAccountId
     ) {
       throw new HttpException(
@@ -343,18 +330,20 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
 
     let where: FindConditions<TEntity> = {};
 
-    if (filter.where) {
+    if (filter.where && !_.isEmpty(filter.where)) {
       where = this.resolveWhereOperator(filter.where);
     }
 
-    const whereOr: FindConditions<TEntity>[] = [];
+    if (filter.isShowDeleted) {
+      (where as any).isDeleted = true;
+    } else {
+      (where as any).isDeleted = false;
+    }
 
-    if (filter.whereOr) {
-      if (!_.isEmpty(where)) {
-        whereOr.push(where);
-      }
+    const whereOrs: FindConditions<TEntity>[] = [];
 
-      whereOr.push(this.resolveWhereOperator(filter.whereOr));
+    if (filter.whereOr && !_.isEmpty(filter.whereOr)) {
+      whereOrs.push({ ...(where || {}), ...this.resolveWhereOperator(filter.whereOr) });
     }
 
     const order: { [P in keyof TEntity]?: 'ASC' | 'DESC' | 1 | -1 } = {};
@@ -368,15 +357,9 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       });
     }
 
-    if (filter.isShowDeleted) {
-      (where as any).isDeleted = true;
-    } else {
-      (where as any).isDeleted = false;
-    }
-
     const result: FindManyOptions = {
       relations: filter.relations,
-      where: whereOr && whereOr.length > 0 ? whereOr : where,
+      where: whereOrs && whereOrs.length > 0 ? whereOrs : where,
       order,
       skip: filter.offset,
       take: filter.limit,
@@ -389,15 +372,11 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
   private resolveWhereOperator(source: object): FindConditions<TEntity> {
     const result: FindConditions<TEntity> = {};
 
-    Object.keys(source).map(w => {
-      let value: string;
-      if (typeof source[w] === 'object' && source[w].plain) {
-        value = source[w].plain;
-      } else {
-        value = source[w];
-      }
+    _.forEach(source, (val: { plain }, prop) => {
+      const value: string = val.plain;
 
-      const propertyType = getPropertyType(this.repository.metadata.columns, w);
+      const propertyType = getPropertyType(this.repository.metadata.columns, prop);
+
       if (
         propertyType &&
         (propertyType === 'boolean' ||
@@ -405,9 +384,9 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
           propertyType === 'uuid' ||
           isPropertyTypeNumber(propertyType))
       ) {
-        result[w] = value;
+        result[prop] = value;
       } else {
-        result[w] = Like('%' + value + '%');
+        result[prop] = Like('%' + value + '%');
       }
     });
 

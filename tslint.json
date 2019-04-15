@@ -11,16 +11,9 @@
     "no-unused-expression": true
   },
   "rules": {
-    "no-this-assignment": [
-      true,
-      { "allowed-names": ["^self$"], "allow-destructuring": true }
-    ],
-    "typedef": [
-      true,
-      "call-signature",
-      "parameter",
-      "member-variable-declaration"
-    ],
+    "no-empty-interface": false,
+    "no-this-assignment": [true, { "allowed-names": ["^self$"], "allow-destructuring": true }],
+    "typedef": [true, "call-signature", "parameter", "member-variable-declaration"],
     "no-unused-variable": [true, { "ignore-pattern": "^_" }],
     "no-submodule-imports": false,
     "no-console": [true, "log"],

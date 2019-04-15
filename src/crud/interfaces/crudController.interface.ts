@@ -1,12 +1,15 @@
 import { Response } from 'express';
 import { IFile } from '../../fileStorage/interfaces/fileStorage.interface';
-import { ICrudDto } from './crud.interface';
+import { ICrudConfig, ICrudDto } from './crud.interface';
 import { IFormSchema } from './form.interface';
+import { IGridSchema } from './grid.interface';
 
 export interface ICrudController<TDto extends ICrudDto> {
-  getFormSchema(id: string, isDraft: string, isDeleted: string): Promise<IFormSchema>;
+  getConfig(): ICrudConfig;
 
-  getGridSchema(): object;
+  getFormSchema(): IFormSchema;
+
+  getGridSchema(): IGridSchema;
 
   openDeleted(filterArg?: string): Promise<{ items: TDto[]; totalCount: number }>;
 

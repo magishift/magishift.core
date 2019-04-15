@@ -1,18 +1,20 @@
-import { FindOneOptions } from 'typeorm';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { FindOneOptions, ObjectLiteral } from 'typeorm';
 import { DefaultRoles } from '../../auth/role/defaultRoles';
-import { ICrudDto, ICrudEntity } from './crud.interface';
+import { ICrudConfig, ICrudDto, ICrudEntity } from './crud.interface';
 import { IFilter } from './filter.interface';
 import { IFormSchema } from './form.interface';
+import { IGridSchema } from './grid.interface';
 
 export interface IServiceConfig {
   softDelete: boolean;
 }
 
 export interface ICrudService<TEntity extends ICrudEntity, TDto extends ICrudDto> {
-  getFormSchema(id?: string, isDraft?: string, isDeleted?: string): Promise<IFormSchema>;
+  getCrudConfig(): ICrudConfig;
 
-  getGridSchema(): object;
+  getFormSchema(isDraft?: string, isDeleted?: string): IFormSchema;
+
+  getGridSchema(): IGridSchema;
 
   count(filter: IFilter): Promise<number>;
 
@@ -30,7 +32,7 @@ export interface ICrudService<TEntity extends ICrudEntity, TDto extends ICrudDto
   ): Promise<TDto>;
 
   findOne(
-    param: TEntity,
+    param: ObjectLiteral,
     options?: FindOneOptions<TEntity>,
     permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<TDto>;

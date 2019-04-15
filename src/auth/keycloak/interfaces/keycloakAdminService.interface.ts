@@ -2,7 +2,7 @@ import RealmRepresentation from 'keycloak-admin/lib/defs/realmRepresentation';
 import RoleRepresentation from 'keycloak-admin/lib/defs/roleRepresentation';
 import UserRepresentation from 'keycloak-admin/lib/defs/userRepresentation';
 
-export interface IKeycloakAdminService {
+export interface IKeycloakService {
   realmsList(): Promise<RealmRepresentation[]>;
 
   getAccountById(id: string, realm: string): Promise<UserRepresentation>;

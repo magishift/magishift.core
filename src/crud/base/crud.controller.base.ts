@@ -7,12 +7,13 @@ import { v4 as uuid } from 'uuid';
 import { IFile } from '../../fileStorage/interfaces/fileStorage.interface';
 import { csvtojson } from '../../utils/csvtojson';
 import { ExceptionHandler } from '../../utils/error.utils';
-import { ICrudDto, ICrudEntity } from '../interfaces/crud.interface';
+import { ICrudConfig, ICrudDto, ICrudEntity } from '../interfaces/crud.interface';
 import { ICrudController } from '../interfaces/crudController.interface';
 import { ICrudMapper } from '../interfaces/crudMapper.Interface';
 import { ICrudService } from '../interfaces/crudService.interface';
 import { IFilter } from '../interfaces/filter.interface';
 import { FieldTypes, IFormSchema } from '../interfaces/form.interface';
+import { IGridSchema } from '../interfaces/grid.interface';
 
 export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICrudEntity>
   implements ICrudController<TDto> {
@@ -21,15 +22,23 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     protected readonly mapper: ICrudMapper<TEntity, TDto>,
   ) {}
 
-  async getFormSchema(id?: string, isDraft?: string, isDeleted?: string): Promise<IFormSchema> {
+  getConfig(): ICrudConfig {
     try {
-      return this.service.getFormSchema(id, isDraft, isDeleted);
+      return this.service.getCrudConfig();
     } catch (e) {
       return ExceptionHandler(e);
     }
   }
 
-  getGridSchema(): object {
+  getFormSchema(): IFormSchema {
+    try {
+      return this.service.getFormSchema();
+    } catch (e) {
+      return ExceptionHandler(e);
+    }
+  }
+
+  getGridSchema(): IGridSchema {
     try {
       return this.service.getGridSchema();
     } catch (e) {
@@ -262,8 +271,9 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
 
     const headers = [];
 
-    Object.keys(formSchema.schema.fields).map(key => {
-      const field = formSchema.schema.fields[key];
+    _.forEach(formSchema.schema.fields, (value, key) => {
+      const field = value;
+
       if (
         [FieldTypes.Map, FieldTypes.File, FieldTypes.CSV, FieldTypes.Image, FieldTypes.Table].indexOf(field.type) < 0
       ) {

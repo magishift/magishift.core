@@ -1,6 +1,0 @@
-type Token {
-  id: String
-  ttl: String
-  accountId: String
-  userData: JSON
-}

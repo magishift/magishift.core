@@ -21,7 +21,7 @@ export class AuthInterceptor implements NestInterceptor {
         if (
           permissions &&
           permissions.indexOf(DefaultRoles.owner) >= 0 &&
-          SessionUtil.getUserRoles.indexOf(DefaultRoles.admin) < 0
+          SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0
         ) {
           const findDataOwner: any = _.find(data, '_dataOwner');
 

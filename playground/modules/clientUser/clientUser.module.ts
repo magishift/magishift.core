@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../../../src/auth/auth.module';
-import { KeycloakAdminService } from '../../../src/auth/keycloak/keycloakAdmin.service';
+import { KeycloakService } from '../../../src/auth/keycloak/keycloak.service';
 import { DraftModule } from '../../../src/crud/draft/draft.module';
 import { PubSubProvider } from '../../../src/crud/providers/pubSub.provider';
 import { FileStorageModule } from '../../../src/fileStorage/fileStorage.module';
@@ -30,7 +30,7 @@ import { ClientUserRoleService } from './clientUserRole/clientUserRole.service';
     ClientUserRoleService,
     ClientUserRoleMapper,
     PubSubProvider,
-    KeycloakAdminService,
+    KeycloakService,
   ],
   controllers: [ClientUserController, ClientUserRoleController],
   exports: [ClientUserService, ClientUserRoleService],

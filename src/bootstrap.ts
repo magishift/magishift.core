@@ -1,6 +1,5 @@
 import { MailerModule } from '@nest-modules/mailer';
-import { CacheInterceptor, CacheModule, DynamicModule, ForwardReference, Module, Provider, Type } from '@nestjs/common';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { DynamicModule, ForwardReference, Module, Provider, Type } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { GraphQLModule } from '@nestjs/graphql';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -116,18 +115,7 @@ export async function MagiApp(
       playground: true,
       installSubscriptionHandlers: true,
       tracing: true,
-      context: data => {
-        if (data.req) {
-          return {
-            ...data.req,
-            authScope: data.req.headers.authorization,
-            authRealm: data.req.headers.realm || data.req.headers['x-realm'],
-            bodyScope: data.req.body,
-          };
-        }
-
-        return data;
-      },
+      context: data => data,
     }),
     FileStorageModule,
     LoggerModule,
@@ -146,7 +134,7 @@ export async function MagiApp(
     DeviceModule,
     ReportModule,
     RedisModule.register(redisConfig),
-    CacheModule.register(),
+    // CacheModule.register(),
   ];
 
   if (ConfigService.getConfig.email) {
@@ -165,7 +153,7 @@ export async function MagiApp(
 
   providers.push(DateScalar);
   providers.push(PubSubProvider);
-  providers.push({ provide: APP_INTERCEPTOR, useClass: CacheInterceptor });
+  // providers.push({ provide: APP_INTERCEPTOR, useClass: CacheInterceptor });
 
   if (!exports) {
     exports = [];

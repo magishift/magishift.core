@@ -14,7 +14,7 @@ export class Menu {
       this.menu = MenuFactory(ConfigService.getConfig.appName, ConfigService.getConfig.menuItems);
     }
 
-    const currentUserRoles = SessionUtil.getUserRoles;
+    const currentUserRoles = SessionUtil.getAccountRoles;
 
     return Menu.filterByRole(this.menu, currentUserRoles);
   }

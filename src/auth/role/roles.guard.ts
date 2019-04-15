@@ -1,8 +1,7 @@
 import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import * as lodash from 'lodash';
+import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthService } from '../auth.service';
-import { SessionUtil } from '../session.util';
 import { DefaultRoles } from './defaultRoles';
 
 @Injectable()
@@ -12,40 +11,42 @@ export class RolesGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
       // Get method or class permissions
-      const permissions: string[] =
+      const rolePermissions: string[] =
         this.reflector.get<string[]>('roles', context.getHandler()) ||
         this.reflector.get<string[]>('roles', context.getClass());
 
-      const isPublic = !permissions || permissions.length === 0 || permissions.indexOf(DefaultRoles.public) >= 0;
+      const realmPermissions: string[] =
+        this.reflector.get<string[]>('realm', context.getHandler()) ||
+        this.reflector.get<string[]>('realm', context.getClass());
+
+      const isPublic =
+        !rolePermissions || rolePermissions.length === 0 || rolePermissions.indexOf(DefaultRoles.public) >= 0;
 
       // Get request data
-      const request = context.switchToHttp().getRequest();
+      let request = context.switchToHttp().getRequest();
 
-      // resolve realm
-      const headerRealm: string =
-        request.headers.realm || request.headers['x-realm'] || lodash.find(context.getArgs(), 'authRealm');
-
-      if (!headerRealm && !isPublic) {
-        throw new HttpException('No realm found in request header', 400);
+      if (!request) {
+        const ctx = GqlExecutionContext.create(context);
+        request = ctx.getContext().req;
       }
 
-      let headerAuth: string[];
-      // if request doesn't exist use authScope
-      if (request && request.headers && request.headers.authorization) {
-        headerAuth = request.headers.authorization.split(' ');
-      } else {
-        const authScope = lodash.find(context.getArgs(), 'authScope');
-        if (authScope) {
-          headerAuth = authScope.authScope.split(' ');
-        }
+      const headerRealm: string = request.headers.realm || request.query.realm;
+      if (!isPublic && !headerRealm) {
+        throw new HttpException('Must provide realm in request headers', 400);
       }
 
-      if (((headerAuth && headerAuth.length > 0) || request.query.token) && headerRealm) {
+      const headerAuth: string[] = request.headers.authorization
+        ? request.headers.authorization.split(' ')
+        : [request.query.token];
+
+      if (headerAuth && headerAuth.length > 0 && headerRealm) {
         const jwtToken = headerAuth[headerAuth.length - 1] || request.query.token;
 
-        SessionUtil.setAccountRealm = headerRealm;
+        if (realmPermissions && realmPermissions.length > 0 && realmPermissions.indexOf(headerRealm) === -1) {
+          return false;
+        }
 
-        return await AuthService.authorizeToken(jwtToken, context.getHandler().name, headerRealm, permissions);
+        return await AuthService.authorizeToken(jwtToken, context.getHandler().name, headerRealm, rolePermissions);
       }
 
       return isPublic;

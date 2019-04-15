@@ -11,7 +11,6 @@ import {
 } from './interfaces/grid.interface';
 
 const gridColumns: { [key: string]: IGridColumns } = {};
-
 const gridFilters: IGridFilters = {};
 
 export const GridSchemas: IGridSchemas = {};
@@ -20,10 +19,8 @@ export const Grid = (
   param: {
     options?: IGridOptions;
     filters?: IFilterOptions;
-    foreignKey?: { [key: string]: string };
   } = {},
 ) => {
-  const { foreignKey } = param;
   let { options, filters } = param;
 
   options = Object.assign(
@@ -47,7 +44,7 @@ export const Grid = (
       options,
       filters: gridFilters[target.name] || filters,
       columns: gridColumns[target.name],
-      foreignKey,
+      foreignKey: {},
     };
 
     GridSchemas[target.name] = schema;
