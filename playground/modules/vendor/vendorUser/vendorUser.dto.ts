@@ -9,7 +9,7 @@ import { IFileStorageDto } from '../../../../src/fileStorage/interfaces/fileStor
 import { UserDto } from '../../../../src/user/user.dto';
 import { IUserRoleDto } from '../../../../src/user/userRole/interfaces/userRole.interface';
 import { CLIENT_ROLE_ENDPOINT } from '../../clientUser/clientUserRole/interfaces/clientUser.const';
-import { IVendorDto } from '../../vendor/interfaces/vendor.interface';
+import { IVendorDto } from '../interfaces/vendor.interface';
 import { VENDOR_USER_ENDPOINT } from './interfaces/vendorUser.const';
 import { IVendorUserDto } from './interfaces/vendorUser.interface';
 

@@ -133,14 +133,14 @@ export interface IFormFieldRadio extends IFormField {
 
 export interface IFormFieldTable extends IFormField {
   type?: FieldTypes.Table;
-  fk?: { [key: string]: string };
-  model?: string;
+  fk: { [key: string]: string };
+  model: string;
   data?: object[];
 }
 
-export interface IFormFieldFk extends IFormField {
+export interface IFormFieldFk {
   type?: FieldTypes.Fk;
-  fk?: { [key: string]: string };
+  fk: { [key: string]: string };
 }
 
 export interface IAutocompleteDataSource {

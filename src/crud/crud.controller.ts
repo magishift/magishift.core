@@ -12,7 +12,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiUseTags } from '@nestjs/swagger';
+import { ApiImplicitBody, ApiImplicitFile, ApiImplicitQuery, ApiResponse, ApiUseTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { DefaultRoles } from '../auth/role/defaultRoles';
 import { Realms } from '../auth/role/realms.decorator';
@@ -26,10 +26,11 @@ import { ICrudController } from './interfaces/crudController.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
 import { ICrudService } from './interfaces/crudService.interface';
 import { IFormSchema } from './interfaces/form.interface';
-import { IGridSchema } from './interfaces/grid.interface';
+import { SwaggerGridSchema } from './interfaces/grid.interface';
 
 export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICrudEntity>(
   name: string,
+  dto: new () => TDto,
   roles: IEndpointUserRoles,
   realms?: string[],
 ): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>) => CrudController<TDto, TEntity> {
@@ -59,24 +60,37 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
 
     @Get('/grid')
     @Roles(DefaultRoles.authenticated)
-    getGridSchema(): IGridSchema {
+    @ApiResponse({ status: 200, type: SwaggerGridSchema })
+    getGridSchema(): SwaggerGridSchema {
       return super.getGridSchema();
     }
 
     @Get('/deleted')
     @Roles(...(roles.read || roles.default))
+    @ApiImplicitQuery({
+      name: 'filter',
+      description: 'example: {"order":["id DESC"],"where":{},"limit":25,"offset":0}',
+    })
     async openDeleted(@Query('filter') filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
       return await super.openDeleted(filterArg);
     }
 
     @Get('drafts')
     @Roles(...(roles.read || roles.default))
+    @ApiImplicitQuery({
+      name: 'filter',
+      description: 'example: {"order":["id DESC"],"where":{},"limit":25,"offset":0}',
+    })
     async findAllDrafts(@Query('filter') filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
       return await super.findAllDrafts(filterArg);
     }
 
     @Get()
     @Roles(...(roles.read || roles.default))
+    @ApiImplicitQuery({
+      name: 'filter',
+      description: 'example: {"order":["id DESC"],"where":{},"limit":25,"offset":0}',
+    })
     async findAll(@Query('filter') filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
       return await super.findAll(filterArg);
     }
@@ -89,30 +103,42 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
 
     @Get('deleted/:id')
     @Roles(...(roles.read || roles.default))
-    async fetchDeletedById(id: string): Promise<TDto> {
+    async fetchDeletedById(@Param('id') id: string): Promise<TDto> {
       return await super.fetchDeletedById(id);
     }
 
     @Get('draft/:id')
     @Roles(...(roles.read || roles.default))
-    async fetchDraftById(id: string): Promise<TDto> {
+    async fetchDraftById(@Param('id') id: string): Promise<TDto> {
       return await super.fetchDraftById(id);
     }
 
     @Post()
     @Roles(...(roles.write || roles.default))
+    @ApiImplicitBody({
+      name: 'Create ' + name,
+      type: dto,
+    })
     async create(@Body() data: TDto): Promise<TDto> {
       return await super.create(data);
     }
 
     @Post('draft')
     @Roles(...(roles.write || roles.default))
+    @ApiImplicitBody({
+      name: 'Create Draft ' + name,
+      type: dto,
+    })
     async saveAsDraft(@Body() data: TDto): Promise<TDto> {
       return await super.saveAsDraft(data);
     }
 
     @Patch(':id')
     @Roles(...(roles.update || roles.write || roles.default))
+    @ApiImplicitBody({
+      name: 'Update ' + name,
+      type: dto,
+    })
     async update(@Param('id') id: string, @Body() data: TDto): Promise<TDto> {
       return await super.update(id, data);
     }
@@ -131,7 +157,7 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
 
     @Delete('multi/:ids')
     @Roles(...(roles.delete || roles.default))
-    async destroyBulk(@Param() { ids }: { ids: string }): Promise<{
+    async destroyBulk(@Param('ids') { ids }: { ids: string }): Promise<{
       [key: string]: string;
     }> {
       return await super.destroyBulk({ ids });
@@ -139,6 +165,7 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
 
     @Post('import-csv')
     @Roles(...(roles.write || roles.default))
+    @ApiImplicitFile({ name: 'file' })
     @UseInterceptors(FileInterceptor('file'))
     async importCSV(@UploadedFile() file: IFile): Promise<TDto[]> {
       return await super.importCSV(file);

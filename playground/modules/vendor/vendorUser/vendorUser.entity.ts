@@ -1,6 +1,6 @@
 import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 import { User } from '../../../../src/user/user.entity';
-import { Vendor } from '../../vendor/vendor.entity';
+import { Vendor } from '../vendor.entity';
 import { IVendorUser } from './interfaces/vendorUser.interface';
 import { VendorUserRole } from './vendorUserRole/vendorUserRole.entity';
 

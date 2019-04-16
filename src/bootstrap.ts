@@ -208,7 +208,8 @@ export async function MagiApp(
       .build();
 
     const document = SwaggerModule.createDocument(app, options);
-    SwaggerModule.setup('/explorer', app, document);
+
+    SwaggerModule.setup('/swagger', app, document);
 
     console.info(chalk.green(`Starting server...`));
 
@@ -230,8 +231,6 @@ export async function MagiApp(
     }
 
     app.useGlobalFilters(new ErrorFilter(appLogger));
-
-    // app.useGlobalInterceptors(new AuthInterceptor(ApplicationModule.ReflectorInstance));
 
     app.use(json({ limit: '50mb' }));
 

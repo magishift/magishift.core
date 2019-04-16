@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { ApiUseTags } from '@nestjs/swagger';
 import { DefaultRoles } from '../../../auth/role/defaultRoles';
 import { Roles } from '../../../auth/role/roles.decorator';
 import { RolesGuard } from '../../../auth/role/roles.guard';
@@ -7,6 +8,7 @@ import { GoogleFcmService } from './googleFcm.service';
 import { GOOGLE_FCM_CONFIG_ENDPOINT } from './interfaces/googleFcm.interface';
 
 @Controller(GOOGLE_FCM_CONFIG_ENDPOINT)
+@ApiUseTags(GOOGLE_FCM_CONFIG_ENDPOINT)
 @UseGuards(RolesGuard)
 @Roles(DefaultRoles.authenticated)
 export class GoogleFcmController {

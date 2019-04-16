@@ -1,8 +1,8 @@
 import { ICrudDto, ICrudEntity } from '../../../../src/crud/interfaces/crud.interface';
+import { IFileStorage, IFileStorageDto } from '../../../../src/fileStorage/interfaces/fileStorage.interface';
 import { IUser, IUserDto } from '../../../../src/user/interfaces/user.interface';
 import { ITender, ITenderDto } from '../../packet/tender/interfaces/tender.interface';
 import { IParticipant, IParticipantDto } from '../../packet/tender/participant/interfaces/participant.interface';
-import { IFileStorage, IFileStorageDto } from '../../../../src/fileStorage/interfaces/fileStorage.interface';
 
 export enum VendorType {
   BUMD = 'BUMD',

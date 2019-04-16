@@ -5,15 +5,20 @@ import { Roles } from '../auth/role/roles.decorator';
 import { SessionUtil } from '../auth/session.util';
 import { CrudControllerFactory } from '../crud/crud.controller';
 import { ExceptionHandler } from '../utils/error.utils';
+import { FileStorageDto } from './fileStorage.dto';
 import { FileStorageMapper } from './fileStorage.mapper';
 import { FileStorageService } from './fileStorage.service';
 import { FILE_STORAGE_ENDPOINT } from './interfaces/fileStorage.const';
 import { IFileStorage, IFileStorageDto } from './interfaces/fileStorage.interface';
 
 @Controller(FILE_STORAGE_ENDPOINT)
-export class FileStorageController extends CrudControllerFactory<IFileStorageDto, IFileStorage>(FILE_STORAGE_ENDPOINT, {
-  default: [DefaultRoles.admin],
-}) {
+export class FileStorageController extends CrudControllerFactory<IFileStorageDto, IFileStorage>(
+  FILE_STORAGE_ENDPOINT,
+  FileStorageDto,
+  {
+    default: [DefaultRoles.admin],
+  },
+) {
   constructor(protected readonly service: FileStorageService, protected readonly mapper: FileStorageMapper) {
     super(service, mapper);
   }

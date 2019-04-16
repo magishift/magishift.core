@@ -10,7 +10,7 @@ import { SELECT_ENDPOINT } from './modules/select/interfaces/select.const';
 import { TENANT_ENDPOINT } from './modules/tenant/interfaces/tenant.const';
 import { TEXT_INPUT_ENDPOINT } from './modules/textInput/interfaces/textInput.const';
 import { VENDOR_ENDPOINT } from './modules/vendor/interfaces/vendor.const';
-import { VENDOR_ROLE_ENDPOINT } from './modules/vendor/vendorUser/vendorUserRole/interfaces/vendorUser.const';
+import { VENDOR_ROLE_ENDPOINT } from './modules/vendor/vendorUser/vendorUserRole/interfaces/vendorUserRole.const';
 
 export const menuItems: IMenu[] = [
   {
@@ -56,7 +56,7 @@ export const menuItems: IMenu[] = [
   },
 
   {
-    title: 'Demo Packet',
+    title: 'Packet',
     icon: 'domain',
     roles: [DefaultRoles.authenticated],
     items: [
@@ -72,7 +72,7 @@ export const menuItems: IMenu[] = [
   },
 
   {
-    title: 'Demo Vendor',
+    title: 'Vendor',
     icon: 'domain',
     roles: [DefaultRoles.authenticated],
     items: [

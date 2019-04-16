@@ -5,11 +5,12 @@ import { CrudControllerFactory } from '../../crud/crud.controller';
 import { HttpService } from '../../http/http.service';
 import { REPORT_ENDPOINT } from './interfaces/report.const';
 import { IReport, IReportDto } from './interfaces/report.interface';
+import { ReportDto } from './report.dto';
 import { ReportMapper } from './report.mapper';
 import { ReportService } from './report.service';
 
 @Controller(REPORT_ENDPOINT)
-export class ReportController extends CrudControllerFactory<IReportDto, IReport>(REPORT_ENDPOINT, {
+export class ReportController extends CrudControllerFactory<IReportDto, IReport>(REPORT_ENDPOINT, ReportDto, {
   default: [DefaultRoles.admin],
 }) {
   constructor(

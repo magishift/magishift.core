@@ -5,11 +5,12 @@ import { Form, FormField } from '../../../src/crud/form.decorator';
 import { Grid, GridColumn } from '../../../src/crud/grid.decorator';
 import { FieldTypes } from '../../../src/crud/interfaces/form.interface';
 import { IFileStorageDto } from '../../../src/fileStorage/interfaces/fileStorage.interface';
-import { IUserDto } from '../../../src/user/interfaces/user.interface';
 import { ITenderDto } from '../packet/tender/interfaces/tender.interface';
 import { IParticipantDto } from '../packet/tender/participant/interfaces/participant.interface';
 import { VENDOR_ENDPOINT } from './interfaces/vendor.const';
 import { IVendorDto, VendorCategory, VendorStatus, VendorType } from './interfaces/vendor.interface';
+import { VENDOR_EXPERT_TEAM_ENDPOINT } from './vendorExpertTeam/interfaces/vendorExpertTeam.const';
+import { IVendorExpertTeamDto } from './vendorExpertTeam/interfaces/vendorExpertTeam.interface';
 import { VENDOR_USER_ENDPOINT } from './vendorUser/interfaces/vendorUser.const';
 import { IVendorUserDto } from './vendorUser/interfaces/vendorUser.interface';
 
@@ -43,7 +44,7 @@ export class VendorDto extends CrudDto implements IVendorDto {
     type: FieldTypes.Select,
     choices: Object.keys(VendorCategory).map(key => key),
   })
-  @GridColumn({ text: 'Legal Type', searchAble: true })
+  @GridColumn({ text: 'Category', searchAble: true })
   category: VendorCategory;
 
   @IsString()
@@ -143,9 +144,9 @@ export class VendorDto extends CrudDto implements IVendorDto {
     fk: {
       vendor: 'vendorId',
     },
-    model: VENDOR_USER_ENDPOINT,
+    model: VENDOR_EXPERT_TEAM_ENDPOINT,
   })
-  expertTeam: IUserDto[];
+  expertTeam: IVendorExpertTeamDto[];
 
   @FormField({
     label: 'SIUP',

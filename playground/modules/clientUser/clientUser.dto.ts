@@ -18,15 +18,12 @@ const CREDENTIAL = 'Credentials';
 @Grid()
 @Form()
 export class ClientUserDto extends UserDto implements IClientUserDto {
-  tenant: ITenantDto;
-
   accountId: string;
 
   @FormFieldFk({
-    label: 'Tenant',
     fk: { tenant: 'id' },
   })
-  tenantId: string;
+  tenant: ITenantDto;
 
   @IsString()
   @ApiModelProperty()

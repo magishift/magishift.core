@@ -9,13 +9,18 @@ import { IFileStorageDto } from '../../../../../src/fileStorage/interfaces/fileS
 import { ExceptionHandler } from '../../../../../src/utils/error.utils';
 import { PARTICIPANT_ENDPOINT } from './interfaces/participant.const';
 import { IParticipant, IParticipantDto } from './interfaces/participant.interface';
+import { ParticipantDto } from './participant.dto';
 import { ParticipantMapper } from './participant.mapper';
 import { ParticipantService } from './participant.service';
 
 @Controller(PARTICIPANT_ENDPOINT)
-export class ParticipantController extends CrudControllerFactory<IParticipantDto, IParticipant>(PARTICIPANT_ENDPOINT, {
-  default: [DefaultRoles.admin],
-}) {
+export class ParticipantController extends CrudControllerFactory<IParticipantDto, IParticipant>(
+  PARTICIPANT_ENDPOINT,
+  ParticipantDto,
+  {
+    default: [DefaultRoles.admin],
+  },
+) {
   constructor(
     protected readonly service: ParticipantService,
     protected readonly fileService: FileStorageService,

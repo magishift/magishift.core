@@ -1,16 +1,19 @@
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { CrudEntity } from '../../../src/crud/crud.entity';
 import { FileStorage } from '../../../src/fileStorage/fileStorage.entity';
-import { IUser } from '../../../src/user/interfaces/user.interface';
 import { Participant } from '../packet/tender/participant/participant.entity';
 import { Tender } from '../packet/tender/tender.entity';
 import { IVendor, VendorCategory, VendorStatus, VendorType } from './interfaces/vendor.interface';
+import { VendorExpertTeam } from './vendorExpertTeam/vendorExpertTeam.entity';
 import { VendorUser } from './vendorUser/vendorUser.entity';
 
 @Entity()
 export class Vendor extends CrudEntity implements IVendor {
   @OneToMany(_ => VendorUser, vendorUser => vendorUser.vendor)
-  vendorUsers: IUser[];
+  vendorUsers: VendorUser[];
+
+  @OneToMany(_ => VendorExpertTeam, vendorExpertTeam => vendorExpertTeam.vendor)
+  vendorExpertTeam: VendorExpertTeam[];
 
   @Column()
   companyName: string;

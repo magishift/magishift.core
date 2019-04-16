@@ -19,18 +19,10 @@ import { ITenderDto, TenderCategory, TenderPhases, TenderType } from './interfac
 import { PARTICIPANT_ENDPOINT } from './participant/interfaces/participant.const';
 import { IParticipantDto } from './participant/interfaces/participant.interface';
 
-@Grid({
-  options: {
-    create: false,
-    update: true,
-    delete: false,
-    view: false,
-  },
-})
+@Grid()
 @Form()
 export class TenderDto extends CrudDto implements ITenderDto {
   @FormFieldFk({
-    label: 'Participants',
     fk: { packet: 'id' },
   })
   packet: IPacketDto;

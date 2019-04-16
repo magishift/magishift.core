@@ -7,5 +7,4 @@ export interface IClientUser extends IUser {
 
 export interface IClientUserDto extends IUserDto {
   tenant: ITenantDto;
-  tenantId: string;
 }

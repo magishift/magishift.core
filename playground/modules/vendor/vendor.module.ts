@@ -10,6 +10,11 @@ import { Vendor } from './vendor.entity';
 import { VendorMapper } from './vendor.mapper';
 import { VendorResolver } from './vendor.resolver';
 import { VendorService } from './vendor.service';
+import { VendorExpertTeamController } from './vendorExpertTeam/vendorExpertTeam.controller';
+import { VendorExpertTeam } from './vendorExpertTeam/vendorExpertTeam.entity';
+import { VendorExpertTeamMapper } from './vendorExpertTeam/vendorExpertTeam.mapper';
+import { VendorExpertTeamResolver } from './vendorExpertTeam/vendorExpertTeam.resolver';
+import { VendorExpertTeamService } from './vendorExpertTeam/vendorExpertTeam.service';
 import { VendorUserController } from './vendorUser/vendorUser.controller';
 import { VendorUser } from './vendorUser/vendorUser.entity';
 import { VendorUserMapper } from './vendorUser/vendorUser.mapper';
@@ -25,9 +30,7 @@ import { VendorUserRoleService } from './vendorUser/vendorUserRole/vendorUserRol
     TypeOrmModule.forFeature([Vendor]),
     TypeOrmModule.forFeature([VendorUser]),
     TypeOrmModule.forFeature([VendorUserRole]),
-    FileStorageModule,
-    DraftModule,
-    AuthModule,
+    TypeOrmModule.forFeature([VendorExpertTeam]),
     FileStorageModule,
     DraftModule,
     AuthModule,
@@ -44,8 +47,11 @@ import { VendorUserRoleService } from './vendorUser/vendorUserRole/vendorUserRol
     VendorUserRoleMapper,
     PubSubProvider,
     KeycloakService,
+    VendorExpertTeamResolver,
+    VendorExpertTeamService,
+    VendorExpertTeamMapper,
   ],
-  controllers: [VendorController, VendorUserController, VendorUserRoleController],
-  exports: [VendorService, VendorUserService, VendorUserRoleService],
+  controllers: [VendorController, VendorUserController, VendorUserRoleController, VendorExpertTeamController],
+  exports: [VendorService, VendorUserService, VendorUserRoleService, VendorExpertTeamService],
 })
 export class VendorModule {}

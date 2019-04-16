@@ -47,7 +47,7 @@ export const MenuFactory = (appTitle: string, items: IMenu[]): IMenu[] => {
     { header: 'Systems', roles: [DefaultRoles.admin] },
 
     {
-      title: 'Security',
+      title: 'User Management',
       icon: 'lock',
       roles: [DefaultRoles.admin],
       items: [

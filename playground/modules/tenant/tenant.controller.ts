@@ -8,11 +8,12 @@ import { IFileStorageDto } from '../../../src/fileStorage/interfaces/fileStorage
 import { ExceptionHandler } from '../../../src/utils/error.utils';
 import { TENANT_ENDPOINT } from './interfaces/tenant.const';
 import { ITenant, ITenantDto } from './interfaces/tenant.interface';
+import { TenantDto } from './tenant.dto';
 import { TenantMapper } from './tenant.mapper';
 import { TenantService } from './tenant.service';
 
 @Controller(TENANT_ENDPOINT)
-export class TenantController extends CrudControllerFactory<ITenantDto, ITenant>(TENANT_ENDPOINT, {
+export class TenantController extends CrudControllerFactory<ITenantDto, ITenant>(TENANT_ENDPOINT, TenantDto, {
   default: [DefaultRoles.admin],
 }) {
   constructor(

@@ -22,9 +22,7 @@ const ParticipantStep = {
 @Form({ type: FormTypes.Wizard })
 export class ParticipantDto extends CrudDto implements IParticipantDto {
   @FormFieldFk({
-    label: 'Tender',
     fk: { tender: 'id' },
-    wizardStep: ParticipantStep.doc,
   })
   tender: ITenderDto;
 

@@ -10,12 +10,13 @@ import { UserRoleService } from './userRole.service';
 
 export function UserRoleControllerFactory<TDto extends IUserRoleDto, TEntity extends IUserRole>(
   name: string,
+  dto: new () => TDto,
   roles: IEndpointUserRoles,
   realms?: string[],
 ): new (service: UserRoleService<TEntity, TDto>, mapper: CrudMapper<TEntity, TDto>) => IUserRoleController<TDto> {
   @ApiUseTags(name)
   @Roles(...roles.default)
-  class UserRoleController extends CrudControllerFactory<TDto, TEntity>(name, roles, realms)
+  class UserRoleController extends CrudControllerFactory<TDto, TEntity>(name, dto, roles, realms)
     implements IUserRoleController<TDto> {
     constructor(
       protected readonly service: UserRoleService<TEntity, TDto>,

@@ -6,7 +6,7 @@ import { SessionUtil } from '../auth/session.util';
 import { BaseService } from '../base/base.service';
 import { DataStatus } from '../base/interfaces/base.interface';
 import { getPropertyType, getRelationsTableName, isPropertyTypeNumber } from '../database/utils.database';
-import { GetFormSchema, GetGridSchema } from './crud.util';
+import { GetFormSchema, GetGridSchema, GetKanbanSchema } from './crud.util';
 import { Draft } from './draft/draft.entity.mongo';
 import { DraftService } from './draft/draft.service';
 import { ICrudConfig, ICrudDto, ICrudEntity } from './interfaces/crud.interface';
@@ -15,6 +15,7 @@ import { ICrudService, IServiceConfig } from './interfaces/crudService.interface
 import { IFilter } from './interfaces/filter.interface';
 import { IFormSchema } from './interfaces/form.interface';
 import { IGridSchema } from './interfaces/grid.interface';
+import { IKanban } from './interfaces/kanban.interface';
 
 export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICrudDto> extends BaseService<TEntity>
   implements ICrudService<TEntity, TDto> {
@@ -29,7 +30,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
 
   getCrudConfig(): ICrudConfig {
     return {
-      kanban: null,
+      kanban: this.getKanbanSchema(),
       grid: this.getGridSchema(),
       form: this.getFormSchema(),
       softDelete: this.config.softDelete,
@@ -59,6 +60,12 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     if (result && _.isEmpty(result.schema)) {
       return null;
     }
+
+    return result;
+  }
+
+  getKanbanSchema(): IKanban {
+    const result = GetKanbanSchema(this.constructor.name);
 
     return result;
   }

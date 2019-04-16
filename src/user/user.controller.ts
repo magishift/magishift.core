@@ -19,6 +19,7 @@ import { IEndpointUserRoles } from './userRole/interfaces/userRoleEndpoint.inter
 
 export function UserControllerFactory<TDto extends IUserDto, TEntity extends IUser>(
   name: string,
+  dto: new () => TDto,
   roles: IEndpointUserRoles,
   realms?: string[],
 ): new (
@@ -26,7 +27,7 @@ export function UserControllerFactory<TDto extends IUserDto, TEntity extends IUs
   fileService: FileStorageService,
   mapper: ICrudMapper<TEntity, TDto>,
 ) => IUserController<TDto> {
-  class UserController extends CrudControllerFactory<TDto, TEntity>(name, roles, realms)
+  class UserController extends CrudControllerFactory<TDto, TEntity>(name, dto, roles, realms)
     implements IUserController<TDto> {
     constructor(
       protected readonly service: UserService<TEntity, TDto>,

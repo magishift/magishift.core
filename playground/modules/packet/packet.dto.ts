@@ -3,7 +3,6 @@ import { IsString } from 'class-validator';
 import { CrudDto } from '../../../src/crud/crud.dto';
 import { Form, FormField, FormFieldTable } from '../../../src/crud/form.decorator';
 import { Grid, GridColumn } from '../../../src/crud/grid.decorator';
-import { FieldTypes } from '../../../src/crud/interfaces/form.interface';
 import { IPacketDto } from './interfaces/packet.interface';
 import { TENDER_ENDPOINT } from './tender/interfaces/tender.const';
 import { ITenderDto } from './tender/interfaces/tender.interface';
@@ -43,7 +42,6 @@ export class PacketDto extends CrudDto implements IPacketDto {
 
   @FormFieldTable({
     label: 'Procurement',
-    type: FieldTypes.Table,
     fk: {
       packet: 'packetId',
     },
