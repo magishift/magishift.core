@@ -4,6 +4,7 @@ import { AuthModule } from '../../auth/auth.module';
 import { KeycloakService } from '../../auth/keycloak/keycloak.service';
 import { DraftModule } from '../../crud/draft/draft.module';
 import { PubSubProvider } from '../../crud/providers/pubSub.provider';
+import { DateScalar } from '../../crud/scalars/date.scalar';
 import { FileStorageModule } from '../../fileStorage/fileStorage.module';
 import { BackOfficeRoleController } from './backOfficeRole/backOfficeRole.controller';
 import { BackOfficeRole } from './backOfficeRole/backOfficeRole.entity';
@@ -16,21 +17,16 @@ import { BackOfficeUserResolver } from './backOfficeUser.resolver';
 import { BackOfficeUserService } from './backOfficeUser.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([BackOfficeUser]),
-    TypeOrmModule.forFeature([BackOfficeRole]),
-    FileStorageModule,
-    DraftModule,
-    AuthModule,
-  ],
+  imports: [TypeOrmModule.forFeature([BackOfficeUser, BackOfficeRole]), FileStorageModule, DraftModule, AuthModule],
   providers: [
     BackOfficeUserService,
     BackOfficeUserResolver,
     BackOfficeUserMapper,
     BackOfficeRoleService,
     BackOfficeRoleMapper,
-    PubSubProvider,
     KeycloakService,
+    DateScalar,
+    PubSubProvider,
   ],
   controllers: [BackOfficeUserController, BackOfficeRoleController],
   exports: [BackOfficeUserService, BackOfficeRoleService],

@@ -7,11 +7,11 @@ import { v4 as uuid } from 'uuid';
 import { IFile } from '../../fileStorage/interfaces/fileStorage.interface';
 import { csvtojson } from '../../utils/csvtojson';
 import { ExceptionHandler } from '../../utils/error.utils';
+import { Filter } from '../crud.filter';
 import { ICrudConfig, ICrudDto, ICrudEntity } from '../interfaces/crud.interface';
 import { ICrudController } from '../interfaces/crudController.interface';
 import { ICrudMapper } from '../interfaces/crudMapper.Interface';
 import { ICrudService } from '../interfaces/crudService.interface';
-import { IFilter } from '../interfaces/filter.interface';
 import { FieldTypes, IFormSchema } from '../interfaces/form.interface';
 import { IGridSchema } from '../interfaces/grid.interface';
 
@@ -48,7 +48,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
 
   async openDeleted(filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
     try {
-      let filter: IFilter;
+      let filter: Filter<TDto>;
 
       if (filterArg) {
         filter = JSON.parse(filterArg);
@@ -71,7 +71,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
 
   async findAllDrafts(filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
     try {
-      let filter: IFilter;
+      let filter: Filter<TDto>;
 
       if (filterArg) {
         filter = JSON.parse(filterArg);
@@ -92,7 +92,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
 
   async findAll(filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
     try {
-      let filter: IFilter;
+      let filter: Filter<TDto>;
 
       if (filterArg) {
         filter = JSON.parse(filterArg);
@@ -215,7 +215,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
 
   async exportCSV(res: Response, filterArg?: string): Promise<void> {
     try {
-      let filter: IFilter;
+      let filter: Filter<TDto>;
 
       if (filterArg) {
         filter = JSON.parse(filterArg);

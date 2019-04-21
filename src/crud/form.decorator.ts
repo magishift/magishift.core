@@ -16,7 +16,7 @@ import {
   IFormFieldUpload,
 } from './interfaces/form.interface';
 
-const formFields: {
+const formFieldRegistries: {
   [key: string]: {
     [key: string]:
       | IFormField
@@ -32,18 +32,31 @@ const formFields: {
   };
 } = {};
 
-export const FormSchemas: { [key: string]: IForm } = {};
+export const FormSchemaRegistries: { [key: string]: IForm } = {};
 
 export const Form = (param: { type?: FormTypes } = { type: FormTypes.Simple }): any => {
   return (target: { name: string; prototype: ICrudDto }) => {
     const { type } = param;
 
+    const targetName: string = target.name;
+
+    const superClass = Object.getPrototypeOf(target);
+
+    if (superClass && superClass.name !== targetName && formFieldRegistries[superClass.name]) {
+      formFieldRegistries[targetName] = {
+        ...formFieldRegistries[targetName],
+        ...formFieldRegistries[superClass.name],
+      };
+    }
+
     const formSchema: IForm = {
-      fields: formFields[target.name],
+      fields: formFieldRegistries[target.name],
       type,
     };
 
-    FormSchemas[target.name] = formSchema;
+    target.prototype.formSchema = formSchema;
+
+    FormSchemaRegistries[target.name] = formSchema;
   };
 };
 
@@ -61,17 +74,20 @@ export const FormField = (
     | IFormFieldRadio
     | IFormFieldTable
     | IFormFieldFk,
-): any => /* Resolve form field*/ (target: ICrudDto, key: string) => {
-  // Check if dto name already in formFields
-  if (!formFields[target.constructor.name]) {
-    formFields[target.constructor.name] = {};
+): any => (target: ICrudDto, key: string) => {
+  const targetName: string = target.constructor.name;
+
+  // Check if dto with given name already in formFields
+  if (!formFieldRegistries[targetName]) {
+    formFieldRegistries[targetName] = {};
   }
+
   if (typeof arg === 'string') {
-    formFields[target.constructor.name][key] = {
+    formFieldRegistries[targetName][key] = {
       label: arg,
     };
   } else {
-    formFields[target.constructor.name][key] = arg;
+    formFieldRegistries[targetName][key] = arg;
   }
 };
 

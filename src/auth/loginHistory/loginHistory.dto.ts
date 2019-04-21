@@ -12,14 +12,8 @@ import { ILoginHistoryDto } from './interfaces/loginHistory.interface';
     create: false,
     update: false,
   },
-  foreignKey: {
-    account: 'accountId',
-  },
 })
 export class LoginHistoryDto extends CrudDto implements ILoginHistoryDto {
-  @GridColumn({ text: 'Id' })
-  id: string;
-
   @GridColumn({ text: 'Account Id' })
   accountId: string;
 

@@ -1,7 +1,7 @@
 import { Body, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ITokenUser } from '../auth/interfaces/auth.interface';
-import { LoginData } from '../auth/loginData.dto';
+import { TokenUser } from '../auth/auth.token';
+import { LoginInput } from '../auth/loginData.dto';
 import { DefaultRoles } from '../auth/role/defaultRoles';
 import { Roles } from '../auth/role/roles.decorator';
 import { CrudControllerFactory } from '../crud/crud.controller';
@@ -69,7 +69,7 @@ export function UserControllerFactory<TDto extends IUserDto, TEntity extends IUs
 
     @Post('login')
     @Roles(DefaultRoles.public)
-    async login(@Body() data: LoginData): Promise<ITokenUser> {
+    async login(@Body() data: LoginInput): Promise<TokenUser> {
       try {
         return await this.service.login(data);
       } catch (e) {

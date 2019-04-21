@@ -1,7 +1,7 @@
 import { ApiModelProperty } from '@nestjs/swagger';
 import { IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
 import { ILoginHistoryDto } from '../../../../src/auth/loginHistory/interfaces/loginHistory.interface';
-import { Form, FormField } from '../../../../src/crud/form.decorator';
+import { Form, FormField, FormFieldFk } from '../../../../src/crud/form.decorator';
 import { Grid, GridColumn } from '../../../../src/crud/grid.decorator';
 import { FieldTypes } from '../../../../src/crud/interfaces/form.interface';
 import { ColumnTypes } from '../../../../src/crud/interfaces/grid.interface';
@@ -22,9 +22,7 @@ export class VendorUserDto extends UserDto implements IVendorUserDto {
 
   accountId: string;
 
-  @FormField({
-    label: 'Vendor',
-    type: FieldTypes.Fk,
+  @FormFieldFk({
     fk: { vendor: 'id' },
   })
   vendor: IVendorDto;

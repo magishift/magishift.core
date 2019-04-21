@@ -1,6 +1,6 @@
 {
-  "watch": ["./src", "./playground"],
+  "watch": ["./src", "./example"],
   "ext": "ts",
   "ignore": ["./src/**/*.spec.ts"],
-  "exec": "ts-node -r ./playground/main.ts"
+  "exec": "ts-node -r ./example/main.ts"
 }

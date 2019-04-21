@@ -1,5 +1,5 @@
-import { FormSchemas } from './form.decorator';
-import { GridSchemas } from './grid.decorator';
+import { FormSchemaRegistries } from './form.decorator';
+import { GridSchemaRegistries } from './grid.decorator';
 import { IFormSchema } from './interfaces/form.interface';
 import { IGridSchema } from './interfaces/grid.interface';
 import { IKanban } from './interfaces/kanban.interface';
@@ -11,12 +11,12 @@ function replaceControllerToDTO(str: string): string {
 
 export function GetFormSchema(serviceName: string): IFormSchema {
   const dtoName = replaceControllerToDTO(serviceName);
-  return { schema: FormSchemas[dtoName] };
+  return { schema: FormSchemaRegistries[dtoName] };
 }
 
 export function GetGridSchema(serviceName: string): IGridSchema {
   const dtoName = replaceControllerToDTO(serviceName);
-  return { schema: GridSchemas[dtoName] };
+  return { schema: GridSchemaRegistries[dtoName] };
 }
 
 export function GetKanbanSchema(serviceName: string): IKanban {

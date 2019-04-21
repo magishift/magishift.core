@@ -12,6 +12,7 @@ import {
 import { Grid, GridColumn } from '../../../../src/crud/grid.decorator';
 import { FieldTypes } from '../../../../src/crud/interfaces/form.interface';
 import { ColumnTypes } from '../../../../src/crud/interfaces/grid.interface';
+import { Kanban } from '../../../../src/crud/kanban.decorator';
 import { IFileStorageDto } from '../../../../src/fileStorage/interfaces/fileStorage.interface';
 import { IPacketDto } from '../interfaces/packet.interface';
 import { TENDER_ENDPOINT } from './interfaces/tender.const';
@@ -21,6 +22,7 @@ import { IParticipantDto } from './participant/interfaces/participant.interface'
 
 @Grid()
 @Form()
+@Kanban('currentPhase')
 export class TenderDto extends CrudDto implements ITenderDto {
   @FormFieldFk({
     fk: { packet: 'id' },

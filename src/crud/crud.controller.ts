@@ -1,5 +1,7 @@
 import {
   Body,
+  ClassSerializerInterceptor,
+  Controller,
   Delete,
   Get,
   Param,
@@ -21,10 +23,12 @@ import { RolesGuard } from '../auth/role/roles.guard';
 import { IFile } from '../fileStorage/interfaces/fileStorage.interface';
 import { IEndpointUserRoles } from '../user/userRole/interfaces/userRoleEndpoint.interface';
 import { CrudController } from './base/crud.controller.base';
+import { Filter } from './crud.filter';
 import { ICrudConfig, ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudController } from './interfaces/crudController.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
 import { ICrudService } from './interfaces/crudService.interface';
+import { IFindAllResult } from './interfaces/filter.interface';
 import { IFormSchema } from './interfaces/form.interface';
 import { SwaggerGridSchema } from './interfaces/grid.interface';
 
@@ -34,10 +38,12 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
   roles: IEndpointUserRoles,
   realms?: string[],
 ): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>) => CrudController<TDto, TEntity> {
+  @Controller(name)
   @ApiUseTags(name)
   @UseGuards(RolesGuard)
   @Roles(...roles.default)
   @Realms(...(realms || []))
+  @UseInterceptors(ClassSerializerInterceptor)
   class CrudControllerBuilder extends CrudController<TDto, TEntity> implements ICrudController<TDto> {
     constructor(
       protected readonly service: ICrudService<TEntity, TDto>,
@@ -55,14 +61,14 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
     @Get('/form')
     @Roles(DefaultRoles.authenticated)
     getFormSchema(): IFormSchema {
-      return super.getFormSchema();
+      return { schema: new dto().formSchema };
     }
 
     @Get('/grid')
     @Roles(DefaultRoles.authenticated)
     @ApiResponse({ status: 200, type: SwaggerGridSchema })
     getGridSchema(): SwaggerGridSchema {
-      return super.getGridSchema();
+      return { schema: new dto().gridSchema };
     }
 
     @Get('/deleted')
@@ -70,8 +76,9 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
     @ApiImplicitQuery({
       name: 'filter',
       description: 'example: {"order":["id DESC"],"where":{},"limit":25,"offset":0}',
+      type: Filter,
     })
-    async openDeleted(@Query('filter') filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
+    async openDeleted(@Query('filter') filterArg?: string): Promise<IFindAllResult> {
       return await super.openDeleted(filterArg);
     }
 
@@ -80,8 +87,9 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
     @ApiImplicitQuery({
       name: 'filter',
       description: 'example: {"order":["id DESC"],"where":{},"limit":25,"offset":0}',
+      type: Filter,
     })
-    async findAllDrafts(@Query('filter') filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
+    async findAllDrafts(@Query('filter') filterArg?: string): Promise<IFindAllResult> {
       return await super.findAllDrafts(filterArg);
     }
 
@@ -91,7 +99,7 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
       name: 'filter',
       description: 'example: {"order":["id DESC"],"where":{},"limit":25,"offset":0}',
     })
-    async findAll(@Query('filter') filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
+    async findAll(@Query('filter') filterArg?: string): Promise<IFindAllResult> {
       return await super.findAll(filterArg);
     }
 

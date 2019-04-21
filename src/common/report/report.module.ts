@@ -8,12 +8,11 @@ import { HttpModule } from '../../http/http.module';
 import { ReportController } from './report.controller';
 import { Report } from './report.entity';
 import { ReportMapper } from './report.mapper';
-import { ReportResolver } from './report.resolver';
 import { ReportService } from './report.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Report]), FileStorageModule, DraftModule, AuthModule, HttpModule],
-  providers: [ReportService, ReportResolver, ReportMapper, PubSubProvider],
+  providers: [ReportService, ReportMapper, PubSubProvider],
   controllers: [ReportController],
   exports: [ReportService],
 })

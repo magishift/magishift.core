@@ -32,7 +32,7 @@ export class RolesGuard implements CanActivate {
 
       const headerRealm: string = request.headers.realm || request.query.realm;
       if (!isPublic && !headerRealm) {
-        throw new HttpException('Must provide realm in request headers', 400);
+        throw new HttpException('Resource is not public, you must provide "realm" in request headers', 400);
       }
 
       const headerAuth: string[] = request.headers.authorization
@@ -51,7 +51,7 @@ export class RolesGuard implements CanActivate {
 
       return isPublic;
     } catch (e) {
-      throw new HttpException(e, e.status || HttpStatus.UNAUTHORIZED);
+      throw new HttpException(e.message || e, e.status || HttpStatus.UNAUTHORIZED);
     }
   }
 }

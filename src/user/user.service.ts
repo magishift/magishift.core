@@ -6,9 +6,11 @@ import _ = require('lodash');
 import { FindConditions, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { AuthService } from '../auth/auth.service';
-import { ILoginData, ITokenPayload, ITokenUser } from '../auth/interfaces/auth.interface';
+import { TokenUser } from '../auth/auth.token';
+import { ITokenPayload } from '../auth/interfaces/auth.interface';
 import { IKeycloakService } from '../auth/keycloak/interfaces/keycloakAdminService.interface';
 import { KeycloakService } from '../auth/keycloak/keycloak.service';
+import { LoginInput } from '../auth/loginData.dto';
 import { SessionUtil } from '../auth/session.util';
 import { DataStatus } from '../base/interfaces/base.interface';
 import { CrudService } from '../crud/crud.service';
@@ -72,7 +74,6 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
       await this.keycloakAdminService.updateAccountRoles(keycloak.id, keycloakRoles, this.realm);
 
       user.accountId = keycloak.id;
-      user.realm = this.realm;
 
       const result = await super.create(user);
 
@@ -174,12 +175,16 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
     }
   }
 
-  async login(loginData: ILoginData): Promise<ITokenUser> {
+  async login(loginData: LoginInput): Promise<TokenUser> {
     const grant = await this.keycloakAdminService.login(loginData.username, loginData.password, this.realm);
 
-    const user = await this.repository.findOne({ username: loginData.username } as FindConditions<TEntity>);
-
     const decryptedToken: ITokenPayload = jwt.decode(grant.accessToken) as ITokenPayload;
+
+    const user = await this.repository.findOne({ accountId: decryptedToken.sub } as FindConditions<TEntity>);
+
+    if (!user) {
+      throw new HttpException('User is not registered', 401);
+    }
 
     return {
       accessToken: grant.accessToken,
@@ -249,7 +254,6 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
           email: account.email,
           isDeleted: !account.enabled,
           realmRoles: roles,
-          realm,
         });
 
         await repository.save(user);

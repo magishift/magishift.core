@@ -1,3 +1,4 @@
+import { ICrudDto } from './interfaces/crud.interface';
 import {
   ColumnAlign,
   ColumnTypes,
@@ -10,10 +11,11 @@ import {
   IGridSchemas,
 } from './interfaces/grid.interface';
 
-const gridColumns: { [key: string]: IGridColumns } = {};
-const gridFilters: IGridFilters = {};
+const gridColumnRegistries: { [key: string]: IGridColumns } = {};
 
-export const GridSchemas: IGridSchemas = {};
+const gridFilterRegistries: IGridFilters = {};
+
+export const GridSchemaRegistries: IGridSchemas = {};
 
 export const Grid = (
   param: {
@@ -39,15 +41,28 @@ export const Grid = (
     rules: {},
   };
 
-  return (target: { name }) => {
-    const schema: IGrid = {
+  return (target: { name: string; prototype: ICrudDto }) => {
+    const targetName = target.name;
+
+    const superClass = Object.getPrototypeOf(target);
+
+    if (superClass && superClass.name !== targetName && gridColumnRegistries[superClass.name]) {
+      gridColumnRegistries[targetName] = {
+        ...gridColumnRegistries[targetName],
+        ...gridColumnRegistries[superClass.name],
+      };
+    }
+
+    const gridSchema: IGrid = {
       options,
-      filters: gridFilters[target.name] || filters,
-      columns: gridColumns[target.name],
+      filters: gridFilterRegistries[target.name] || filters,
+      columns: gridColumnRegistries[target.name],
       foreignKey: {},
     };
 
-    GridSchemas[target.name] = schema;
+    target.prototype.gridSchema = gridSchema;
+
+    GridSchemaRegistries[target.name] = gridSchema;
   };
 };
 
@@ -71,12 +86,13 @@ export const GridColumn = (arg: string | IGridColumn) => {
   }
 
   return (target: { gridColumns: IGridColumns; gridFilters: IGridFilters }, key: string) => {
-    const name = target.constructor.name;
-    if (!gridColumns[name]) {
-      gridColumns[name] = {};
+    const targetName = target.constructor.name;
+
+    if (!gridColumnRegistries[targetName]) {
+      gridColumnRegistries[targetName] = {};
     }
 
-    gridColumns[name][key] = {
+    gridColumnRegistries[targetName][key] = {
       text,
       value: value || key,
       type: type || ColumnTypes.String,
@@ -84,17 +100,17 @@ export const GridColumn = (arg: string | IGridColumn) => {
     };
 
     if (searchAble) {
-      if (!gridFilters[name]) {
+      if (!gridFilterRegistries[targetName]) {
         const filters: IFilterOptions = {
           rules: {},
           fields: {},
           model: {},
         };
 
-        gridFilters[name] = filters;
+        gridFilterRegistries[targetName] = filters;
       }
 
-      gridFilters[name].fields[key] = {
+      gridFilterRegistries[targetName].fields[key] = {
         label: text,
         type,
       };

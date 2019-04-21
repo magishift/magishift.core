@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import _ = require('lodash');
 import { Repository } from 'typeorm';
+import { Filter } from '../crud.filter';
+import { ICrudDto } from '../interfaces/crud.interface';
 import { IFilter } from '../interfaces/filter.interface';
 import { Draft } from './draft.entity.mongo';
 import { IDraft } from './interfaces/draft.interface';
@@ -53,7 +55,7 @@ export class DraftService {
     const query = {};
     if (where && !_.isEmpty(where)) {
       _.forEach(where, (val, key) => {
-        query[`data.${key}`] = new RegExp(val.plain);
+        query[`data.${key}`] = new RegExp(val as string);
       });
     }
 
@@ -63,7 +65,7 @@ export class DraftService {
 
   async countByTable(
     service: string,
-    filter: IFilter = {
+    filter: Filter<ICrudDto> = {
       offset: 0,
       limit: -1,
     },

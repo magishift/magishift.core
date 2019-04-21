@@ -86,6 +86,7 @@ export interface IFormField {
   callBack?: string;
   value?: any;
   multiple?: boolean;
+  length?: { min: number; max: number };
 }
 
 export interface IFormFieldTextArea extends IFormField {

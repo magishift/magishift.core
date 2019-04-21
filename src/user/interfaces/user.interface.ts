@@ -19,7 +19,6 @@ export interface IUser extends ICrudEntity {
   firstName: string;
   lastName: string;
   realmRoles: IUserRole[];
-  realm: string;
 }
 
 export interface IUserDto extends ICrudDto {
@@ -30,7 +29,6 @@ export interface IUserDto extends ICrudDto {
   username: string;
   password: string;
   passwordConfirm: string;
-  realm: string;
   loginHistories?: ILoginHistoryDto[];
   notifications?: INotificationDto[];
   devices?: IDeviceDto[];

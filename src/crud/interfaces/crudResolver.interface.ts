@@ -1,25 +1,24 @@
-import { ICrudDto, ICrudEntity } from './crud.interface';
+import { ICrudDto } from './crud.interface';
+import { IFilter } from './filter.interface';
 
 export interface ISubscriptionResult {
   subscribe: () => any;
 }
 
-export interface ICrudResolver<TDto extends ICrudDto, TEntity extends ICrudEntity> {
-  findById(ctx: any): Promise<object>;
+export interface ICrudResolver<TDto extends ICrudDto> {
+  findById(id: string): Promise<ICrudDto>;
 
-  findAll(ctx: any): Promise<object>;
+  findAll(filter: IFilter): Promise<ICrudDto[]>;
 
-  create(args: { input }): Promise<void>;
+  create(args: TDto): Promise<void>;
 
-  updateById(args: { input }): Promise<void>;
+  update(args: TDto): Promise<void>;
 
-  update(args: { input }): Promise<void>;
+  destroy(args: TDto): Promise<void>;
 
-  destroy(ctx: any): Promise<void>;
+  destroyById(args: string): Promise<void>;
 
-  destroyById(ctx: any): Promise<object>;
-
-  created(ctx: any): ISubscriptionResult;
+  created(args: any): ISubscriptionResult;
 
   updated(): ISubscriptionResult;
 

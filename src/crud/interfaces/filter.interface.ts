@@ -1,23 +1,21 @@
-import { CrudDto } from '../crud.dto';
+export interface IFilterWhere {
+  [key: string]: {
+    plain: string;
+    regex: string;
+  };
+}
 
 export interface IFilter {
   offset?: number;
-  where?: {
-    [key: string]: {
-      plain: string;
-      regex: string;
-    };
-  };
-  whereOr?: object;
+  where?: Partial<any>;
+  whereOr?: Partial<any>;
   order?: string[];
   limit?: number;
   isShowDeleted?: boolean;
   relations?: string[];
-  operator?: string;
 }
 
-export interface IFindAll<TEntity extends CrudDto> {
-  count: number;
-
-  data: TEntity[];
+export interface IFindAllResult {
+  totalCount: number;
+  items: any[];
 }

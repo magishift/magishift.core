@@ -5,7 +5,7 @@ import { BackOfficeRole } from './backOfficeRole/backOfficeRole.entity';
 
 @Entity()
 export class BackOfficeUser extends User implements IUser {
-  @ManyToMany(_ => BackOfficeRole, backOfficeRole => backOfficeRole.users)
+  @ManyToMany(() => BackOfficeRole, backOfficeRole => backOfficeRole.users)
   @JoinTable()
   realmRoles: BackOfficeRole[];
 }

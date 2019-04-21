@@ -9,7 +9,7 @@ export abstract class CrudEntity extends BaseEntity implements ICrudEntity {
   __meta: IDataMeta = {};
 
   @Column({ default: false })
-  isDeleted: boolean;
+  isDeleted?: boolean;
 
   getRepository(): Repository<ICrudEntity> {
     return _getRepository(this.constructor.name);

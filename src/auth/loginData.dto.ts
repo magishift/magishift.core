@@ -1,12 +1,13 @@
 import { ApiModelProperty } from '@nestjs/swagger';
-import { ILoginDataDto } from './interfaces/auth.interface';
+import { ArgsType, Field } from 'type-graphql';
 
-export abstract class LoginData implements ILoginDataDto {
+@ArgsType()
+export class LoginInput {
+  @Field()
   @ApiModelProperty()
-  username: string;
+  readonly username: string;
 
+  @Field()
   @ApiModelProperty()
-  password: string;
-
-  readonly role: string;
+  readonly password: string;
 }

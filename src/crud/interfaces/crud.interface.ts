@@ -1,39 +1,71 @@
 import { ValidationError } from 'class-validator';
+import { Field, InterfaceType } from 'type-graphql';
 import { Repository } from 'typeorm';
 import { DataStatus, IBaseDto, IBaseEntity } from '../../base/interfaces/base.interface';
-import { IFormSchema } from './form.interface';
-import { IGridSchema } from './grid.interface';
+import { IForm, IFormField, IFormSchema } from './form.interface';
+import { IGrid, IGridColumns, IGridFilters, IGridSchema } from './grid.interface';
 
-export interface IDataHsitory {
+@InterfaceType()
+export abstract class IDataHsitory {
+  @Field()
   date: Date;
+
+  @Field()
   action: 'updated' | 'created' | 'deleted';
+
+  @Field()
   by: string;
 }
 
-export interface IDataMeta {
+@InterfaceType()
+export abstract class IDataMeta {
   dataStatus?: DataStatus;
+
+  @Field()
   editable?: boolean;
+
+  @Field()
   deleteable?: boolean;
+
+  @Field()
   dataOwner?: string;
+
   histories?: IDataHsitory[];
 }
 
-export interface ICrudEntity extends IBaseEntity {
-  getRepository: () => Repository<any>;
-  isDeleted: boolean;
+export abstract class ICrudEntity implements IBaseEntity {
+  id: string;
+  isDeleted?: boolean;
   __meta: IDataMeta;
+  abstract getRepository: () => Repository<any>;
 }
 
 export interface ICrudDto extends IBaseDto {
-  isDeleted?: boolean;
-  __meta?: IDataMeta;
+  gridSchema: IGrid;
+  gridColumns: IGridColumns;
+  gridFilters: IGridFilters;
+
+  formSchema: IForm;
+  formFields: IFormField[];
+
+  id: string;
+
+  isDeleted: boolean;
+
+  __meta: IDataMeta;
+
   validate(): Promise<ValidationError[]>;
 }
 
-export interface ICrudConfig {
+@InterfaceType()
+export abstract class ICrudConfig {
   kanban: object;
   form: IFormSchema;
   grid: IGridSchema;
+
+  @Field()
   softDelete: boolean;
+
+  @Field()
   enableDraft: boolean;
 }

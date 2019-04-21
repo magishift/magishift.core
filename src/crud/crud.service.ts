@@ -78,7 +78,6 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     filter: IFilter = {
       offset: 0,
       limit: -1,
-
       isShowDeleted: false,
     },
   ): Promise<number> {

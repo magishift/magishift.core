@@ -5,11 +5,12 @@ import { DefaultRoles } from '../../auth/role/defaultRoles';
 import { ResolverFactory } from '../../crud/crud.resolver';
 import { REPORT_ENDPOINT } from './interfaces/report.const';
 import { IReport, IReportDto } from './interfaces/report.interface';
+import { ReportDto } from './report.dto';
 import { ReportMapper } from './report.mapper';
 import { ReportService } from './report.service';
 
 @Resolver(REPORT_ENDPOINT)
-export class ReportResolver extends ResolverFactory<IReportDto, IReport>(REPORT_ENDPOINT, {
+export class ReportResolver extends ResolverFactory<IReportDto, IReport>(REPORT_ENDPOINT, ReportDto, {
   default: [DefaultRoles.admin],
 }) {
   constructor(
