@@ -1,6 +1,6 @@
 import { ApiModelProperty } from '@nestjs/swagger';
 import { Max, Min } from 'class-validator';
-import { ArgsType, Field } from 'type-graphql';
+import { ArgsType, Field, Int } from 'type-graphql';
 import { ICrudDto } from './interfaces/crud.interface';
 import { IFilter } from './interfaces/filter.interface';
 
@@ -12,17 +12,21 @@ export class Filter<TDto extends ICrudDto> implements IFilter {
   @ApiModelProperty()
   whereOr?: Partial<TDto>;
 
-  @Field(() => [String], { nullable: true })
+  @Field(() => [String], {
+    nullable: true,
+    description: 'ex. ["id ASC", "title DESC"]',
+    defaultValue: ['id ASC'],
+  })
   @ApiModelProperty()
   order?: string[];
 
-  @Field({ nullable: true })
+  @Field(() => Int, { nullable: true })
   @ApiModelProperty()
   @Min(1)
   @Max(1000)
   limit?: number;
 
-  @Field({ nullable: true })
+  @Field(() => Int, { nullable: true })
   @ApiModelProperty()
   @Min(0)
   offset?: number;

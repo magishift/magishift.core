@@ -2,8 +2,8 @@ import { Field, ObjectType } from 'type-graphql';
 import { IUserDto } from '../user/interfaces/user.interface';
 import { ITokenUser } from './interfaces/auth.interface';
 
-@ObjectType()
-export class TokenUser extends ITokenUser {
+@ObjectType({ isAbstract: true })
+export class TokenUser<TUser extends IUserDto> implements ITokenUser {
   @Field()
   readonly accessToken: string;
 
@@ -16,7 +16,7 @@ export class TokenUser extends ITokenUser {
   @Field()
   readonly accountId: string;
 
-  readonly userData: IUserDto;
+  readonly userData: TUser;
 
   @Field()
   readonly realm: string;

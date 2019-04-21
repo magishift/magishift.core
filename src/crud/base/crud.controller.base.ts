@@ -12,6 +12,7 @@ import { ICrudConfig, ICrudDto, ICrudEntity } from '../interfaces/crud.interface
 import { ICrudController } from '../interfaces/crudController.interface';
 import { ICrudMapper } from '../interfaces/crudMapper.Interface';
 import { ICrudService } from '../interfaces/crudService.interface';
+import { IFindAllResult } from '../interfaces/filter.interface';
 import { FieldTypes, IFormSchema } from '../interfaces/form.interface';
 import { IGridSchema } from '../interfaces/grid.interface';
 
@@ -90,7 +91,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  async findAll(filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
+  async findAll(filterArg?: string): Promise<IFindAllResult> {
     try {
       let filter: Filter<TDto>;
 

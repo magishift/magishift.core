@@ -1,5 +1,5 @@
 import { ICrudDto } from './crud.interface';
-import { IFilter } from './filter.interface';
+import { IFilter, IFindAllResult } from './filter.interface';
 
 export interface ISubscriptionResult {
   subscribe: () => any;
@@ -8,7 +8,7 @@ export interface ISubscriptionResult {
 export interface ICrudResolver<TDto extends ICrudDto> {
   findById(id: string): Promise<ICrudDto>;
 
-  findAll(filter: IFilter): Promise<ICrudDto[]>;
+  findAll(filter: IFilter): Promise<IFindAllResult>;
 
   create(args: TDto): Promise<void>;
 

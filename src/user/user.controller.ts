@@ -4,7 +4,7 @@ import { TokenUser } from '../auth/auth.token';
 import { LoginInput } from '../auth/loginData.dto';
 import { DefaultRoles } from '../auth/role/defaultRoles';
 import { Roles } from '../auth/role/roles.decorator';
-import { CrudControllerFactory } from '../crud/crud.controller';
+import { CrudControllerFactory as ControllerFactory } from '../crud/crud.controller';
 import { CrudMapper } from '../crud/crud.mapper';
 import { ICrudMapper } from '../crud/interfaces/crudMapper.Interface';
 import { FileStorageDto } from '../fileStorage/fileStorage.dto';
@@ -19,7 +19,7 @@ import { IEndpointUserRoles } from './userRole/interfaces/userRoleEndpoint.inter
 
 export function UserControllerFactory<TDto extends IUserDto, TEntity extends IUser>(
   name: string,
-  dto: new () => TDto,
+  dtoClass: new (...args: any[]) => TDto,
   roles: IEndpointUserRoles,
   realms?: string[],
 ): new (
@@ -27,7 +27,7 @@ export function UserControllerFactory<TDto extends IUserDto, TEntity extends IUs
   fileService: FileStorageService,
   mapper: ICrudMapper<TEntity, TDto>,
 ) => IUserController<TDto> {
-  class UserController extends CrudControllerFactory<TDto, TEntity>(name, dto, roles, realms)
+  class UserController extends ControllerFactory<TDto, TEntity>(name, dtoClass, roles, realms)
     implements IUserController<TDto> {
     constructor(
       protected readonly service: UserService<TEntity, TDto>,
@@ -69,7 +69,7 @@ export function UserControllerFactory<TDto extends IUserDto, TEntity extends IUs
 
     @Post('login')
     @Roles(DefaultRoles.public)
-    async login(@Body() data: LoginInput): Promise<TokenUser> {
+    async login(@Body() data: LoginInput): Promise<TokenUser<TDto>> {
       try {
         return await this.service.login(data);
       } catch (e) {

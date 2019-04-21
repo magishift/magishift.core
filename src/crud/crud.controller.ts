@@ -34,15 +34,15 @@ import { SwaggerGridSchema } from './interfaces/grid.interface';
 
 export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICrudEntity>(
   name: string,
-  dto: new () => TDto,
+  dtoClass: new (...args: any[]) => TDto,
   roles: IEndpointUserRoles,
-  realms?: string[],
+  realmsAccess?: string[],
 ): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>) => CrudController<TDto, TEntity> {
   @Controller(name)
   @ApiUseTags(name)
   @UseGuards(RolesGuard)
   @Roles(...roles.default)
-  @Realms(...(realms || []))
+  @Realms(...(realmsAccess || []))
   @UseInterceptors(ClassSerializerInterceptor)
   class CrudControllerBuilder extends CrudController<TDto, TEntity> implements ICrudController<TDto> {
     constructor(
@@ -61,14 +61,14 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
     @Get('/form')
     @Roles(DefaultRoles.authenticated)
     getFormSchema(): IFormSchema {
-      return { schema: new dto().formSchema };
+      return { schema: new dtoClass().formSchema };
     }
 
     @Get('/grid')
     @Roles(DefaultRoles.authenticated)
     @ApiResponse({ status: 200, type: SwaggerGridSchema })
     getGridSchema(): SwaggerGridSchema {
-      return { schema: new dto().gridSchema };
+      return { schema: new dtoClass().gridSchema };
     }
 
     @Get('/deleted')
@@ -125,7 +125,7 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
     @Roles(...(roles.write || roles.default))
     @ApiImplicitBody({
       name: 'Create ' + name,
-      type: dto,
+      type: dtoClass,
     })
     async create(@Body() data: TDto): Promise<TDto> {
       return await super.create(data);
@@ -135,7 +135,7 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
     @Roles(...(roles.write || roles.default))
     @ApiImplicitBody({
       name: 'Create Draft ' + name,
-      type: dto,
+      type: dtoClass,
     })
     async saveAsDraft(@Body() data: TDto): Promise<TDto> {
       return await super.saveAsDraft(data);
@@ -145,7 +145,7 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
     @Roles(...(roles.update || roles.write || roles.default))
     @ApiImplicitBody({
       name: 'Update ' + name,
-      type: dto,
+      type: dtoClass,
     })
     async update(@Param('id') id: string, @Body() data: TDto): Promise<TDto> {
       return await super.update(id, data);

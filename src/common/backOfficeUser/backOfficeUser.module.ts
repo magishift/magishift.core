@@ -9,6 +9,7 @@ import { FileStorageModule } from '../../fileStorage/fileStorage.module';
 import { BackOfficeRoleController } from './backOfficeRole/backOfficeRole.controller';
 import { BackOfficeRole } from './backOfficeRole/backOfficeRole.entity';
 import { BackOfficeRoleMapper } from './backOfficeRole/backOfficeRole.mapper';
+import { BackOfficeRoleResolver } from './backOfficeRole/backOfficeRole.resolver';
 import { BackOfficeRoleService } from './backOfficeRole/backOfficeRole.service';
 import { BackOfficeUserController } from './backOfficeUser.controller';
 import { BackOfficeUser } from './backOfficeUser.entity';
@@ -23,6 +24,7 @@ import { BackOfficeUserService } from './backOfficeUser.service';
     BackOfficeUserResolver,
     BackOfficeUserMapper,
     BackOfficeRoleService,
+    BackOfficeRoleResolver,
     BackOfficeRoleMapper,
     KeycloakService,
     DateScalar,

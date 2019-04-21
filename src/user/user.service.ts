@@ -175,7 +175,7 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
     }
   }
 
-  async login(loginData: LoginInput): Promise<TokenUser> {
+  async login(loginData: LoginInput): Promise<TokenUser<TDto>> {
     const grant = await this.keycloakAdminService.login(loginData.username, loginData.password, this.realm);
 
     const decryptedToken: ITokenPayload = jwt.decode(grant.accessToken) as ITokenPayload;

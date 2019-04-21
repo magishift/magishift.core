@@ -53,8 +53,7 @@ export abstract class ITokenPayload {
   readonly azp: string;
 }
 
-@InterfaceType({ isAbstract: true })
-export abstract class ITokenUser {
+export interface ITokenUser {
   readonly accessToken: string;
   readonly refreshToken: string;
   readonly ttl: number;
