@@ -3,7 +3,7 @@ import { Field, InterfaceType } from 'type-graphql';
 import { Repository } from 'typeorm';
 import { DataStatus, IBaseDto, IBaseEntity } from '../../base/interfaces/base.interface';
 import { IForm, IFormField, IFormSchema } from './form.interface';
-import { IGrid, IGridColumns, IGridFilters, IGridSchema } from './grid.interface';
+import { IGrid, IGridColumns, IGridSchema } from './grid.interface';
 
 @InterfaceType()
 export abstract class IDataHsitory {
@@ -43,8 +43,6 @@ export abstract class ICrudEntity implements IBaseEntity {
 export interface ICrudDto extends IBaseDto {
   gridSchema: IGrid;
   gridColumns: IGridColumns;
-  gridFilters: IGridFilters;
-
   formSchema: IForm;
   formFields: IFormField[];
 

@@ -6,24 +6,22 @@ import {
   IGrid,
   IGridColumn,
   IGridColumns,
-  IGridFilters,
   IGridOptions,
   IGridSchemas,
 } from './interfaces/grid.interface';
 
 const gridColumnRegistries: { [key: string]: IGridColumns } = {};
 
-const gridFilterRegistries: IGridFilters = {};
+const gridFilterRegistries: { [key: string]: IFilterOptions } = {};
 
 export const GridSchemaRegistries: IGridSchemas = {};
 
 export const Grid = (
   param: {
     options?: IGridOptions;
-    filters?: IFilterOptions;
   } = {},
 ) => {
-  let { options, filters } = param;
+  let { options } = param;
 
   options = Object.assign(
     {
@@ -35,34 +33,33 @@ export const Grid = (
     options,
   );
 
-  filters = filters || {
-    model: {},
-    fields: {},
-    rules: {},
-  };
-
   return (target: { name: string; prototype: ICrudDto }) => {
     const targetName = target.name;
 
     const superClass = Object.getPrototypeOf(target);
 
     if (superClass && superClass.name !== targetName && gridColumnRegistries[superClass.name]) {
-      gridColumnRegistries[targetName] = {
-        ...gridColumnRegistries[targetName],
-        ...gridColumnRegistries[superClass.name],
-      };
+      gridColumnRegistries[targetName] = Object.assign(
+        gridColumnRegistries[superClass.name],
+        gridColumnRegistries[targetName],
+      );
+
+      gridFilterRegistries[targetName] = Object.assign(
+        gridFilterRegistries[superClass.name],
+        gridFilterRegistries[targetName],
+      );
     }
 
     const gridSchema: IGrid = {
       options,
-      filters: gridFilterRegistries[target.name] || filters,
-      columns: gridColumnRegistries[target.name],
+      filters: gridFilterRegistries[targetName],
+      columns: gridColumnRegistries[targetName],
       foreignKey: {},
     };
 
     target.prototype.gridSchema = gridSchema;
 
-    GridSchemaRegistries[target.name] = gridSchema;
+    GridSchemaRegistries[targetName] = gridSchema;
   };
 };
 
@@ -85,7 +82,7 @@ export const GridColumn = (arg: string | IGridColumn) => {
     value = column.value;
   }
 
-  return (target: { gridColumns: IGridColumns; gridFilters: IGridFilters }, key: string) => {
+  return (target: { gridColumns: IGridColumns }, key: string) => {
     const targetName = target.constructor.name;
 
     if (!gridColumnRegistries[targetName]) {
@@ -101,13 +98,11 @@ export const GridColumn = (arg: string | IGridColumn) => {
 
     if (searchAble) {
       if (!gridFilterRegistries[targetName]) {
-        const filters: IFilterOptions = {
+        gridFilterRegistries[targetName] = {
           rules: {},
           fields: {},
           model: {},
         };
-
-        gridFilterRegistries[targetName] = filters;
       }
 
       gridFilterRegistries[targetName].fields[key] = {

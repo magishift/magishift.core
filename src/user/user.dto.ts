@@ -57,14 +57,14 @@ export abstract class UserDto extends CrudDto implements IUserDto {
   @Field()
   @ApiModelProperty()
   @FormField({ label: 'Phone Number' })
-  @GridColumn({ text: 'Phone Number' })
+  @GridColumn({ text: 'Phone Number', searchAble: true })
   phoneNumber: string;
 
   @IsEmail()
   @Field()
   @ApiModelProperty()
   @FormField({ label: 'Email', type: FieldTypes.Email, required: true })
-  @GridColumn({ text: 'Email' })
+  @GridColumn({ text: 'Email', searchAble: true })
   email: string;
 
   @IsBoolean()

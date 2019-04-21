@@ -378,8 +378,8 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
   private resolveWhereOperator(source: object): FindConditions<TEntity> {
     const result: FindConditions<TEntity> = {};
 
-    _.forEach(source, (val: { plain }, prop) => {
-      const value: string = val.plain;
+    _.forEach(source, (val: string, prop: string) => {
+      const value: string = val;
 
       const propertyType = getPropertyType(this.repository.metadata.columns, prop);
 

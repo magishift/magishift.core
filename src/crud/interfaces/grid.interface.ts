@@ -66,10 +66,6 @@ export interface IFilterOptions {
   readonly rules: object;
 }
 
-export interface IGridFilters {
-  [key: string]: IFilterOptions;
-}
-
 export interface IGrid {
   options: IGridOptions;
   filters: IFilterOptions;

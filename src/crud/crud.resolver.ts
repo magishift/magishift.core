@@ -1,6 +1,7 @@
 import { ClassSerializerInterceptor, HttpException, HttpStatus, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
+import { GraphQLJSONObject } from 'graphql-type-json';
 import pluralize = require('pluralize');
 import { ArgsType, ClassType, Field, ID, InputType, Int, ObjectType } from 'type-graphql';
 import { AuthService } from '../auth/auth.service';
@@ -66,10 +67,10 @@ export function CrudResolverFactory<TDto extends ICrudDto, TEntity extends ICrud
 
   @ArgsType()
   class FilterResolver extends Filter<TDto> {
-    @Field(() => dtoClass, { nullable: true })
+    @Field(() => GraphQLJSONObject, { nullable: true })
     where?: Partial<TDto>;
 
-    @Field(() => dtoClass, { nullable: true })
+    @Field(() => GraphQLJSONObject, { nullable: true })
     whereOr?: Partial<TDto>;
   }
 

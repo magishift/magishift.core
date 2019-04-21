@@ -50,13 +50,13 @@ export const Form = (param: { type?: FormTypes } = { type: FormTypes.Simple }): 
     }
 
     const formSchema: IForm = {
-      fields: formFieldRegistries[target.name],
+      fields: formFieldRegistries[targetName],
       type,
     };
 
     target.prototype.formSchema = formSchema;
 
-    FormSchemaRegistries[target.name] = formSchema;
+    FormSchemaRegistries[targetName] = formSchema;
   };
 };
 
