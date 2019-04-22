@@ -1,1 +1,1 @@
-export const VENDOR_ENDPOINT = 'vendor';
+export const VENDOR_ENDPOINT = 'Vendor';

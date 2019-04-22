@@ -4,15 +4,15 @@ import { Repository } from 'typeorm';
 import { AuthService } from '../../../../src/auth/auth.service';
 import { KeycloakService } from '../../../../src/auth/keycloak/keycloak.service';
 import { DraftService } from '../../../../src/crud/draft/draft.service';
-import { IUser, IUserDto } from '../../../../src/user/interfaces/user.interface';
 import { UserService } from '../../../../src/user/user.service';
 import { VENDOR_USER_REALM } from './interfaces/vendorUser.const';
+import { IVendorUser, IVendorUserDto } from './interfaces/vendorUser.interface';
 import { VendorUser } from './vendorUser.entity';
 import { VendorUserMapper } from './vendorUser.mapper';
 import { VendorUserRoleService } from './vendorUserRole/vendorUserRole.service';
 
 @Injectable()
-export class VendorUserService extends UserService<IUser, IUserDto> {
+export class VendorUserService extends UserService<IVendorUser, IVendorUserDto> {
   constructor(
     @InjectRepository(VendorUser) protected readonly repository: Repository<VendorUser>,
     protected readonly authService: AuthService,

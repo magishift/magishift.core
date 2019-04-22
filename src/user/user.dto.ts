@@ -1,10 +1,8 @@
 import { ApiModelProperty } from '@nestjs/swagger';
-import { Exclude, Transform } from 'class-transformer';
+import { Exclude } from 'class-transformer';
 import { IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
 import { Field, InputType, ObjectType } from 'type-graphql';
 import { ILoginHistoryDto } from '../auth/loginHistory/interfaces/loginHistory.interface';
-import { BackOfficeRoleDto } from '../common/backOfficeUser/backOfficeRole/backOfficeRole.dto';
-import { BO_ROLE_ENDPOINT } from '../common/backOfficeUser/backOfficeRole/interfaces/backOfficeUser.const';
 import { BO_USER_ENDPOINT } from '../common/backOfficeUser/interfaces/backOfficeUser.const';
 import { CrudDto } from '../crud/crud.dto';
 import { Form, FormField, FormFieldUpload } from '../crud/form.decorator';
@@ -85,20 +83,6 @@ export abstract class UserDto extends CrudDto implements IUserDto {
   @FormField({ label: 'Username', required: true, createOnly: true, group: CREDENTIALS })
   username: string;
 
-  @IsString()
-  @Field(() => [BackOfficeRoleDto], { nullable: true })
-  @ApiModelProperty()
-  @FormField({
-    label: 'Roles',
-    type: FieldTypes.Autocomplete,
-    dataSource: { url: BO_ROLE_ENDPOINT, searchParams: ['name'] },
-    multiple: true,
-    group: CREDENTIALS,
-  })
-  @GridColumn({ text: 'Role' })
-  @Transform(role => role.string)
-  realmRoles: IUserRoleDto[];
-
   @IsOptional()
   @IsString()
   @Field({ nullable: true })
@@ -130,4 +114,6 @@ export abstract class UserDto extends CrudDto implements IUserDto {
   notifications: INotificationDto[];
 
   devices: IDeviceDto[];
+
+  abstract realmRoles: IUserRoleDto[];
 }

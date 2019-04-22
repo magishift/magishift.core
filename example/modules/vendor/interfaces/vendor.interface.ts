@@ -1,3 +1,4 @@
+import { registerEnumType } from 'type-graphql';
 import { ICrudDto, ICrudEntity } from '../../../../src/crud/interfaces/crud.interface';
 import { IFileStorage, IFileStorageDto } from '../../../../src/fileStorage/interfaces/fileStorage.interface';
 import { IUser, IUserDto } from '../../../../src/user/interfaces/user.interface';
@@ -24,6 +25,8 @@ export enum VendorType {
   KoperasiBersama = 'Koperasi Bersama',
 }
 
+registerEnumType(VendorType, { name: 'VendorType' });
+
 export enum VendorStatus {
   NonActive = 'Non-active',
   Active = 'Active',
@@ -31,12 +34,16 @@ export enum VendorStatus {
   Blacklist = 'Blacklist',
 }
 
+registerEnumType(VendorStatus, { name: 'VendorStatus' });
+
 export enum VendorCategory {
   IT = 'IT',
   Accounting = 'Accounting',
   ManagementConsultant = 'Management Consultant',
   Architecture = 'Architecture',
 }
+
+registerEnumType(VendorCategory, { name: 'VendorCategory' });
 
 export interface IVendor extends ICrudEntity {
   vendorUsers: IUser[];

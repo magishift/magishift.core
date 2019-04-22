@@ -1,1 +1,1 @@
-export const TENANT_ENDPOINT = 'tenant';
+export const TENANT_ENDPOINT = 'Tenant';

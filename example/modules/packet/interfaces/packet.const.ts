@@ -1,1 +1,1 @@
-export const PACKET_ENDPOINT = 'packet';
+export const PACKET_ENDPOINT = 'Packet';

@@ -2,14 +2,15 @@ import { Inject } from '@nestjs/common';
 import { Resolver } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { DefaultRoles } from '../../../src/auth/role/defaultRoles';
-import { ResolverFactory } from '../../../src/crud/crud.resolver';
+import { CrudResolverFactory } from '../../../src/crud/crud.resolver';
 import { PACKET_ENDPOINT } from './interfaces/packet.const';
 import { IPacket, IPacketDto } from './interfaces/packet.interface';
+import { PacketDto } from './packet.dto';
 import { PacketMapper } from './packet.mapper';
 import { PacketService } from './packet.service';
 
-@Resolver(PACKET_ENDPOINT)
-export class PacketResolver extends ResolverFactory<IPacketDto, IPacket>(PACKET_ENDPOINT, {
+@Resolver()
+export class PacketResolver extends CrudResolverFactory<IPacketDto, IPacket>(PACKET_ENDPOINT, PacketDto, {
   default: [DefaultRoles.admin],
 }) {
   constructor(

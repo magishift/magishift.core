@@ -33,7 +33,7 @@ yarn-error.log
 logger/*
 nohup.out
 
-main.schema.graphql
+main.schema.gql
 
 .env.local*
 

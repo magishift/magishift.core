@@ -33,6 +33,7 @@ export interface IKeycloakRealm {
   authServerUrl: string;
   public: boolean;
 }
+
 @Injectable()
 export class KeycloakService implements IKeycloakService {
   private static keycloakClient: KeycloakAdminClient;
@@ -65,8 +66,6 @@ export class KeycloakService implements IKeycloakService {
     masterConfig.public = this.realmConfigs.master.public || true;
 
     this.redisClient = this.redisService.getClient();
-
-    this.auth();
   }
 
   getConfig(realm: string): object {
@@ -272,7 +271,6 @@ export class KeycloakService implements IKeycloakService {
 
   private async getKeycloakClient(): Promise<KeycloakAdminClient> {
     await this.auth();
-
     return KeycloakService.keycloakClient;
   }
 

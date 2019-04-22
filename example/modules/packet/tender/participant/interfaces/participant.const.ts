@@ -1,1 +1,1 @@
-export const PARTICIPANT_ENDPOINT = 'participant';
+export const PARTICIPANT_ENDPOINT = 'Participant';

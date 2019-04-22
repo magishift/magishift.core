@@ -1,5 +1,6 @@
 import { ApiModelProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
+import { Field, InputType, ObjectType } from 'type-graphql';
 import { CrudDto } from '../../../../src/crud/crud.dto';
 import { Form, FormField, FormFieldFk, FormFieldUpload } from '../../../../src/crud/form.decorator';
 import { Grid, GridColumn } from '../../../../src/crud/grid.decorator';
@@ -12,6 +13,8 @@ import { IVendorExpertTeamDto } from './interfaces/vendorExpertTeam.interface';
 
 @Grid()
 @Form()
+@ObjectType(VENDOR_EXPERT_TEAM_ENDPOINT)
+@InputType()
 export class VendorExpertTeamDto extends CrudDto implements IVendorExpertTeamDto {
   @FormFieldFk({
     fk: { vendor: 'id' },
@@ -27,6 +30,7 @@ export class VendorExpertTeamDto extends CrudDto implements IVendorExpertTeamDto
   @GridColumn({ text: 'CV', type: ColumnTypes.Image })
   cv: IFileStorageDto;
 
+  @Field()
   @IsString()
   @ApiModelProperty()
   @FormField({
@@ -35,6 +39,7 @@ export class VendorExpertTeamDto extends CrudDto implements IVendorExpertTeamDto
   @GridColumn({ text: 'Name', searchAble: true })
   name: string;
 
+  @Field()
   @IsString()
   @ApiModelProperty()
   @FormField({

@@ -2,14 +2,15 @@ import { Inject } from '@nestjs/common';
 import { Resolver } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { DefaultRoles } from '../../../../src/auth/role/defaultRoles';
-import { ResolverFactory } from '../../../../src/crud/crud.resolver';
+import { CrudResolverFactory } from '../../../../src/crud/crud.resolver';
 import { VENDOR_ENDPOINT } from '../interfaces/vendor.const';
 import { IVendor, IVendorDto } from '../interfaces/vendor.interface';
+import { VendorDto } from '../vendor.dto';
 import { VendorMapper } from '../vendor.mapper';
 import { VendorService } from '../vendor.service';
 
-@Resolver(VENDOR_ENDPOINT)
-export class VendorResolver extends ResolverFactory<IVendorDto, IVendor>(VENDOR_ENDPOINT, {
+@Resolver()
+export class VendorResolver extends CrudResolverFactory<IVendorDto, IVendor>(VENDOR_ENDPOINT, VendorDto, {
   default: [DefaultRoles.admin],
 }) {
   constructor(

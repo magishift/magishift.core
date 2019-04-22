@@ -1,1 +1,1 @@
-export const BO_ROLE_ENDPOINT = 'backOfficeRole';
+export const BO_ROLE_ENDPOINT = 'BackOfficeRole';

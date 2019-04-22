@@ -1,1 +1,1 @@
-export const TENDER_ENDPOINT = 'tender';
+export const TENDER_ENDPOINT = 'Tender';

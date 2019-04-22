@@ -1,1 +1,1 @@
-export const CLIENT_ROLE_ENDPOINT = 'clientUserRole';
+export const CLIENT_ROLE_ENDPOINT = 'ClientUserRole';

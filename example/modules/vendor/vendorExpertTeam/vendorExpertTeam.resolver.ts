@@ -2,15 +2,17 @@ import { Inject } from '@nestjs/common';
 import { Resolver } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { DefaultRoles } from '../../../../src/auth/role/defaultRoles';
-import { ResolverFactory } from '../../../../src/crud/crud.resolver';
-import { VENDOR_ENDPOINT } from '../interfaces/vendor.const';
+import { CrudResolverFactory } from '../../../../src/crud/crud.resolver';
+import { VENDOR_EXPERT_TEAM_ENDPOINT } from './interfaces/vendorExpertTeam.const';
 import { IVendorExpertTeam, IVendorExpertTeamDto } from './interfaces/vendorExpertTeam.interface';
+import { VendorExpertTeamDto } from './vendorExpertTeam.dto';
 import { VendorExpertTeamMapper } from './vendorExpertTeam.mapper';
 import { VendorExpertTeamService } from './vendorExpertTeam.service';
 
-@Resolver(VENDOR_ENDPOINT)
-export class VendorExpertTeamResolver extends ResolverFactory<IVendorExpertTeamDto, IVendorExpertTeam>(
-  VENDOR_ENDPOINT,
+@Resolver()
+export class VendorExpertTeamResolver extends CrudResolverFactory<IVendorExpertTeamDto, IVendorExpertTeam>(
+  VENDOR_EXPERT_TEAM_ENDPOINT,
+  VendorExpertTeamDto,
   {
     default: [DefaultRoles.authenticated],
   },

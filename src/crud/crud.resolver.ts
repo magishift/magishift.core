@@ -10,7 +10,7 @@ import { Roles } from '../auth/role/roles.decorator';
 import { RolesGuard } from '../auth/role/roles.guard';
 import { IEndpointUserRoles } from '../user/userRole/interfaces/userRoleEndpoint.interface';
 import { ExceptionHandler } from '../utils/error.utils';
-import { capitalizeFirstLetter } from '../utils/string.utils';
+import { capitalizeFirstLetter, unCapitalizeFirstLetter } from '../utils/string.utils';
 import { CrudDto } from './crud.dto';
 import { Filter } from './crud.filter';
 import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
@@ -29,9 +29,10 @@ export function CrudResolverFactory<TDto extends ICrudDto, TEntity extends ICrud
   TDto
 > {
   const nameCapFirst = capitalizeFirstLetter(name);
+  const nameUnCapFirst = unCapitalizeFirstLetter(name);
 
   // graphql query name template
-  const findById: string = `${name}ById`;
+  const findById: string = `${nameUnCapFirst}ById`;
   const findAll: string = `all${pluralize(nameCapFirst)}`;
   const create: string = `create${nameCapFirst}`;
   const update: string = `update${nameCapFirst}`;
@@ -39,9 +40,9 @@ export function CrudResolverFactory<TDto extends ICrudDto, TEntity extends ICrud
   const destroyById: string = `delete${nameCapFirst}ById`;
 
   // graphql subscription name templates
-  const subCreated: string = `${name}Created`;
-  const subUpdated: string = `${name}Updated`;
-  const subDestroyed: string = `${name}Deleted`;
+  const subCreated: string = `${nameUnCapFirst}Created`;
+  const subUpdated: string = `${nameUnCapFirst}Updated`;
+  const subDestroyed: string = `${nameUnCapFirst}Deleted`;
 
   PubSubList.RegisterPubsub(subCreated, nameCapFirst);
   PubSubList.RegisterPubsub(subUpdated, nameCapFirst);
@@ -107,7 +108,7 @@ export function CrudResolverFactory<TDto extends ICrudDto, TEntity extends ICrud
 
     @Query(() => FindAllResult, { name: findAll })
     @Roles(...(roles.read || roles.default))
-    async findAll(@Args() filter: FilterResolver): Promise<IFindAllResult> {
+    async findAll(@Args() filter: FilterResolver): Promise<FindAllResult> {
       try {
         const items = await this.service.findAll(filter);
         const totalCount = await this.service.count(filter);
