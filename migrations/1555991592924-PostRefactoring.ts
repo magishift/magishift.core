@@ -1,6 +1,6 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class PostRefactoring1555990389622 implements MigrationInterface {
+export class PostRefactoring1555991592924 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<any> {
         await queryRunner.query(`CREATE TABLE "file_storage" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "__meta" text, "isDeleted" boolean NOT NULL DEFAULT false, "ownerId" character varying NOT NULL, "url" character varying NOT NULL, "object" character varying NOT NULL, "type" character varying NOT NULL, "meta" text NOT NULL DEFAULT '{}', "permissions" text NOT NULL DEFAULT '["public"]', "storage" character varying NOT NULL DEFAULT 'local', "dataStatus" character varying NOT NULL DEFAULT 'submitted', CONSTRAINT "UQ_f7ccb9ca8a5735d3750519f38c1" UNIQUE ("url"), CONSTRAINT "PK_2834b5398654dd125afabfd0dc2" PRIMARY KEY ("id"))`);
