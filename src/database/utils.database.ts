@@ -2,7 +2,7 @@ import _ = require('lodash');
 import { ColumnType, EntityMetadata } from 'typeorm';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 
-export const getPropertyType = (columns: ColumnMetadata[], propertyName: string): ColumnType | void => {
+export const GetPropertyType = (columns: ColumnMetadata[], propertyName: string): ColumnType | void => {
   const property: ColumnMetadata = _.find(columns, { propertyName });
 
   if (property && property.type && (property.type as any).name) {
@@ -14,7 +14,7 @@ export const getPropertyType = (columns: ColumnMetadata[], propertyName: string)
   }
 };
 
-export const getRelationsTableName = (metadata: EntityMetadata): string[] => {
+export const GetRelationsTableName = (metadata: EntityMetadata): string[] => {
   const relations = [];
 
   _.filter(metadata.columns, 'relationMetadata').map(relation => {
@@ -28,7 +28,7 @@ export const getRelationsTableName = (metadata: EntityMetadata): string[] => {
   return relations;
 };
 
-export const isPropertyTypeNumber = (propertyType: ColumnType): boolean => {
+export const ColumnIsNumber = (columnType: ColumnType): boolean => {
   return (
     [
       'int',
@@ -45,6 +45,6 @@ export const isPropertyTypeNumber = (propertyType: ColumnType): boolean => {
       'decimal',
       'numeric',
       'number',
-    ].indexOf(propertyType.toString().toLowerCase()) > 0
+    ].indexOf(columnType.toString().toLowerCase()) > 0
   );
 };

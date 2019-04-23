@@ -49,7 +49,7 @@ export const ConfigLoaderHelper = (
       database: process.env.MAGISHIFT_DB_NAME,
       port: Number(process.env.MAGISHIFT_DB_PORT),
       logging: envType !== 'production',
-      synchronize: true,
+      synchronize: false,
       entities,
       namingStrategy: new SnakeNamingStrategy(),
       cache: {

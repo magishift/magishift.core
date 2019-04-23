@@ -68,7 +68,7 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
     @Roles(DefaultRoles.authenticated)
     @ApiResponse({ status: 200, type: SwaggerGridSchema })
     getGridSchema(): SwaggerGridSchema {
-      return { schema: new dtoClass().gridSchema };
+      return super.getGridSchema();
     }
 
     @Get('/deleted')

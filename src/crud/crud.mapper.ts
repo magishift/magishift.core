@@ -3,7 +3,7 @@ import { Validator } from 'class-validator';
 import _ = require('lodash');
 import { DeepPartial, getRepository, ObjectLiteral, Repository } from 'typeorm';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
-import { getPropertyType } from '../database/utils.database';
+import { GetPropertyType } from '../database/utils.database';
 import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
 
@@ -60,7 +60,7 @@ export abstract class CrudMapper<TEntity extends ICrudEntity, TDto extends ICrud
 
     await Promise.all(
       this.repository.metadata.columns.map(async (column: ColumnMetadata) => {
-        const propType = getPropertyType(this.repository.metadata.columns, column.propertyName);
+        const propType = GetPropertyType(this.repository.metadata.columns, column.propertyName);
 
         if (
           result[column.propertyName] &&

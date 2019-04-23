@@ -37,6 +37,36 @@ check api endpoint
 check graphql endpoint
 `http://localhost:8008/graphql`
 
+## Database migration
+
+Automatic generate migration script
+
+```
+npm run migration:generate -n MigrationFileName
+or
+yarn migration:generate -n MigrationFileName
+```
+
+Run migration script
+
+```
+npm run migration:run
+or
+yarn migration:run
+```
+
+Revert migration script
+
+```
+npm run migration:revert
+or
+yarn migration:revert
+```
+
+more advanced command and config refer to here:
+
+- [TypeOrm Migration](https://github.com/typeorm/typeorm/blob/master/docs/migrations.md)
+
 ## Code of conduct
 
 - Never create feature/module that specific to one project

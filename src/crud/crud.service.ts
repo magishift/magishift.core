@@ -5,7 +5,7 @@ import { DefaultRoles } from '../auth/role/defaultRoles';
 import { SessionUtil } from '../auth/session.util';
 import { BaseService } from '../base/base.service';
 import { DataStatus } from '../base/interfaces/base.interface';
-import { getPropertyType, getRelationsTableName, isPropertyTypeNumber } from '../database/utils.database';
+import { ColumnIsNumber, GetPropertyType, GetRelationsTableName } from '../database/utils.database';
 import { GetFormSchema, GetGridSchema, GetKanbanSchema } from './crud.util';
 import { Draft } from './draft/draft.entity.mongo';
 import { DraftService } from './draft/draft.service';
@@ -47,7 +47,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
   getGridSchema(): IGridSchema {
     const result = GetGridSchema(this.constructor.name);
 
-    const relations = getRelationsTableName(this.repository.metadata);
+    const relations = GetRelationsTableName(this.repository.metadata);
 
     if (relations && relations.length > 0) {
       result.schema.foreignKey = {};
@@ -96,7 +96,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     options = options || {};
     options.cache = true;
 
-    options.relations = options.relations || getRelationsTableName(this.repository.metadata);
+    options.relations = options.relations || GetRelationsTableName(this.repository.metadata);
 
     const result = await this.repository.findOne(id, options);
 
@@ -127,7 +127,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
   ): Promise<TDto> {
     options = options || {};
     options.cache = true;
-    options.relations = options.relations || getRelationsTableName(this.repository.metadata);
+    options.relations = options.relations || GetRelationsTableName(this.repository.metadata);
 
     const result = await this.repository.findOne({ ...param } as FindConditions<TEntity>, options);
 
@@ -331,7 +331,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
 
   private resolveFindOptions(filter: IFilter): FindManyOptions {
     if (!filter.relations) {
-      filter.relations = getRelationsTableName(this.repository.metadata);
+      filter.relations = GetRelationsTableName(this.repository.metadata);
     }
 
     let where: FindConditions<TEntity> = {};
@@ -381,14 +381,14 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     _.forEach(source, (val: string, prop: string) => {
       const value: string = val;
 
-      const propertyType = getPropertyType(this.repository.metadata.columns, prop);
+      const propertyType = GetPropertyType(this.repository.metadata.columns, prop);
 
       if (
         propertyType &&
         (propertyType === 'boolean' ||
           propertyType === 'bool' ||
           propertyType === 'uuid' ||
-          isPropertyTypeNumber(propertyType))
+          ColumnIsNumber(propertyType))
       ) {
         result[prop] = value;
       } else {
