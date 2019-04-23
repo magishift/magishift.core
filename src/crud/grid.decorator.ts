@@ -1,3 +1,4 @@
+import { ICrudDto } from './interfaces/crud.interface';
 import {
   ColumnAlign,
   ColumnTypes,
@@ -5,26 +6,22 @@ import {
   IGrid,
   IGridColumn,
   IGridColumns,
-  IGridFilters,
   IGridOptions,
   IGridSchemas,
 } from './interfaces/grid.interface';
 
-const gridColumns: { [key: string]: IGridColumns } = {};
+const gridColumnRegistries: { [key: string]: IGridColumns } = {};
 
-const gridFilters: IGridFilters = {};
+const gridFilterRegistries: { [key: string]: IFilterOptions } = {};
 
-export const GridSchemas: IGridSchemas = {};
+export const GridSchemaRegistries: IGridSchemas = {};
 
 export const Grid = (
   param: {
     options?: IGridOptions;
-    filters?: IFilterOptions;
-    foreignKey?: { [key: string]: string };
   } = {},
 ) => {
-  const { foreignKey } = param;
-  let { options, filters } = param;
+  let { options } = param;
 
   options = Object.assign(
     {
@@ -36,21 +33,33 @@ export const Grid = (
     options,
   );
 
-  filters = filters || {
-    model: {},
-    fields: {},
-    rules: {},
-  };
+  return (target: { name: string; prototype: ICrudDto }) => {
+    const targetName = target.name;
 
-  return (target: { name }) => {
-    const schema: IGrid = {
+    const superClass = Object.getPrototypeOf(target);
+
+    if (superClass && superClass.name !== targetName && gridColumnRegistries[superClass.name]) {
+      gridColumnRegistries[targetName] = Object.assign(
+        gridColumnRegistries[superClass.name],
+        gridColumnRegistries[targetName],
+      );
+
+      gridFilterRegistries[targetName] = Object.assign(
+        gridFilterRegistries[superClass.name],
+        gridFilterRegistries[targetName],
+      );
+    }
+
+    const gridSchema: IGrid = {
       options,
-      filters: gridFilters[target.name] || filters,
-      columns: gridColumns[target.name],
-      foreignKey,
+      filters: gridFilterRegistries[targetName],
+      columns: gridColumnRegistries[targetName],
+      foreignKey: {},
     };
 
-    GridSchemas[target.name] = schema;
+    target.prototype.gridSchema = gridSchema;
+
+    GridSchemaRegistries[targetName] = gridSchema;
   };
 };
 
@@ -73,13 +82,14 @@ export const GridColumn = (arg: string | IGridColumn) => {
     value = column.value;
   }
 
-  return (target: { gridColumns: IGridColumns; gridFilters: IGridFilters }, key: string) => {
-    const name = target.constructor.name;
-    if (!gridColumns[name]) {
-      gridColumns[name] = {};
+  return (target: { gridColumns: IGridColumns }, key: string) => {
+    const targetName = target.constructor.name;
+
+    if (!gridColumnRegistries[targetName]) {
+      gridColumnRegistries[targetName] = {};
     }
 
-    gridColumns[name][key] = {
+    gridColumnRegistries[targetName][key] = {
       text,
       value: value || key,
       type: type || ColumnTypes.String,
@@ -87,17 +97,15 @@ export const GridColumn = (arg: string | IGridColumn) => {
     };
 
     if (searchAble) {
-      if (!gridFilters[name]) {
-        const filters: IFilterOptions = {
+      if (!gridFilterRegistries[targetName]) {
+        gridFilterRegistries[targetName] = {
           rules: {},
           fields: {},
           model: {},
         };
-
-        gridFilters[name] = filters;
       }
 
-      gridFilters[name].fields[key] = {
+      gridFilterRegistries[targetName].fields[key] = {
         label: text,
         type,
       };

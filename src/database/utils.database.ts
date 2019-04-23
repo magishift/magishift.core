@@ -1,8 +1,8 @@
 import _ = require('lodash');
-import { ColumnType } from 'typeorm';
+import { ColumnType, EntityMetadata } from 'typeorm';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 
-export const getPropertyType = (columns: ColumnMetadata[], propertyName: string): ColumnType | void => {
+export const GetPropertyType = (columns: ColumnMetadata[], propertyName: string): ColumnType | void => {
   const property: ColumnMetadata = _.find(columns, { propertyName });
 
   if (property && property.type && (property.type as any).name) {
@@ -14,31 +14,21 @@ export const getPropertyType = (columns: ColumnMetadata[], propertyName: string)
   }
 };
 
-export const getRelationsName = (columns: ColumnMetadata[]): string[] => {
-  const relations: ColumnMetadata[] = _.filter(columns, 'relationMetadata');
+export const GetRelationsTableName = (metadata: EntityMetadata): string[] => {
+  const relations = [];
 
-  const relationsName = [];
-
-  relations.map(relation => {
-    relationsName.push(relation.relationMetadata.propertyName);
+  _.filter(metadata.columns, 'relationMetadata').map(relation => {
+    relations.push(relation.relationMetadata.propertyName);
   });
 
-  return relationsName;
-};
-
-export const getRelationsTableName = (columns: ColumnMetadata[]): string[] => {
-  const relations: ColumnMetadata[] = _.filter(columns, 'relationMetadata');
-
-  const relationsTableName = [];
-
-  relations.map(relation => {
-    relationsTableName.push(relation.relationMetadata.inverseEntityMetadata.name);
+  _.filter(metadata.relations, 'isManyToManyOwner').map(relation => {
+    relations.push(relation.propertyName);
   });
 
-  return relationsTableName;
+  return relations;
 };
 
-export const isPropertyTypeNumber = (propertyType: ColumnType): boolean => {
+export const ColumnIsNumber = (columnType: ColumnType): boolean => {
   return (
     [
       'int',
@@ -55,6 +45,6 @@ export const isPropertyTypeNumber = (propertyType: ColumnType): boolean => {
       'decimal',
       'numeric',
       'number',
-    ].indexOf(propertyType.toString().toLowerCase()) > 0
+    ].indexOf(columnType.toString().toLowerCase()) > 0
   );
 };

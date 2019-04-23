@@ -13,37 +13,32 @@ import * as express from 'express';
 import * as rateLimit from 'express-rate-limit';
 import * as StatusMonitor from 'express-status-monitor';
 import { existsSync } from 'fs';
-import * as graphqlJS from 'graphql';
-import * as GraphQlJSON from 'graphql-type-json';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import * as helmet from 'helmet';
-import { fileLoader, mergeTypes } from 'merge-graphql-schemas';
-import { RedisModule } from 'nestjs-redis';
 import * as path from 'path';
 import 'reflect-metadata';
-import { AccountModule } from './auth/account/account.module';
 import { AuthModule } from './auth/auth.module';
-import { AuthInterceptor } from './auth/interceptors/auth.interceptor';
 import { LoginHistoryModule } from './auth/loginHistory/loginHistory.module';
-import { RoleModule } from './auth/role/role.module';
 import { BaseModule } from './base/base.module';
-import { DateScalar } from './base/base.scalar';
-import { AdminModule } from './common/admin/admin.module';
+import { BackOfficeUserModule } from './common/backOfficeUser/backOfficeUser.module';
 import { EmailTemplateModule } from './common/emailTemplate/emailTemplate.module';
+import { ReportModule } from './common/report/report.module';
 import { SmsTemplateModule } from './common/smsTemplate/smsTemplate.module';
 import { IConfigOptions } from './config/config.interfaces';
 import { ConfigModule } from './config/config.module';
 import { ConfigService } from './config/config.service';
 import { CronModule } from './cron/cron.module';
 import { DraftModule } from './crud/draft/draft.module';
-import { PubSubList, PubSubProvider } from './crud/providers/pubSub.provider';
+import { PubSubProvider } from './crud/providers/pubSub.provider';
+import { DateScalar } from './crud/scalars/date.scalar';
+import { IRedisModuleOptions } from './database/redis/redis.interface';
+import { RedisModule } from './database/redis/redis.module';
 import { FileStorageModule } from './fileStorage/fileStorage.module';
 import { GraphQLInstance } from './graphql/graphql.instance';
 import { HttpModule } from './http/http.module';
 import { LoggerModule } from './logger/logger.module';
 import { LoggerService } from './logger/logger.service';
 import { SettingModule } from './setting/setting.module';
-import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { GoogleConfigModule } from './thirdParty/google/google.module';
 import { GoogleCalendarModule } from './thirdParty/google/googleCalendar/googleCalendar.module';
 import { GoogleFcmModule } from './thirdParty/google/googleFcm/googleFcm.module';
@@ -69,7 +64,6 @@ export async function MagiApp(
   controllers?: Type<any>[],
   providers?: Provider[],
   exports?: Array<DynamicModule | string | Provider | ForwardReference>,
-  components?: Provider[],
 ): Promise<any> {
   if (!ConfigService.getConfig) {
     ConfigService.setConfig = config;
@@ -77,7 +71,7 @@ export async function MagiApp(
 
   await GraphQLInstance.initialize(config.db.main);
 
-  const mainSchema = GraphQLInstance.graphqlSchema;
+  // const mainSchema = GraphQLInstance.graphqlSchema;
 
   const graphqlPaths: string[] = [];
 
@@ -85,20 +79,21 @@ export async function MagiApp(
 
   if (existsSync('node_modules/@mandalalabs/magishift.core')) {
     graphqlPaths.push('node_modules/@mandalalabs/magishift.core/dist/**/*.graphql');
+  } else if (existsSync('example/modules')) {
+    graphqlPaths.push('example/modules/**/*.graphql');
   }
 
-  const typesArray = graphqlPaths.map(graphqlPath => {
-    return mergeTypes(fileLoader(graphqlPath), { all: true });
-  });
+  // const typesArray = graphqlPaths.map(graphqlPath => {
+  //   return mergeTypes(fileLoader(graphqlPath), { all: true });
+  // });
 
-  const graphQLSchema = mergeTypes([...typesArray, PubSubList.GetPubSubSchema, graphqlJS.printSchema(mainSchema)], {
-    all: true,
-  });
+  // const graphQLSchema = mergeTypes([...typesArray, PubSubList.GetPubSubSchema, graphqlJS.printSchema(mainSchema)], {
+  //   all: true,
+  // });
 
-  const redisConfig = {
+  const redisConfig: IRedisModuleOptions = {
     host: process.env.MAGISHIFT_REDIS_HOST,
     port: Number(process.env.MAGISHIFT_REDIS_PORT),
-    duration: 30000,
   };
 
   const defaultImports = [
@@ -106,26 +101,13 @@ export async function MagiApp(
     HttpModule,
     TypeOrmModule.forRoot(ConfigService.getConfig.db.main),
     TypeOrmModule.forRoot(ConfigService.getConfig.db.secondary),
-    SubscriptionsModule.forRoot(ConfigService.getConfig.appPort + 1),
     ConfigModule.injectConfig(ConfigService.getConfig),
     GraphQLModule.forRoot({
-      resolvers: { JSON: GraphQlJSON },
-      typeDefs: graphQLSchema,
-      debug: true,
+      autoSchemaFile: 'main.schema.gql',
       playground: true,
       installSubscriptionHandlers: true,
       tracing: true,
-      context: data => {
-        if (data.req) {
-          return {
-            ...data.req,
-            authScope: data.req.headers.authorization,
-            bodyScope: data.req.body,
-          };
-        }
-
-        return data;
-      },
+      context: data => data,
     }),
     FileStorageModule,
     LoggerModule,
@@ -134,17 +116,17 @@ export async function MagiApp(
     EmailTemplateModule,
     SmsTemplateModule,
     AuthModule,
-    RoleModule,
-    AccountModule,
     LoginHistoryModule,
-    AdminModule,
+    BackOfficeUserModule,
     DraftModule,
     GoogleConfigModule,
     GoogleCalendarModule,
     GoogleFcmModule,
     NotificationModule,
     DeviceModule,
+    ReportModule,
     RedisModule.register(redisConfig),
+    // CacheModule.register(),
   ];
 
   if (ConfigService.getConfig.email) {
@@ -163,6 +145,7 @@ export async function MagiApp(
 
   providers.push(DateScalar);
   providers.push(PubSubProvider);
+  // providers.push({ provide: APP_INTERCEPTOR, useClass: CacheInterceptor });
 
   if (!exports) {
     exports = [];
@@ -175,7 +158,7 @@ export async function MagiApp(
     controllers,
     providers,
     exports,
-    components,
+    // components,
   })
   class ApplicationModule {
     static AgendaInstance: Agenda;
@@ -217,7 +200,8 @@ export async function MagiApp(
       .build();
 
     const document = SwaggerModule.createDocument(app, options);
-    SwaggerModule.setup('/explorer', app, document);
+
+    SwaggerModule.setup('/swagger', app, document);
 
     console.info(chalk.green(`Starting server...`));
 
@@ -239,8 +223,6 @@ export async function MagiApp(
     }
 
     app.useGlobalFilters(new ErrorFilter(appLogger));
-
-    app.useGlobalInterceptors(new AuthInterceptor(ApplicationModule.ReflectorInstance));
 
     app.use(json({ limit: '50mb' }));
 

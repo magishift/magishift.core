@@ -14,7 +14,7 @@ export class Menu {
       this.menu = MenuFactory(ConfigService.getConfig.appName, ConfigService.getConfig.menuItems);
     }
 
-    const currentUserRoles = SessionUtil.getUserRoles;
+    const currentUserRoles = SessionUtil.getAccountRoles;
 
     return Menu.filterByRole(this.menu, currentUserRoles);
   }
@@ -27,9 +27,12 @@ export class Menu {
       }
 
       if (item.roles && item.roles.length > 0) {
-        const result = currentUserRoles.some(role => item.roles.indexOf(role) >= 0);
+        if (currentUserRoles && currentUserRoles.length > 0) {
+          const result = currentUserRoles.some(role => item.roles.indexOf(role) >= 0);
+          return result;
+        }
 
-        return result;
+        return false;
       }
 
       return true;

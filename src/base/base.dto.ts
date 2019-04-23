@@ -1,13 +1,18 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ApiModelProperty } from '@nestjs/swagger';
-import { IsUUID, validate, ValidationError } from 'class-validator';
-import { v4 as uuid } from 'uuid';
+import { IsOptional, IsUUID, validate, ValidationError } from 'class-validator';
+import { Field, ID, InputType, InterfaceType, ObjectType } from 'type-graphql';
 import { IBaseDto } from './interfaces/base.interface';
 
+@InterfaceType({ isAbstract: true })
+@ObjectType({ isAbstract: true })
+@InputType({ isAbstract: true })
 export abstract class BaseDto implements IBaseDto {
-  @ApiModelProperty()
+  @IsOptional()
   @IsUUID()
-  id: string = uuid();
+  @ApiModelProperty()
+  @Field(() => ID)
+  id: string;
 
   async validate(): Promise<ValidationError[]> {
     const errors: ValidationError[] = await validate(Object.assign({}, this), {
@@ -16,8 +21,6 @@ export abstract class BaseDto implements IBaseDto {
     });
 
     if (errors.length > 0) {
-      console.error('Dto validation error', errors);
-
       throw new HttpException(errors, HttpStatus.BAD_REQUEST);
     }
 

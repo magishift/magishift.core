@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as AWS from 'aws-sdk';
 import * as fs from 'fs';
@@ -42,11 +42,15 @@ export class FileStorageService extends CrudService<IFileStorage, IFileStorageDt
     return result;
   }
 
-  async upload(file: IFileStorageDto, ...permissions: string[]): Promise<IFileStorageDto> {
+  async upload(fileData: IFileStorageDto, ...permissions: string[]): Promise<IFileStorageDto> {
+    if (!fileData.ownerId) {
+      throw new HttpException('Object owner Id is required', 400);
+    }
+
     if (ConfigService.getConfig.s3) {
-      return this.uploadS3(file, ...permissions);
+      return this.uploadS3(fileData, ...permissions);
     } else {
-      return this.uploadLocal(file, ...permissions);
+      return this.uploadLocal(fileData, ...permissions);
     }
   }
 

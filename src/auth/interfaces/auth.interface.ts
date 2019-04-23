@@ -1,20 +1,6 @@
 import { IUserDto } from '../../user/interfaces/user.interface';
 
-export interface ILoginData {
-  readonly username: string;
-  readonly password: string;
-
-  role: string;
-}
-
-export interface ILoginDataDto {
-  readonly username: string;
-  readonly password: string;
-
-  role: string;
-}
-
-export interface ITokenPayload {
+export abstract class ITokenPayload {
   readonly email: string;
   readonly email_verified: boolean;
   readonly exp: number;
@@ -26,18 +12,31 @@ export interface ITokenPayload {
   readonly realm_access: { roles: string[] };
   readonly resource_access: object;
   readonly scope: string;
+
+  /**
+   * Session Id
+   *
+   * @type {string}
+   * @memberof ITokenPayload
+   */
   readonly session_state: string;
+
+  /**
+   * Account Id
+   *
+   * @type {string}
+   * @memberof ITokenPayload
+   */
   readonly sub: string;
   readonly typ: string;
   readonly azp: string;
 }
 
-export interface IToken {
-  readonly id: string;
-  readonly ttl: string;
-}
-
-export interface ITokenUser extends IToken {
+export interface ITokenUser {
+  readonly accessToken: string;
+  readonly refreshToken: string;
+  readonly ttl: number;
   readonly accountId: string;
   readonly userData: IUserDto;
+  readonly realm: string;
 }

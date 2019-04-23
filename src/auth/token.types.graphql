@@ -1,0 +1,8 @@
+type Token {
+  accessToken: String
+  refreshToken: String
+  ttl: Int
+  accountId: String
+  userData: JSON
+  realm: String
+}

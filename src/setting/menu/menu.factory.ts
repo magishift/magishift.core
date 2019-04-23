@@ -1,7 +1,8 @@
-import { ROLE_ENDPOINT } from '../../auth/role/interfaces/role.const';
-import { DefaultRoles } from '../../auth/role/role.const';
-import { ADMIN_ENDPOINT } from '../../common/admin/interfaces/admin.const';
+import { DefaultRoles } from '../../auth/role/defaultRoles';
+import { BO_ROLE_ENDPOINT } from '../../common/backOfficeUser/backOfficeRole/interfaces/backOfficeUser.const';
+import { BO_USER_ENDPOINT } from '../../common/backOfficeUser/interfaces/backOfficeUser.const';
 import { EMAIL_TEMPLATE_ENDPOINT } from '../../common/emailTemplate/interfaces/emailTemplate.const';
+import { REPORT_ENDPOINT } from '../../common/report/interfaces/report.const';
 import { GOOGLE_CONFIG_ENDPOINT } from '../../thirdParty/google/interfaces/google.const';
 import { IMenu } from './interfaces/menu.interface';
 
@@ -31,19 +32,31 @@ export const MenuFactory = (appTitle: string, items: IMenu[]): IMenu[] => {
       icon: 'notifications',
     },
 
+    {
+      title: 'Report',
+      icon: 'dashboard',
+      roles: [DefaultRoles.admin],
+      items: [
+        {
+          href: '/crud/' + REPORT_ENDPOINT,
+          title: 'Manage Dashboard',
+        },
+      ],
+    },
+
     { header: 'Systems', roles: [DefaultRoles.admin] },
 
     {
-      title: 'Security',
+      title: 'User Management',
       icon: 'lock',
       roles: [DefaultRoles.admin],
       items: [
         {
-          href: '/crud/' + ADMIN_ENDPOINT,
+          href: '/crud/' + BO_USER_ENDPOINT,
           title: 'Back Office User',
         },
         {
-          href: '/crud/' + ROLE_ENDPOINT,
+          href: '/crud/' + BO_ROLE_ENDPOINT,
           title: 'Roles',
         },
       ],
@@ -72,6 +85,7 @@ export const MenuFactory = (appTitle: string, items: IMenu[]): IMenu[] => {
     {
       title: 'Templates',
       icon: 'keyboard_arrow_right',
+      roles: [DefaultRoles.admin],
       items: [
         {
           href: '/crud/' + EMAIL_TEMPLATE_ENDPOINT,

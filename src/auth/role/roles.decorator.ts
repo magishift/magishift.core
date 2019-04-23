@@ -1,5 +1,5 @@
-import { ReflectMetadata } from '@nestjs/common';
-import { DefaultRoles } from './role.const';
+import { SetMetadata } from '@nestjs/common';
+import { DefaultRoles } from './defaultRoles';
 
 export const Roles = (...roles: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[]) =>
-  ReflectMetadata('roles', roles);
+  SetMetadata('roles', roles);

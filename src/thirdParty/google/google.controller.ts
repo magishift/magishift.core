@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
+import { ApiUseTags } from '@nestjs/swagger';
 import { GetFormSchema } from '../../crud/crud.util';
 import { IFormSchema } from '../../crud/interfaces/form.interface';
 import { ExceptionHandler } from '../../utils/error.utils';
@@ -7,6 +8,7 @@ import { GOOGLE_CONFIG_ENDPOINT } from './interfaces/google.const';
 import { IGoogleConfigDto } from './interfaces/google.interface';
 
 @Controller(GOOGLE_CONFIG_ENDPOINT)
+@ApiUseTags(GOOGLE_CONFIG_ENDPOINT)
 export class GoogleConfigController {
   constructor(protected readonly service: GoogleConfigService) {}
 

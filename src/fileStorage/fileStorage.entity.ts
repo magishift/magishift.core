@@ -1,7 +1,7 @@
 import { Column, Entity } from 'typeorm';
-import { DefaultRoles } from '../auth/role/role.const';
+import { DefaultRoles } from '../auth/role/defaultRoles';
 import { CrudEntity } from '../crud/crud.entity';
-import { IFileStorage } from './interfaces/fileStorage.interface';
+import { IFile, IFileStorage } from './interfaces/fileStorage.interface';
 
 @Entity()
 export class FileStorage extends CrudEntity implements IFileStorage {
@@ -17,11 +17,11 @@ export class FileStorage extends CrudEntity implements IFileStorage {
   @Column()
   type: string;
 
-  @Column()
-  meta: string;
+  @Column({ type: 'simple-json', default: {} })
+  meta: IFile;
 
-  @Column({ default: JSON.stringify([DefaultRoles.public]) })
-  permissions: string;
+  @Column({ type: 'simple-array', default: [DefaultRoles.public] })
+  permissions: string[];
 
   @Column({ default: 'local' })
   storage: 'local' | 'S3' = 'local';

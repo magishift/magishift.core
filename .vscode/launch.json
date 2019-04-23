@@ -6,7 +6,7 @@
       "request": "launch",
       "name": "Debug Magishift Playground",
       "runtimeArgs": ["-r", "ts-node/register"],
-      "args": ["${workspaceRoot}/playground/main.ts"],
+      "args": ["${workspaceRoot}/example/main.ts"],
       "protocol": "inspector",
       "sourceMaps": true,
       "cwd": "${workspaceRoot}"

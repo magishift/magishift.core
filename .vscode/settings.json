@@ -1,6 +1,7 @@
 {
   "cSpell.words": [
     "agendash",
+    "anjing",
     "automigration",
     "backend",
     "bootstrapper",
@@ -13,11 +14,13 @@
     "dtos",
     "graphiql",
     "injectable",
+    "kanban",
     "keycloak",
     "magishift",
     "mandalalabs",
     "middlewares",
     "nestjs",
+    "npwp",
     "originalname",
     "postgraphile",
     "postgres",

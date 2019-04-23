@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import * as env from 'dotenv';
+import dotenv = require('dotenv');
 import { IMenuItems } from '../setting/menu/interfaces/menu.interface';
 import { SnakeNamingStrategy } from './../database/snakeNaming';
 import { IAwsS3, IConfigOptions, IDBConfigs, IEmailConfig, IGraphQlConfig, NodeEnvType } from './config.interfaces';
@@ -12,7 +12,7 @@ export const ConfigLoaderHelper = (
   envPath?: string,
   cwd?: string,
 ): IConfigOptions => {
-  const { parsed } = env.config({
+  const { parsed } = dotenv.config({
     path: envPath || process.cwd() + '/.env',
   });
 
@@ -49,7 +49,7 @@ export const ConfigLoaderHelper = (
       database: process.env.MAGISHIFT_DB_NAME,
       port: Number(process.env.MAGISHIFT_DB_PORT),
       logging: envType !== 'production',
-      synchronize: true,
+      synchronize: false,
       entities,
       namingStrategy: new SnakeNamingStrategy(),
       cache: {
@@ -69,7 +69,7 @@ export const ConfigLoaderHelper = (
       username: process.env.MAGISHIFT_MONGO_DB_USER,
       database: process.env.MAGISHIFT_MONGO_DB_NAME,
       authSource: 'admin',
-      w: 1,
+      // w: 1,
       port: Number(process.env.MAGISHIFT_MONGO_DB_PORT),
       synchronize: true,
       logging: envType !== 'production',

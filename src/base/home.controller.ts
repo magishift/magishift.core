@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import * as osUtils from 'os-utils';
 import { ExceptionHandler } from '../utils/error.utils';
 
-@Controller('')
+@Controller()
 export class HomeController {
   @Get()
   async index(): Promise<object> {

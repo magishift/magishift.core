@@ -1,51 +1,49 @@
-import { Injectable } from '@nestjs/common';
-import * as jwt from 'jsonwebtoken';
-import { RedisService } from 'nestjs-redis';
-import { ExceptionHandler } from '../utils/error.utils';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import jwt = require('jsonwebtoken');
 import { ITokenPayload } from './interfaces/auth.interface';
-import { KeyCloakService } from './keycloak/keycloak.service';
-import { KeycloakAdminService } from './keycloak/keycloakAdmin.service';
+import { KeycloakService } from './keycloak/keycloak.service';
 import { LoginHistoryService } from './loginHistory/loginHistory.service';
-import { DefaultRoles } from './role/role.const';
+import { DefaultRoles } from './role/defaultRoles';
 import { SessionUtil } from './session.util';
 
 @Injectable()
 export class AuthService {
+  private static keycloakAdminService: KeycloakService;
+  private static loginHistoryService: LoginHistoryService;
+
   constructor(
-    protected readonly keycloakAdminService: KeycloakAdminService,
-    protected readonly keycloakService: KeyCloakService,
-    protected readonly loginHistoryService: LoginHistoryService,
-    protected readonly redisService: RedisService,
-  ) {}
-
-  login(username: string, password: string): any {
-    return this.keycloakService.login(username, password);
+    private readonly keycloakAdminService: KeycloakService,
+    private readonly loginHistoryService: LoginHistoryService,
+  ) {
+    AuthService.keycloakAdminService = this.keycloakAdminService;
+    AuthService.loginHistoryService = this.loginHistoryService;
   }
 
-  async logout(token: string): Promise<void> {
-    const authHeader = token.split(' ');
-
-    await this.keycloakService.logout(authHeader[authHeader.length - 1]);
-  }
-
-  async authorizeToken(
+  static async authorizeToken(
     jwtToken: string,
     operationName: string,
+    realm: string,
     permissions: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<boolean> {
     try {
       const isPublic = !permissions || permissions.length === 0 || permissions.indexOf(DefaultRoles.public) >= 0;
 
       if (jwtToken !== undefined && jwtToken !== null && jwtToken !== DefaultRoles.public) {
-        await this.keycloakService.verifyToken(jwtToken);
+        const decryptedToken: ITokenPayload = jwt.decode(jwtToken) as ITokenPayload;
 
-        const decryptedToken = jwt.decode(jwtToken) as ITokenPayload;
+        if (!decryptedToken) {
+          throw new HttpException('Invalid JWT token', 400);
+        }
 
+        await AuthService.keycloakAdminService.verifyToken(jwtToken, realm);
+
+        SessionUtil.setCurrentToken = jwtToken;
         SessionUtil.setAccountId = decryptedToken.sub;
-        SessionUtil.setAccountRealm = decryptedToken.azp;
-        SessionUtil.setAccountRoles = decryptedToken.realm_access.roles;
+        SessionUtil.setAccountRoles = decryptedToken.realm_access
+          ? [...decryptedToken.realm_access.roles, DefaultRoles.authenticated]
+          : [];
 
-        await this.loginHistoryService.updateActions(
+        await AuthService.loginHistoryService.updateActions(
           SessionUtil.setAccountId,
           decryptedToken.session_state,
           operationName,
@@ -68,7 +66,7 @@ export class AuthService {
 
       return isPublic;
     } catch (e) {
-      return ExceptionHandler(e, 401);
+      throw new HttpException(e, e.status || HttpStatus.UNAUTHORIZED);
     }
   }
 }

@@ -87,25 +87,39 @@ services:
     depends_on:
       - postgres
 
-  ldap-host:
-    image: osixia/openldap
-    environment:
-      - LDAP_ORGANISATION=${LDAP_ORGANISATION}
-      - LDAP_DOMAIN=${LDAP_DOMAIN}
-    ports:
-      - ${LDAP_PORT}:389
-
-  phpldapadmin-service:
-    image: osixia/phpldapadmin
-    environment:
-      - PHPLDAPADMIN_LDAP_HOSTS=ldap-host
-    ports:
-      - ${LDAP_PHPLDAPADMIN_PORT}:443
-    depends_on:
-      - ldap-host
-
   maildev:
     image: djfarrelly/maildev
     ports:
     - "${MAILDEV_PORT}:80"
     - "25"
+
+  zookeeper:
+    image: zookeeper:latest
+    hostname: zookeeper
+    ports:
+      - ${ZOOKEEPER_PORT}:2181
+    environment:
+        ZOO_MY_ID: 1
+        ZOO_PORT: 2181
+        ZOO_SERVERS: server.1=zookeeper:2888:3888
+    volumes:
+      - ./zk-single-kafka-single/zookeeper/data:/data
+      - ./zk-single-kafka-single/zookeeper/datalog:/datalog
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka
+    ports:
+      - ${KAFKA_PORT}:9092
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - ./zk-single-kafka-single/kafka/data:/var/lib/kafka/data
+    depends_on:
+      - zookeeper

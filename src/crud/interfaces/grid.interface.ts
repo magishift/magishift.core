@@ -1,3 +1,5 @@
+import { ApiModelProperty } from '@nestjs/swagger';
+
 export enum ColumnTypes {
   Text = 'text',
   Textarea = 'textarea',
@@ -64,10 +66,6 @@ export interface IFilterOptions {
   readonly rules: object;
 }
 
-export interface IGridFilters {
-  [key: string]: IFilterOptions;
-}
-
 export interface IGrid {
   options: IGridOptions;
   filters: IFilterOptions;
@@ -81,4 +79,23 @@ export interface IGridSchemas {
 
 export interface IGridSchema {
   schema: IGrid;
+}
+
+class SwaggerGrid implements IGrid {
+  @ApiModelProperty()
+  options: IGridOptions;
+
+  @ApiModelProperty()
+  filters: IFilterOptions;
+
+  @ApiModelProperty()
+  columns: IGridColumns;
+
+  @ApiModelProperty()
+  foreignKey: { [key: string]: string };
+}
+
+export class SwaggerGridSchema implements IGridSchema {
+  @ApiModelProperty()
+  schema: SwaggerGrid;
 }

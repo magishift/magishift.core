@@ -1,4 +1,4 @@
-import { HttpException, Res } from '@nestjs/common';
+import { Res } from '@nestjs/common';
 import { Response } from 'express';
 import { parse as json2csv } from 'json2csv';
 import _ = require('lodash');
@@ -7,12 +7,14 @@ import { v4 as uuid } from 'uuid';
 import { IFile } from '../../fileStorage/interfaces/fileStorage.interface';
 import { csvtojson } from '../../utils/csvtojson';
 import { ExceptionHandler } from '../../utils/error.utils';
-import { ICrudDto, ICrudEntity } from '../interfaces/crud.interface';
+import { Filter } from '../crud.filter';
+import { ICrudConfig, ICrudDto, ICrudEntity } from '../interfaces/crud.interface';
 import { ICrudController } from '../interfaces/crudController.interface';
 import { ICrudMapper } from '../interfaces/crudMapper.Interface';
 import { ICrudService } from '../interfaces/crudService.interface';
-import { IFilter } from '../interfaces/filter.interface';
+import { IFindAllResult } from '../interfaces/filter.interface';
 import { FieldTypes, IFormSchema } from '../interfaces/form.interface';
+import { IGridSchema } from '../interfaces/grid.interface';
 
 export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICrudEntity>
   implements ICrudController<TDto> {
@@ -21,15 +23,23 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     protected readonly mapper: ICrudMapper<TEntity, TDto>,
   ) {}
 
-  async getFormSchema(id?: string, isDraft?: string, isDeleted?: string): Promise<IFormSchema> {
+  getConfig(): ICrudConfig {
     try {
-      return this.service.getFormSchema(id, isDraft, isDeleted);
+      return this.service.getCrudConfig();
     } catch (e) {
       return ExceptionHandler(e);
     }
   }
 
-  getGridSchema(): object {
+  getFormSchema(): IFormSchema {
+    try {
+      return this.service.getFormSchema();
+    } catch (e) {
+      return ExceptionHandler(e);
+    }
+  }
+
+  getGridSchema(): IGridSchema {
     try {
       return this.service.getGridSchema();
     } catch (e) {
@@ -39,7 +49,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
 
   async openDeleted(filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
     try {
-      let filter: IFilter;
+      let filter: Filter<TDto>;
 
       if (filterArg) {
         filter = JSON.parse(filterArg);
@@ -62,13 +72,11 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
 
   async findAllDrafts(filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
     try {
-      let filter: IFilter;
+      let filter: Filter<TDto>;
 
       if (filterArg) {
         filter = JSON.parse(filterArg);
       }
-
-      filter.isShowDraft = true;
 
       const items = await this.service.findAllDrafts(filter);
 
@@ -83,9 +91,9 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  async findAll(filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
+  async findAll(filterArg?: string): Promise<IFindAllResult> {
     try {
-      let filter: IFilter;
+      let filter: Filter<TDto>;
 
       if (filterArg) {
         filter = JSON.parse(filterArg);
@@ -127,10 +135,10 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  async create(data: TDto): Promise<void> {
+  async create(data: TDto): Promise<TDto> {
     try {
       const param = await this.mapper.dtoFromObject(data);
-      await this.service.create(param);
+      return await this.service.create(param);
     } catch (e) {
       return ExceptionHandler(e);
     }
@@ -146,10 +154,10 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  async update(id: string, data: TDto): Promise<void> {
+  async update(id: string, data: TDto): Promise<TDto> {
     try {
       const param: TDto = await this.mapper.dtoFromObject(data);
-      await this.service.update(id, param);
+      return await this.service.update(id, param);
     } catch (e) {
       return ExceptionHandler(e);
     }
@@ -200,7 +208,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
         return importResults;
       }
 
-      throw new HttpException('Invalid or empty CSV file', 400);
+      return ExceptionHandler('Invalid or empty CSV file', 400);
     } catch (e) {
       return ExceptionHandler(e);
     }
@@ -208,7 +216,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
 
   async exportCSV(res: Response, filterArg?: string): Promise<void> {
     try {
-      let filter: IFilter;
+      let filter: Filter<TDto>;
 
       if (filterArg) {
         filter = JSON.parse(filterArg);
@@ -264,8 +272,9 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
 
     const headers = [];
 
-    Object.keys(formSchema.schema.fields).map(key => {
-      const field = formSchema.schema.fields[key];
+    _.forEach(formSchema.schema.fields, (value, key) => {
+      const field = value;
+
       if (
         [FieldTypes.Map, FieldTypes.File, FieldTypes.CSV, FieldTypes.Image, FieldTypes.Table].indexOf(field.type) < 0
       ) {

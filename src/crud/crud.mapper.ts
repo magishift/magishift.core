@@ -1,9 +1,9 @@
+import { plainToClassFromExist } from 'class-transformer';
 import { Validator } from 'class-validator';
+import _ = require('lodash');
 import { DeepPartial, getRepository, ObjectLiteral, Repository } from 'typeorm';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
-import { getPropertyType } from '../database/utils.database';
-import { Dto2Entity, DtoFromObject, Entity2Dto } from '../utils/objectMapper.utils';
+import { GetPropertyType } from '../database/utils.database';
 import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
 
@@ -29,24 +29,38 @@ export abstract class CrudMapper<TEntity extends ICrudEntity, TDto extends ICrud
     return this.getNewEntity.getRepository();
   }
 
-  async dtoToEntity(dto: TDto): Promise<QueryDeepPartialEntity<TEntity>> {
+  async dtoToEntity(dto: TDto): Promise<TEntity> {
     delete dto.__meta;
 
-    return Dto2Entity(dto, this.getNewEntity);
+    const entity: DeepPartial<TEntity> = {};
+
+    _.forEach(dto, (value, key) => {
+      entity[key] = value;
+    });
+
+    return this.repository.create(entity);
   }
 
   async entityToDto(entity: DeepPartial<TEntity> | TEntity | ObjectLiteral): Promise<TDto> {
-    const dto = Entity2Dto(entity as TEntity, this.getNewDto);
+    const dto: TDto = this.getNewDto;
+
+    _.forEach(entity, (value, key) => {
+      dto[key] = value;
+    });
 
     return dto;
   }
 
   async dtoFromObject(obj: TDto): Promise<TDto> {
-    const result = DtoFromObject(obj, this.getNewDto);
+    if (!obj) {
+      return undefined;
+    }
+
+    const result = plainToClassFromExist(this.getNewDto, obj);
 
     await Promise.all(
       this.repository.metadata.columns.map(async (column: ColumnMetadata) => {
-        const propType = getPropertyType(this.repository.metadata.columns, column.propertyName);
+        const propType = GetPropertyType(this.repository.metadata.columns, column.propertyName);
 
         if (
           result[column.propertyName] &&

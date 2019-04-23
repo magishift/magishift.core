@@ -1,18 +1,24 @@
-import { Controller, Get, HttpException, Param, Res } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Param, Res } from '@nestjs/common';
 import { Response } from 'express';
-import { DefaultRoles } from '../auth/role/role.const';
+import { DefaultRoles } from '../auth/role/defaultRoles';
 import { Roles } from '../auth/role/roles.decorator';
 import { SessionUtil } from '../auth/session.util';
 import { CrudControllerFactory } from '../crud/crud.controller';
+import { ExceptionHandler } from '../utils/error.utils';
+import { FileStorageDto } from './fileStorage.dto';
 import { FileStorageMapper } from './fileStorage.mapper';
 import { FileStorageService } from './fileStorage.service';
 import { FILE_STORAGE_ENDPOINT } from './interfaces/fileStorage.const';
 import { IFileStorage, IFileStorageDto } from './interfaces/fileStorage.interface';
 
 @Controller(FILE_STORAGE_ENDPOINT)
-export class FileStorageController extends CrudControllerFactory<IFileStorageDto, IFileStorage>(FILE_STORAGE_ENDPOINT, {
-  default: [DefaultRoles.admin],
-}) {
+export class FileStorageController extends CrudControllerFactory<IFileStorageDto, IFileStorage>(
+  FILE_STORAGE_ENDPOINT,
+  FileStorageDto,
+  {
+    default: [DefaultRoles.admin],
+  },
+) {
   constructor(protected readonly service: FileStorageService, protected readonly mapper: FileStorageMapper) {
     super(service, mapper);
   }
@@ -22,8 +28,11 @@ export class FileStorageController extends CrudControllerFactory<IFileStorageDto
   async fileFindById(@Param('id') id: string, @Res() res: Response): Promise<void> {
     const file = await this.service.fetch(id);
 
-    if (!file.permissions.some(permission => SessionUtil.getUserRoles.indexOf(permission) >= 0)) {
-      throw new HttpException(`You don't have access for this file`, 403);
+    if (
+      file.permissions.length > 0 &&
+      !file.permissions.some(permission => SessionUtil.getAccountRoles.indexOf(permission) >= 0)
+    ) {
+      return ExceptionHandler(`You don't have access for this file`, HttpStatus.FORBIDDEN);
     }
 
     if (file.storage === 'S3') {

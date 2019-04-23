@@ -1,8 +1,10 @@
-import { HttpException, Injectable } from '@nestjs/common';
-import { Credentials, OAuth2Client } from 'google-auth-library';
+import { Injectable } from '@nestjs/common';
+import { Credentials } from 'google-auth-library';
 import { google } from 'googleapis';
+import { OAuth2Client } from 'googleapis-common';
 import _ = require('lodash');
 import { SettingService } from '../../setting/setting.service';
+import { ExceptionHandler } from '../../utils/error.utils';
 import { GOOGLE_CALENDAR_SCOPES } from './googleCalendar/interfaces/googleCalendar.const';
 import { IGoogleConfig, IGoogleConfigDto } from './interfaces/google.interface';
 
@@ -21,7 +23,7 @@ export class GoogleConfigService {
 
   async update(config: IGoogleConfigDto): Promise<IGoogleConfigDto> {
     if (!config.calendarEnabled && !config.mapEnabled) {
-      throw new HttpException('At least 1 service, should be enabled', 400);
+      return ExceptionHandler('At least 1 service, should be enabled', 400);
     }
 
     const currentConfigData: IGoogleConfigDto = await this.fetch();

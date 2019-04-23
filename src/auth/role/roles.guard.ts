@@ -1,47 +1,57 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import * as lodash from 'lodash';
-import { ExceptionHandler } from '../../utils/error.utils';
+import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthService } from '../auth.service';
-import { DefaultRoles } from './role.const';
+import { DefaultRoles } from './defaultRoles';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private readonly authService: AuthService, private readonly reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
       // Get method or class permissions
-      const permissions: string[] =
+      const rolePermissions: string[] =
         this.reflector.get<string[]>('roles', context.getHandler()) ||
         this.reflector.get<string[]>('roles', context.getClass());
 
-      const isPublic = !permissions || permissions.length === 0 || permissions.indexOf(DefaultRoles.public) >= 0;
+      const realmPermissions: string[] =
+        this.reflector.get<string[]>('realm', context.getHandler()) ||
+        this.reflector.get<string[]>('realm', context.getClass());
+
+      const isPublic =
+        !rolePermissions || rolePermissions.length === 0 || rolePermissions.indexOf(DefaultRoles.public) >= 0;
 
       // Get request data
-      const request = context.switchToHttp().getRequest();
+      let request = context.switchToHttp().getRequest();
 
-      let authHeader: string[];
-
-      if (request && request.headers && request.headers.authorization) {
-        authHeader = request.headers.authorization.split(' ');
-      } else {
-        // if request doesn't exist use authScope
-        const authScope = lodash.find(context.getArgs(), 'authScope');
-        if (authScope) {
-          authHeader = authScope.authScope.split(' ');
-        }
+      if (!request) {
+        const ctx = GqlExecutionContext.create(context);
+        request = ctx.getContext().req;
       }
 
-      if (authHeader && authHeader.length > 0) {
-        const jwtToken = authHeader[authHeader.length - 1] || request.query.token;
+      const headerRealm: string = request.headers.realm || request.query.realm;
+      if (!isPublic && !headerRealm) {
+        throw new HttpException('Resource is not public, you must provide "realm" in request headers', 400);
+      }
 
-        return await this.authService.authorizeToken(jwtToken, context.getHandler().name, permissions);
+      const headerAuth: string[] = request.headers.authorization
+        ? request.headers.authorization.split(' ')
+        : [request.query.token];
+
+      if (headerAuth && headerAuth.length > 0 && headerRealm) {
+        const jwtToken = headerAuth[headerAuth.length - 1] || request.query.token;
+
+        if (realmPermissions && realmPermissions.length > 0 && realmPermissions.indexOf(headerRealm) === -1) {
+          return false;
+        }
+
+        return await AuthService.authorizeToken(jwtToken, context.getHandler().name, headerRealm, rolePermissions);
       }
 
       return isPublic;
     } catch (e) {
-      return ExceptionHandler(e, 401);
+      throw new HttpException(e.message || e, e.status || HttpStatus.UNAUTHORIZED);
     }
   }
 }

@@ -4,7 +4,6 @@ import _ = require('lodash');
 import { Repository } from 'typeorm';
 import { DraftService } from '../../crud/draft/draft.service';
 import { IFilter } from '../../crud/interfaces/filter.interface';
-import { ILoginHistoryDto } from './interfaces/loginHistory.interface';
 import { LoginHistory } from './loginHistory.entity.mongo';
 
 @Injectable()
@@ -18,10 +17,9 @@ export class LoginHistoryService {
     filter: IFilter = {
       offset: 0,
       limit: 10,
-      isShowDraft: false,
       isShowDeleted: false,
     },
-  ): Promise<ILoginHistoryDto[]> {
+  ): Promise<LoginHistory[]> {
     if (!filter.where || _.isEmpty(filter.where)) {
       return [];
     }

@@ -1,9 +1,17 @@
-import { DefaultRoles } from './role/role.const';
+import { DefaultRoles } from './role/defaultRoles';
 
 export class SessionUtil {
+  private static currentToken: string = null;
   private static currentAccountId: string = null;
-  private static currentAccountRealm: string = null;
-  private static currentUserRoles: string[] = [DefaultRoles.public];
+  private static currentUserRoles: string[] = [];
+
+  static set setCurrentToken(token: string) {
+    SessionUtil.currentToken = token;
+  }
+
+  static get getCurrentToken(): string {
+    return SessionUtil.currentToken;
+  }
 
   static set setAccountId(accountId: string) {
     SessionUtil.currentAccountId = accountId;
@@ -13,19 +21,11 @@ export class SessionUtil {
     return SessionUtil.currentAccountId;
   }
 
-  static set setAccountRealm(realm: string) {
-    SessionUtil.currentAccountRealm = realm;
-  }
-
-  static get getAccountRealm(): string {
-    return SessionUtil.currentAccountRealm;
-  }
-
   static set setAccountRoles(role: string[]) {
     SessionUtil.currentUserRoles = role;
   }
 
-  static get getUserRoles(): string[] {
-    return SessionUtil.currentUserRoles;
+  static get getAccountRoles(): string[] {
+    return SessionUtil.currentUserRoles.length > 0 ? SessionUtil.currentUserRoles : [DefaultRoles.public];
   }
 }

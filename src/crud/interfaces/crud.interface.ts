@@ -1,6 +1,8 @@
 import { ValidationError } from 'class-validator';
 import { Repository } from 'typeorm';
 import { DataStatus, IBaseDto, IBaseEntity } from '../../base/interfaces/base.interface';
+import { IForm, IFormField, IFormSchema } from './form.interface';
+import { IGrid, IGridColumns, IGridSchema } from './grid.interface';
 
 export interface IDataHsitory {
   date: Date;
@@ -17,17 +19,30 @@ export interface IDataMeta {
 }
 
 export interface ICrudEntity extends IBaseEntity {
-  getRepository: () => Repository<any>;
-
-  isDeleted: boolean;
-
+  id: string;
+  isDeleted?: boolean;
   __meta: IDataMeta;
+
+  getRepository: () => Repository<any>;
 }
 
 export interface ICrudDto extends IBaseDto {
-  isDeleted?: boolean;
+  gridSchema: IGrid;
+  gridColumns: IGridColumns;
+  formSchema: IForm;
+  formFields: IFormField[];
 
-  __meta?: IDataMeta;
+  id: string;
+  isDeleted: boolean;
+  __meta: IDataMeta;
 
   validate(): Promise<ValidationError[]>;
+}
+
+export interface ICrudConfig {
+  kanban: object;
+  form: IFormSchema;
+  grid: IGridSchema;
+  softDelete: boolean;
+  enableDraft: boolean;
 }
