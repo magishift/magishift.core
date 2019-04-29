@@ -115,7 +115,7 @@
     "@types/bcryptjs": "2.4.2",
     "@types/chalk": "2.2.0",
     "@types/cli-color": "0.3.29",
-    "@types/connect-redis": "0.0.9",
+    "@types/connect-redis": "0.0.10",
     "@types/cron": "1.7.0",
     "@types/dotenv": "6.1.1",
     "@types/express-session": "1.15.12",
