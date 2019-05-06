@@ -1,0 +1,37 @@
+.vscode
+
+src
+
+package-lock.json
+
+logger/*
+
+.dockerignore
+
+dockerfile
+
+docker-compose.yml
+
+tslint.json
+
+tsconfig.json
+
+jest.json
+
+.prettierrc
+
+files/*
+
+# source
+**/*.ts
+*.ts
+
+# definitions
+!**/*.d.ts
+!*.d.ts
+
+# configuration
+package-lock.json
+tslint.json
+tsconfig.json
+.prettierrc
