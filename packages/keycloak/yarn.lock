@@ -34,20 +34,20 @@
     "@magishift/config" "^0.0.3"
     axios "^0.18.0"
 
-"@magishift/redis@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@magishift/redis/-/redis-0.0.2.tgz#9ba39201da136529bb4c9c1f8eef61fc6865d27b"
-  integrity sha512-8rALqyAS6OH+fIC1W9NN4CdulgqzPCJYdzV82fI29hT2x6J7NmmwF2Y06SJh2LNgjt2714/asU6i4UjQhOwz2Q==
+"@magishift/redis@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@magishift/redis/-/redis-0.0.3.tgz#76171e0f77fb925bec06cb0433fa3cdeacb742d0"
+  integrity sha512-Tnp5LZHsbtwL+FhZK65Xs4X3S6+U1RTwUXohbepzvNDVlkiugDn0dq0B664UzTqgiP19rPZGrRnSlkPoP1hZ9Q==
   dependencies:
     "@magishift/base" "^0.0.3"
     ioredis "^4.9.0"
     typeorm "^0.2.16"
     uuid "^3.3.2"
 
-"@magishift/util@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@magishift/util/-/util-0.0.2.tgz#fe632c59603884d292d072e172afc07d4185f7bc"
-  integrity sha512-BJWM2bu37/Hva5riBm4upoj3l0esWMXMftdB9zVl5jcMzEan4P7yWR6sjZO/uYpIxpAoxnE86iho62wtfq8+vg==
+"@magishift/util@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@magishift/util/-/util-0.0.3.tgz#c9643b2626c644d1b477d256f4e070d51c780fc2"
+  integrity sha512-4KqSrU9POAR39XVNciOrkMyxZDb/XiyHGmelvrpapJRdEAqYveOJ+bnNUPHcx0UViBtViyfnGyjAI+VSITff0w==
   dependencies:
     csvtojson "^2.0.8"
     lodash "^4.17.11"
@@ -947,6 +947,11 @@ dotenv@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-7.0.0.tgz#a2be3cd52736673206e8a85fb5210eea29628e7c"
   integrity sha512-M3NhsLbV1i6HuGzBUH8vXrtxOk+tWmzWKDMbAVSUp3Zsjm7ywFeuwrUXhmhQyRK1q5B5GGy7hcXPbj3bnfZg2g==
+
+dotenv@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.0.0.tgz#ed310c165b4e8a97bb745b0a9d99c31bda566440"
+  integrity sha512-30xVGqjLjiUOArT4+M5q9sYdvuR4riM6yK9wMcas9Vbp6zZa+ocC9dp6QoftuhTPhFAiLK/0C5Ni2nou/Bk8lg==
 
 duplexer3@^0.1.4:
   version "0.1.4"

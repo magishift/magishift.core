@@ -1,0 +1,38 @@
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres:latest
+    volumes:
+      - ./docker-postgres-init:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_MULTIPLE_DATABASES: ${DB_NAME}
+    ports:
+      - ${DB_PORT}:5432
+
+  keycloak:
+    image: jboss/keycloak
+    volumes:
+      - ./keycloak/magishift/:/opt/jboss/keycloak/themes/magishift/
+      - ./keycloak/magishift-internal/:/opt/jboss/keycloak/themes/magishift-internal/
+      - ./keycloak/magishift-social-providers/:/opt/jboss/keycloak/themes/magishift-social-providers/
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgres
+      DB_DATABASE: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      KEYCLOAK_USER: ${KEYCLOAK_USER_MASTER}
+      KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD_MASTER}
+    ports:
+      - ${KEYCLOAK_PORT}:8080
+    depends_on:
+      - postgres
+
+  redis:
+    image: redis:latest
+    hostname: redis
+    ports:
+      - ${REDIS_PORT}:6379

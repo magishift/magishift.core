@@ -23,10 +23,11 @@
   "dependencies": {
     "@magishift/config": "^0.0.3",
     "@magishift/http": "^0.0.4",
-    "@magishift/redis": "^0.0.2",
-    "@magishift/util": "^0.0.2",
+    "@magishift/redis": "^0.0.3",
+    "@magishift/util": "^0.0.3",
     "aws-lambda": "^0.1.2",
     "aws-serverless-express": "^3.3.6",
+    "dotenv": "^8.0.0",
     "ioredis": "^4.9.0",
     "jsonwebtoken": "^8.5.1",
     "keycloak-admin": "^1.12.0",

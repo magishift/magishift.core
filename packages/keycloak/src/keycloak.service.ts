@@ -2,6 +2,7 @@ import { HttpService } from '@magishift/http';
 import { RedisService } from '@magishift/redis';
 import { HttpStatus } from '@nestjs/common';
 import { HttpException, Injectable } from '@nestjs/common';
+import dotenv = require('dotenv');
 import Redis = require('ioredis');
 import jwt = require('jsonwebtoken');
 import KeycloakAdminClient from 'keycloak-admin';
@@ -12,6 +13,10 @@ import _ = require('lodash');
 import moment = require('moment');
 import { IKeycloakService } from './interfaces/keycloakService.interface';
 import { ITokenPayload } from './interfaces/tokenPayload.interface';
+
+const { parsed } = dotenv.config({
+  path: process.cwd() + '/.env',
+});
 
 export interface ILoginResult {
   accessToken: string;
@@ -36,32 +41,54 @@ export interface IKeycloakRealm {
 
 @Injectable()
 export class KeycloakService implements IKeycloakService {
+  private static async Auth(
+    keycloakAdminClient: KeycloakAdminClient,
+    realm: string,
+    client: string,
+    username: string,
+    password: string,
+  ): Promise<KeycloakAdminClient> {
+    keycloakAdminClient.realmName = realm;
+
+    try {
+      await keycloakAdminClient.auth({
+        username,
+        password,
+        clientId: client || 'admin-cli',
+        grantType: 'password',
+      });
+
+      return keycloakAdminClient;
+    } catch (e) {
+      throw new HttpException(
+        `Cannot login to keycloak server, on realm ${realm} ${JSON.stringify(e.response.data)}`,
+        e.response.status || HttpStatus.UNAUTHORIZED,
+      );
+    }
+  }
   private static keycloakClient: KeycloakAdminClient;
+  private masterConfig: IKeycloakAdminConfig;
   private realmConfigs: { master: IKeycloakRealm } & { [key: string]: IKeycloakRealm };
   private defaultAuthServerUrl: string;
   private redisClient: Redis.Redis;
 
-  constructor(
-    private readonly masterConfig: IKeycloakAdminConfig,
-    private readonly httpService: HttpService,
-    private readonly redisService: RedisService,
-  ) {
-    // this.masterConfig = {
-    //   realm_master: process.env.KEYCLOAK_REALM_MASTER,
-    //   user_master: process.env.KEYCLOAK_USER_MASTER,
-    //   password_master: process.env.KEYCLOAK_PASSWORD_MASTER,
-    //   client_master: process.env.KEYCLOAK_CLIENT_MASTER,
-    //   baseUrl: `${process.env.KEYCLOAK_BASE_URL}/auth`,
-    //   grant_type: 'password',
-    // };
+  constructor(private readonly httpService: HttpService, private readonly redisService: RedisService) {
+    this.masterConfig = {
+      realm_master: parsed.KEYCLOAK_REALM_MASTER,
+      user_master: parsed.KEYCLOAK_USER_MASTER,
+      password_master: parsed.KEYCLOAK_PASSWORD_MASTER,
+      client_master: parsed.KEYCLOAK_CLIENT_MASTER,
+      baseUrl: `${parsed.KEYCLOAK_BASE_URL}/auth`,
+      grant_type: 'password',
+    };
 
     KeycloakService.keycloakClient = new KeycloakAdminClient({
       baseUrl: this.masterConfig.baseUrl,
       realmName: this.masterConfig.realm_master,
     });
 
-    this.realmConfigs = JSON.parse(process.env.KEYCLOAK_REALMS);
-    this.defaultAuthServerUrl = `${process.env.KEYCLOAK_BASE_URL}/auth`;
+    this.realmConfigs = JSON.parse(parsed.KEYCLOAK_REALMS);
+    this.defaultAuthServerUrl = `${parsed.KEYCLOAK_BASE_URL}/auth`;
 
     this.realmConfigs.master.authServerUrl = this.realmConfigs.master.authServerUrl || this.defaultAuthServerUrl;
     this.realmConfigs.master.public = this.realmConfigs.master.public || true;
@@ -288,31 +315,5 @@ export class KeycloakService implements IKeycloakService {
       this.masterConfig.user_master,
       this.masterConfig.password_master,
     );
-  }
-
-  private static async Auth(
-    keycloakAdminClient: KeycloakAdminClient,
-    realm: string,
-    client: string,
-    username: string,
-    password: string,
-  ): Promise<KeycloakAdminClient> {
-    keycloakAdminClient.realmName = realm;
-
-    try {
-      await keycloakAdminClient.auth({
-        username,
-        password,
-        clientId: client || 'admin-cli',
-        grantType: 'password',
-      });
-
-      return keycloakAdminClient;
-    } catch (e) {
-      throw new HttpException(
-        `Cannot login to keycloak server, on realm ${realm} ${JSON.stringify(e.response.data)}`,
-        e.response.status || HttpStatus.UNAUTHORIZED,
-      );
-    }
   }
 }
