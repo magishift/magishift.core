@@ -7,11 +7,14 @@
     "bootstrapper",
     "checkboxes",
     "copyfiles",
+    "cors",
     "datepicker",
     "datetime",
     "deletable",
     "deleteable",
     "dtos",
+    "envar",
+    "filestorage",
     "graphiql",
     "injectable",
     "kanban",
@@ -44,7 +47,7 @@
   "prettier.trailingComma": "all",
   "files.autoSave": "onFocusChange",
   "codemetrics.basics.ComplexityLevelHigh": 10,
-  "workbench.colorTheme": "Monokai",
+  "workbench.colorTheme": "Material Theme Palenight High Contrast",
   "files.trimTrailingWhitespace": true,
   "[handlebars]": { "editor.formatOnSave": false }
 }

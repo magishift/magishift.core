@@ -11,8 +11,8 @@ const redisConfig: IRedisModuleOptions = {
 
 @Global()
 @Module({
-  controllers: [KeycloakController],
   imports: [HttpModule, RedisModule.register(redisConfig)],
+  controllers: [KeycloakController],
   providers: [KeycloakService],
   exports: [KeycloakService],
 })

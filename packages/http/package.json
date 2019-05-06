@@ -1,6 +1,6 @@
 {
   "name": "@magishift/http",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "Magishift is Low-Code Framework, helps you to build application easier, faster and a more efficient use of time. (@http)",
   "author": "Sofyan Hadi Ahmad",
   "license": "MIT",
@@ -17,6 +17,8 @@
     "build:publish": "yarn build && yarn publish --no-git-tag-version ",
     "barrels": "barrelsby --delete -d ./src"
   },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "dependencies": {
     "@magishift/config": "^0.0.3",
     "axios": "^0.18.0"

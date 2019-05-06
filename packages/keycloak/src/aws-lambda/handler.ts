@@ -1,28 +1,51 @@
 import { NestFactory } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import { Context, Handler } from 'aws-lambda';
-import * as serverless from 'aws-serverless-express';
-import * as express from 'express';
+import { createServer, proxy } from 'aws-serverless-express';
+import { eventContext } from 'aws-serverless-express/middleware';
 import { Server } from 'http';
 import { KeycloakModule } from '../keycloak.module';
 
+// NOTE: If you get ERR_CONTENT_DECODING_FAILED in your browser, this is likely
+// due to a compressed response (e.g. gzip) which has not been handled correctly
+// by aws-serverless-express and/or API Gateway. Add the necessary MIME types to
+// binaryMimeTypes below
+const binaryMimeTypes: string[] = [];
+
 let cachedServer: Server;
 
-async function bootstrapServer(): Promise<Server> {
-  const expressApp = express();
+process.on('unhandledRejection', reason => {
+  console.error(reason);
+});
 
-  return NestFactory.create(KeycloakModule)
-    .then(app => app.enableCors())
-    .then(app => app.init())
-    .then(() => serverless.createServer(expressApp));
+process.on('uncaughtException', reason => {
+  console.error(reason);
+});
+
+async function bootstrapServer(): Promise<Server> {
+  if (!cachedServer) {
+    try {
+      const expressApp = require('express')();
+
+      const adapter = new ExpressAdapter(expressApp);
+
+      const nestApp = await NestFactory.create(KeycloakModule, adapter);
+
+      nestApp.use(eventContext());
+      await nestApp.init();
+
+      cachedServer = createServer(expressApp, undefined, binaryMimeTypes);
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+  return Promise.resolve(cachedServer);
 }
 
-export const handler: Handler = (event: any, context: Context): any => {
+export const handler: Handler = async (event: any, context: Context): Promise<any> => {
   if (!cachedServer) {
-    bootstrapServer().then(server => {
-      cachedServer = server;
-      return serverless.proxy(server, event, context);
-    });
-  } else {
-    return serverless.proxy(cachedServer, event, context);
+    cachedServer = await bootstrapServer();
   }
+
+  return proxy(cachedServer, event, context, 'PROMISE').promise;
 };

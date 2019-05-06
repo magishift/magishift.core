@@ -1,29 +1,31 @@
-service: serverless-nestjs
+service:
+  name: magishift-keycloak-service
 
 provider:
   name: aws
   runtime: nodejs8.10
+  region: 'ap-southeast-1'
 
 plugins:
+  - '@hewmen/serverless-plugin-typescript'
+  - serverless-plugin-optimize
   - serverless-offline
 
 package:
   exclude:
     - .git/**
+    - dist/**
     - src/**
     - test/**
     - nodemon.json
     - README.md
+  individually: true
 
 functions:
-  index:
-    handler: dist/aws-lambda/index.handler
+  main:
+    handler: src/aws-lambda/handler.handler
     events:
-    - http:
-        cors: true
-        path: '/'
-        method: any
-    - http:
-        cors: true
-        path: '{proxy+}'
-        method: any
+      - http:
+          cors: true
+          method: any
+          path: /{proxy+}

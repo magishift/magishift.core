@@ -1,4 +1,3 @@
-export * from './keycloak.const';
 export * from './keycloak.controller';
 export * from './keycloak.module';
 export * from './keycloak.service';

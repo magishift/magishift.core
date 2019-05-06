@@ -14,14 +14,12 @@
   "scripts": {
     "precommit": "echo 'precommit'",
     "build": "rm -rf dist && tsc --p tsconfig.json -d && copyfiles -u -f -V src/**/*.graphql src/**/**/*.graphql dist",
-    "build:publish": "yarn build && yarn publish",
+    "build:publish": "yarn build && yarn publish --no-git-tag-version ",
     "barrels": "barrelsby --delete -d ./src"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@nestjs/common": "^6.1.1",
-    "@nestjs/core": "^6.1.1",
     "class-validator": "^0.9.1",
     "os-utils": "^0.0.14",
     "type-graphql": "^0.17.3",

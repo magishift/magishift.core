@@ -1,0 +1,23 @@
+{
+  "name": "@magishift/cron",
+  "version": "1.0.0",
+  "description": "Magishift is Low-Code Framework, helps you to build application easier, faster and a more efficient use of time. (@cron)",
+  "author": "Sofyan Hadi Ahmad",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/magishift/magishift.core"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@nestjs/common": "^6.1.1",
+    "@nestjs/core": "^6.1.1",
+    "axios": "^0.18.0"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^6.1.1",
+    "@nestjs/core": "^6.1.1"
+  }
+}

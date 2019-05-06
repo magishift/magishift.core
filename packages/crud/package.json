@@ -1,0 +1,36 @@
+{
+  "name": "@magishift/crud",
+  "version": "1.0.0",
+  "description": "Magishift is Low-Code Framework, helps you to build application easier, faster and a more efficient use of time. (@crud)",
+  "author": "Sofyan Hadi Ahmad",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/magishift/magishift.core"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc --p tsconfig.json -d && copyfiles -u -f -V src/**/*.graphql src/**/**/*.graphql dist",
+    "precommit": "echo 'precommit'",
+    "build:publish": "yarn build && yarn publish --no-git-tag-version",
+    "barrels": "barrelsby --delete -d ./src"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@magishift/base": "^0.0.2",
+    "@magishift/draft": "^0.0.1",
+    "@nestjs/common": "^6.1.1",
+    "@nestjs/core": "^6.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^11.13.9",
+    "@types/uuid": "^3.4.4",
+    "copyfiles": "^2.1.0",
+    "nodemon": "^1.19.0",
+    "supertest": "^4.0.2",
+    "typescript": "^3.4.5"
+  }
+}

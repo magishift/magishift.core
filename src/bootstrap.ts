@@ -34,7 +34,6 @@ import { DateScalar } from './crud/scalars/date.scalar';
 import { IRedisModuleOptions } from './database/redis/redis.interface';
 import { RedisModule } from './database/redis/redis.module';
 import { FileStorageModule } from './fileStorage/fileStorage.module';
-import { GraphQLInstance } from './graphql/graphql.instance';
 import { HttpModule } from './http/http.module';
 import { LoggerModule } from './logger/logger.module';
 import { LoggerService } from './logger/logger.service';
@@ -68,10 +67,6 @@ export async function MagiApp(
   if (!ConfigService.getConfig) {
     ConfigService.setConfig = config;
   }
-
-  await GraphQLInstance.initialize(config.db.main);
-
-  // const mainSchema = GraphQLInstance.graphqlSchema;
 
   const graphqlPaths: string[] = [];
 
