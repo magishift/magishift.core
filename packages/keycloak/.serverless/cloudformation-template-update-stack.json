@@ -103,7 +103,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/magishift-keycloak-service/dev/1557146768135-2019-05-06T12:46:08.135Z/main.zip"
+          "S3Key": "serverless/magishift-keycloak-service/dev/1557158372040-2019-05-06T15:59:32.040Z/main.zip"
         },
         "FunctionName": "magishift-keycloak-service-dev-main",
         "Handler": "_optimize/magishift-keycloak-service-dev-main/src/aws-lambda/handler.handler",
@@ -122,14 +122,14 @@
         "IamRoleLambdaExecution"
       ]
     },
-    "MainLambdaVersionf31I2f2YYd2ZsPIFSdjEmncMfDWLE4x7z1RsAdFFs": {
+    "MainLambdaVersionIdBIuucOvv6KvMiVxzyent6b78wcljXrQFSXXwctuo0": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "MainLambdaFunction"
         },
-        "CodeSha256": "O1TinbgEzSQxVOsPnXdnywmXRfB2AaT5p/BIadN2zKE="
+        "CodeSha256": "zXHv36M2JyXRXeCc2NMIlBtDjrWw8nk6Aewx6NGOwfY="
       }
     },
     "ApiGatewayRestApi": {
@@ -248,7 +248,7 @@
         "MethodResponses": []
       }
     },
-    "ApiGatewayDeployment1557146743102": {
+    "ApiGatewayDeployment1557158342896": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -318,7 +318,7 @@
     "MainLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "MainLambdaVersionf31I2f2YYd2ZsPIFSdjEmncMfDWLE4x7z1RsAdFFs"
+        "Ref": "MainLambdaVersionIdBIuucOvv6KvMiVxzyent6b78wcljXrQFSXXwctuo0"
       }
     },
     "ServiceEndpoint": {

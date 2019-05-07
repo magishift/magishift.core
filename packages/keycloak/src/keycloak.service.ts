@@ -2,7 +2,6 @@ import { HttpService } from '@magishift/http';
 import { RedisService } from '@magishift/redis';
 import { HttpStatus } from '@nestjs/common';
 import { HttpException, Injectable } from '@nestjs/common';
-import dotenv = require('dotenv');
 import Redis = require('ioredis');
 import jwt = require('jsonwebtoken');
 import KeycloakAdminClient from 'keycloak-admin';
@@ -13,10 +12,6 @@ import _ = require('lodash');
 import moment = require('moment');
 import { IKeycloakService } from './interfaces/keycloakService.interface';
 import { ITokenPayload } from './interfaces/tokenPayload.interface';
-
-const { parsed } = dotenv.config({
-  path: process.cwd() + '/.env',
-});
 
 export interface ILoginResult {
   accessToken: string;
@@ -73,27 +68,31 @@ export class KeycloakService implements IKeycloakService {
   private redisClient: Redis.Redis;
 
   constructor(private readonly httpService: HttpService, private readonly redisService: RedisService) {
-    this.masterConfig = {
-      realm_master: parsed.KEYCLOAK_REALM_MASTER,
-      user_master: parsed.KEYCLOAK_USER_MASTER,
-      password_master: parsed.KEYCLOAK_PASSWORD_MASTER,
-      client_master: parsed.KEYCLOAK_CLIENT_MASTER,
-      baseUrl: `${parsed.KEYCLOAK_BASE_URL}/auth`,
-      grant_type: 'password',
-    };
+    try {
+      this.masterConfig = {
+        realm_master: process.env.KEYCLOAK_REALM_MASTER,
+        user_master: process.env.KEYCLOAK_USER_MASTER,
+        password_master: process.env.KEYCLOAK_PASSWORD_MASTER,
+        client_master: process.env.KEYCLOAK_CLIENT_MASTER,
+        baseUrl: `${process.env.KEYCLOAK_BASE_URL}/auth`,
+        grant_type: 'password',
+      };
 
-    KeycloakService.keycloakClient = new KeycloakAdminClient({
-      baseUrl: this.masterConfig.baseUrl,
-      realmName: this.masterConfig.realm_master,
-    });
+      KeycloakService.keycloakClient = new KeycloakAdminClient({
+        baseUrl: this.masterConfig.baseUrl,
+        realmName: this.masterConfig.realm_master,
+      });
 
-    this.realmConfigs = JSON.parse(parsed.KEYCLOAK_REALMS);
-    this.defaultAuthServerUrl = `${parsed.KEYCLOAK_BASE_URL}/auth`;
+      this.realmConfigs = JSON.parse(process.env.KEYCLOAK_REALMS);
+      this.defaultAuthServerUrl = `${process.env.KEYCLOAK_BASE_URL}/auth`;
 
-    this.realmConfigs.master.authServerUrl = this.realmConfigs.master.authServerUrl || this.defaultAuthServerUrl;
-    this.realmConfigs.master.public = this.realmConfigs.master.public || true;
+      this.realmConfigs.master.authServerUrl = this.realmConfigs.master.authServerUrl || this.defaultAuthServerUrl;
+      this.realmConfigs.master.public = this.realmConfigs.master.public || true;
 
-    this.redisClient = this.redisService.getClient();
+      this.redisClient = this.redisService.getClient();
+    } catch (e) {
+      throw new HttpException('Error initialize keycloak service', 500);
+    }
   }
 
   getConfig(realm: string): object {
