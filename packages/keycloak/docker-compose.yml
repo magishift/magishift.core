@@ -3,12 +3,14 @@ version: '3.7'
 services:
   postgres:
     image: postgres:latest
+    volumes:
+      - ./docker-postgres-init:/docker-entrypoint-initdb.d
     environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_MULTIPLE_DATABASES: ${DB_NAME}, ${KEYCLOAK_DB_NAME}
+      POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
+      POSTGRES_USER: ${TYPEORM_USERNAME}
+      POSTGRES_MULTIPLE_DATABASES: ${TYPEORM_DATABASE}, ${KEYCLOAK_DB_NAME}
     ports:
-      - ${DB_PORT}:5432
+      - ${TYPEORM_PORT}:5432
 
   keycloak:
     image: jboss/keycloak
@@ -20,8 +22,8 @@ services:
       DB_VENDOR: POSTGRES
       DB_ADDR: postgres
       DB_DATABASE: ${KEYCLOAK_DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_USER: ${TYPEORM_USERNAME}
+      DB_PASSWORD: ${TYPEORM_PASSWORD}
       KEYCLOAK_USER: ${KEYCLOAK_USER_MASTER}
       KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD_MASTER}
     ports:

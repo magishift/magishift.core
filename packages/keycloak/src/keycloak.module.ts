@@ -27,7 +27,7 @@ const dbConfig: TypeOrmModuleOptions = {
   username: process.env.DB_USER,
   database: process.env.DB_NAME,
   port: Number(process.env.DB_PORT),
-  synchronize: true,
+  synchronize: false,
   entities: [join(__dirname, '**.entity{.ts,.js}')],
   namingStrategy: new SnakeNamingStrategy(),
   cache: {

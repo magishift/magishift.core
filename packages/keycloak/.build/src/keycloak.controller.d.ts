@@ -4,6 +4,4 @@ export declare class KeycloakController {
     constructor(service: KeycloakService);
     configMaster(): object;
     config(realm: string): object;
-    login(): object;
-    logout(): object;
 }

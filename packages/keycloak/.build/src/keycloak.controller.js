@@ -36,22 +36,6 @@ let KeycloakController = class KeycloakController {
             return util_1.ExceptionHandler(e);
         }
     }
-    login() {
-        try {
-            return this.service.getConfig('master');
-        }
-        catch (e) {
-            return util_1.ExceptionHandler(e);
-        }
-    }
-    logout() {
-        try {
-            return this.service.getConfig('master');
-        }
-        catch (e) {
-            return util_1.ExceptionHandler(e);
-        }
-    }
 };
 __decorate([
     common_1.Get('config'),
@@ -66,18 +50,6 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Object)
 ], KeycloakController.prototype, "config", null);
-__decorate([
-    common_1.Post('login'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Object)
-], KeycloakController.prototype, "login", null);
-__decorate([
-    common_1.Post('logout'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Object)
-], KeycloakController.prototype, "logout", null);
 KeycloakController = __decorate([
     common_1.Controller(),
     swagger_1.ApiUseTags(),
