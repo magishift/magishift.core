@@ -22,11 +22,11 @@ const redisConfig: IRedisModuleOptions = {
 
 const dbConfig: TypeOrmModuleOptions = {
   type: 'postgres',
-  host: process.env.DB_HOST,
-  password: process.env.DB_PASSWORD,
-  username: process.env.DB_USER,
-  database: process.env.DB_NAME,
-  port: Number(process.env.DB_PORT),
+  host: process.env.TYPEORM_HOST,
+  password: process.env.TYPEORM_PASSWORD,
+  username: process.env.TYPEORM_USERNAME,
+  database: process.env.TYPEORM_DATABASE,
+  port: Number(process.env.TYPEORM_PORT),
   synchronize: false,
   entities: [join(__dirname, '**.entity{.ts,.js}')],
   namingStrategy: new SnakeNamingStrategy(),
