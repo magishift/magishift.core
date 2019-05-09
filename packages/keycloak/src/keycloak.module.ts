@@ -1,8 +1,12 @@
+import { SnakeNamingStrategy } from '@magishift/config';
 import { HttpModule } from '@magishift/http';
 import { IRedisModuleOptions, RedisModule } from '@magishift/redis';
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import dotenv = require('dotenv');
+import { join } from 'path';
 import { KeycloakController } from './keycloak.controller';
+import { KeycloakEntity } from './keycloak.entity';
 import { KeycloakService } from './keycloak.service';
 
 const { parsed } = dotenv.config({
@@ -16,9 +20,33 @@ const redisConfig: IRedisModuleOptions = {
   port: Number(process.env.REDIS_PORT),
 };
 
-@Global()
+const dbConfig: TypeOrmModuleOptions = {
+  type: 'postgres',
+  host: process.env.DB_HOST,
+  password: process.env.DB_PASSWORD,
+  username: process.env.DB_USER,
+  database: process.env.DB_NAME,
+  port: Number(process.env.DB_PORT),
+  synchronize: true,
+  entities: [join(__dirname, '**.entity{.ts,.js}')],
+  namingStrategy: new SnakeNamingStrategy(),
+  cache: {
+    type: 'redis',
+    options: {
+      host: process.env.REDIS_HOST,
+      port: Number(process.env.REDIS_PORT),
+      duration: 30000,
+    },
+  },
+};
+
 @Module({
-  imports: [HttpModule, RedisModule.register(redisConfig)],
+  imports: [
+    RedisModule.register(redisConfig),
+    TypeOrmModule.forRoot(dbConfig),
+    HttpModule,
+    TypeOrmModule.forFeature([KeycloakEntity]),
+  ],
   controllers: [KeycloakController],
   providers: [KeycloakService],
   exports: [KeycloakService],

@@ -1,9 +1,9 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as request from 'supertest';
-import { KeycloakModule, KeycloakService } from '../src';
+import { KeycloakModule } from '../src';
 
-describe('Keycloak', () => {
+describe('Test Keycloak Endpoint', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -15,15 +15,17 @@ describe('Keycloak', () => {
     await app.init();
   });
 
-  it(`GET /config to fetch keycloak config`, () => {
+  it(`GET /config to fetch keycloak master config`, () => {
     return request(app.getHttpServer())
       .get('/config')
+      .expect((data: { realm: string }) => data.realm === 'master')
       .expect(200);
   });
 
   it(`GET /config/master to fetch keycloak master config`, () => {
     return request(app.getHttpServer())
       .get('/config/master')
+      .expect((data: { realm: string }) => data.realm === 'master')
       .expect(200);
   });
 

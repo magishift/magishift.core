@@ -5,11 +5,13 @@ provider:
   name: aws
   runtime: nodejs8.10
   region: 'ap-southeast-1'
+  stage: ${opt:stage, 'dev'}
 
 plugins:
   - '@hewmen/serverless-plugin-typescript'
   - serverless-plugin-optimize
   - serverless-offline
+  - serverless-dotenv-plugin
 
 package:
   exclude:
@@ -19,12 +21,11 @@ package:
     - test/**
     - nodemon.json
     - README.md
-    - .env*
   individually: true
 
 functions:
   main:
-    handler: src/aws-lambda/handler.handler
+    handler: src/handler.handler
     events:
       - http:
           cors: true

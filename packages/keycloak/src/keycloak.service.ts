@@ -2,6 +2,7 @@ import { HttpService } from '@magishift/http';
 import { RedisService } from '@magishift/redis';
 import { HttpStatus } from '@nestjs/common';
 import { HttpException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import Redis = require('ioredis');
 import jwt = require('jsonwebtoken');
 import KeycloakAdminClient from 'keycloak-admin';
@@ -10,8 +11,10 @@ import RoleRepresentation, { RoleMappingPayload } from 'keycloak-admin/lib/defs/
 import UserRepresentation from 'keycloak-admin/lib/defs/userRepresentation';
 import _ = require('lodash');
 import moment = require('moment');
+import { Repository } from 'typeorm';
 import { IKeycloakService } from './interfaces/keycloakService.interface';
 import { ITokenPayload } from './interfaces/tokenPayload.interface';
+import { KeycloakEntity } from './keycloak.entity';
 
 export interface ILoginResult {
   accessToken: string;
@@ -27,10 +30,13 @@ export interface IKeycloakAdminConfig {
   grant_type: string;
 }
 
-export interface IKeycloakRealm {
+export interface IRealmConfig {
   realm: string;
+  authRealm: string;
   resource: string;
+  authClientId: string;
   authServerUrl: string;
+  authUrl: string;
   public: boolean;
 }
 
@@ -61,13 +67,18 @@ export class KeycloakService implements IKeycloakService {
       );
     }
   }
+
   private static keycloakClient: KeycloakAdminClient;
   private masterConfig: IKeycloakAdminConfig;
-  private realmConfigs: { master: IKeycloakRealm } & { [key: string]: IKeycloakRealm };
   private defaultAuthServerUrl: string;
   private redisClient: Redis.Redis;
 
-  constructor(private readonly httpService: HttpService, private readonly redisService: RedisService) {
+  constructor(
+    @InjectRepository(KeycloakEntity)
+    private readonly repository: Repository<KeycloakEntity>,
+    private readonly httpService: HttpService,
+    private readonly redisService: RedisService,
+  ) {
     try {
       this.masterConfig = {
         realm_master: process.env.KEYCLOAK_REALM_MASTER,
@@ -83,28 +94,30 @@ export class KeycloakService implements IKeycloakService {
         realmName: this.masterConfig.realm_master,
       });
 
-      this.realmConfigs = JSON.parse(process.env.KEYCLOAK_REALMS);
       this.defaultAuthServerUrl = `${process.env.KEYCLOAK_BASE_URL}/auth`;
-
-      this.realmConfigs.master.authServerUrl = this.realmConfigs.master.authServerUrl || this.defaultAuthServerUrl;
-      this.realmConfigs.master.public = this.realmConfigs.master.public || true;
 
       this.redisClient = this.redisService.getClient();
     } catch (e) {
-      throw new HttpException('Error initialize keycloak service', 500);
+      throw new HttpException(`Error initialize keycloak service`, 500);
     }
   }
 
-  getConfig(realm: string): object {
-    return {
-      realm: this.realmConfigs[realm].realm,
-      authRealm: this.realmConfigs[realm].realm,
-      resource: this.realmConfigs[realm].resource,
-      authClientId: this.realmConfigs[realm].resource,
-      authServerUrl: this.realmConfigs[realm].authServerUrl || this.defaultAuthServerUrl,
-      authUrl: this.realmConfigs[realm].authServerUrl || this.defaultAuthServerUrl,
-      public: this.realmConfigs[realm].public || true,
-    };
+  async getConfig(realm: string): Promise<IRealmConfig> {
+    try {
+      const realmConfig = await this.repository.findOne({ realm });
+
+      return {
+        realm: realmConfig.realm,
+        authRealm: realmConfig.realm,
+        resource: realmConfig.resource,
+        authClientId: realmConfig.resource,
+        authServerUrl: realmConfig.authServerUrl || this.defaultAuthServerUrl,
+        authUrl: realmConfig.authServerUrl || this.defaultAuthServerUrl,
+        public: realmConfig.public || true,
+      };
+    } catch (e) {
+      throw new HttpException(`Cannot get realm config ${realm}`, 500);
+    }
   }
 
   async realmsList(): Promise<RealmRepresentation[]> {
@@ -212,9 +225,11 @@ export class KeycloakService implements IKeycloakService {
     try {
       const accessToken = (await this.getKeycloakClient()).accessToken;
 
+      const realmConfig = await this.getConfig(realm);
+
       const result = await this.httpService.Get(
-        `${this.realmConfigs[realm].authServerUrl || this.defaultAuthServerUrl}/admin/realms/${
-          this.realmConfigs[realm].realm
+        `${realmConfig.authServerUrl || this.defaultAuthServerUrl}/admin/realms/${
+          realmConfig.realm
         }/users/${userId}/sessions`,
         {
           headers: {
@@ -230,11 +245,13 @@ export class KeycloakService implements IKeycloakService {
   }
 
   async login(username: string, password: string, realm: string): Promise<ILoginResult> {
+    const realmConfig = await this.getConfig(realm);
+
     try {
       const result = await KeycloakService.Auth(
         KeycloakService.keycloakClient,
         realm,
-        this.realmConfigs[realm].resource,
+        realmConfig.resource,
         username,
         password,
       );
@@ -255,10 +272,12 @@ export class KeycloakService implements IKeycloakService {
 
       const decryptedToken: ITokenPayload = jwt.decode(token) as ITokenPayload;
 
+      const realmConfig = await this.getConfig(realm);
+
       const result = await this.httpService.Delete(
-        `${this.realmConfigs[realm].authServerUrl || this.defaultAuthServerUrl}/admin/realms/${
-          this.realmConfigs[realm].realm
-        }/sessions/${decryptedToken.session_state}`,
+        `${realmConfig.authServerUrl || this.defaultAuthServerUrl}/admin/realms/${realmConfig.realm}/sessions/${
+          decryptedToken.session_state
+        }`,
         {
           headers: {
             Authorization: 'Bearer ' + client.getAccessToken(),
@@ -287,9 +306,11 @@ export class KeycloakService implements IKeycloakService {
       return;
     }
 
+    const realmConfig = await this.getConfig(realm);
+
     const userInfo = await this.httpService.Get(
-      `${this.realmConfigs[realm].authServerUrl || this.defaultAuthServerUrl}/realms/${
-        this.realmConfigs[realm].realm
+      `${realmConfig.authServerUrl || this.defaultAuthServerUrl}/realms/${
+        realmConfig.realm
       }/protocol/openid-connect/userinfo`,
       {
         headers: {

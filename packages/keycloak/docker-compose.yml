@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USER}
-      POSTGRES_MULTIPLE_DATABASES: ${DB_NAME}
+      POSTGRES_MULTIPLE_DATABASES: ${DB_NAME}, ${KEYCLOAK_DB_NAME}
     ports:
       - ${DB_PORT}:5432
 
@@ -19,7 +19,7 @@ services:
     environment:
       DB_VENDOR: POSTGRES
       DB_ADDR: postgres
-      DB_DATABASE: ${DB_NAME}
+      DB_DATABASE: ${KEYCLOAK_DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       KEYCLOAK_USER: ${KEYCLOAK_USER_MASTER}

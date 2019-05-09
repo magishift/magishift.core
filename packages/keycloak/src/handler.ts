@@ -4,7 +4,7 @@ import { Context, Handler } from 'aws-lambda';
 import { createServer, proxy } from 'aws-serverless-express';
 import { eventContext } from 'aws-serverless-express/middleware';
 import { Server } from 'http';
-import { KeycloakModule } from '../keycloak.module';
+import { KeycloakModule } from './keycloak.module';
 
 // NOTE: If you get ERR_CONTENT_DECODING_FAILED in your browser, this is likely
 // due to a compressed response (e.g. gzip) which has not been handled correctly
