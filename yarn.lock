@@ -890,10 +890,10 @@
   dependencies:
     "@types/express" "*"
 
-"@types/cron@1.7.0":
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/@types/cron/-/cron-1.7.0.tgz#8bcad3e45fb1c47671d0edb26a062cd3fbc6968b"
-  integrity sha512-LRu/XiiOExELholyEwEuSTPAEiO+sVR1nXmWEjezneGgYpDyMNVIsjiaHYBoCEUJo4F1hCOlAzQAh80iEUVbKw==
+"@types/cron@1.7.1":
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/@types/cron/-/cron-1.7.1.tgz#752e47ebbe26e83d9e40f2dd6a3f679f2eec54b8"
+  integrity sha512-48brwgU18DqA0mQX1As5OcJEo1yNjaXMM6Mk4r8K1dOzLJRQ37FE/kCivKx7ClKEHfhX2FdcxKzJ1B744a+V3A==
   dependencies:
     "@types/node" "*"
     moment ">=2.14.0"
