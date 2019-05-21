@@ -53,7 +53,7 @@
     "csvtojson": "^2.0.8",
     "dotenv": "^7.0.0",
     "express": "^4.16.4",
-    "express-rate-limit": "^3.4.1",
+    "express-rate-limit": "^4.0.0",
     "express-session": "^1.16.1",
     "express-status-monitor": "^1.2.5",
     "firebase-admin": "^7.3.0",
