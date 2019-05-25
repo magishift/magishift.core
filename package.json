@@ -84,7 +84,7 @@
     "passport-jwt": "^4.0.0",
     "path": "^0.12.7",
     "plop": "^2.3.0",
-    "pluralize": "^7.0.0",
+    "pluralize": "^8.0.0",
     "postgraphile": "^4.3.3",
     "prettier": "^1.17.0",
     "pug": "^2.0.3",
