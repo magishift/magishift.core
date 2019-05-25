@@ -134,7 +134,7 @@
     "@types/twilio": "0.0.10",
     "@types/uuid": "3.4.4",
     "copyfiles": "2.1.0",
-    "nodemon": "1.18.11",
+    "nodemon": "1.19.1",
     "supertest": "4.0.2"
   },
   "resolutions": {
