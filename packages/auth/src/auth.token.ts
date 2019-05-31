@@ -17,8 +17,8 @@ export class TokenUser<TUser extends IAccountDto> implements ITokenUser {
   @Field()
   readonly accountId: string;
 
-  readonly userData: TUser;
-
   @Field()
   readonly realm: string;
+
+  readonly userData: TUser;
 }

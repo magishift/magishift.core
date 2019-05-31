@@ -2,6 +2,7 @@ import { HttpModule } from '@magishift/http';
 import { KeycloakController, KeycloakService } from '@magishift/keycloak';
 import { RedisModule } from '@magishift/redis';
 import { Global, Module } from '@nestjs/common';
+
 import { AuthService } from './auth.service';
 
 @Global()
