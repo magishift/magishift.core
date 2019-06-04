@@ -1,7 +1,6 @@
+import { SessionUtil } from '@magishift/auth';
+import { BaseEntity, DataStatus } from '@magishift/base';
 import { BeforeInsert, BeforeUpdate, Column, getRepository as _getRepository, Repository } from 'typeorm';
-import { SessionUtil } from '../auth/session.util';
-import { BaseEntity } from '../base/base.entity';
-import { DataStatus } from '../base/interfaces/base.interface';
 import { ICrudEntity, IDataMeta } from './interfaces/crud.interface';
 
 export abstract class CrudEntity extends BaseEntity implements ICrudEntity {

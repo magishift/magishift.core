@@ -1,3 +1,4 @@
+import { IBaseMapper } from '@magishift/base';
 import { DeepPartial, ObjectLiteral } from 'typeorm';
 import { ICrudDto, ICrudEntity } from './crud.interface';
 

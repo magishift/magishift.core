@@ -1,3 +1,4 @@
+import { DefaultRoles, Realms, Roles, RolesGuard } from '@magishift/auth';
 import {
   Body,
   ClassSerializerInterceptor,
@@ -16,18 +17,14 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiImplicitBody, ApiImplicitFile, ApiImplicitQuery, ApiResponse, ApiUseTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { DefaultRoles } from '../auth/role/defaultRoles';
-import { Realms } from '../auth/role/realms.decorator';
-import { Roles } from '../auth/role/roles.decorator';
-import { RolesGuard } from '../auth/role/roles.guard';
-import { IFile } from '../fileStorage/interfaces/fileStorage.interface';
-import { IEndpointUserRoles } from '../user/userRole/interfaces/userRoleEndpoint.interface';
 import { Filter } from './crud.filter';
 import { CrudController } from './interfaces/crud.controller.base';
 import { ICrudConfig, ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudController } from './interfaces/crudController.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
+import { ICrudRoleEndpoint } from './interfaces/CrudRoleEndpoint.interface';
 import { ICrudService } from './interfaces/crudService.interface';
+import { IFile } from './interfaces/file.interface';
 import { IFindAllResult } from './interfaces/filter.interface';
 import { IFormSchema } from './interfaces/form.interface';
 import { SwaggerGridSchema } from './interfaces/grid.interface';
@@ -35,7 +32,7 @@ import { SwaggerGridSchema } from './interfaces/grid.interface';
 export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICrudEntity>(
   name: string,
   dtoClass: new (...args: any[]) => TDto,
-  roles: IEndpointUserRoles,
+  roles: ICrudRoleEndpoint,
   realmsAccess?: string[],
 ): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>) => CrudController<TDto, TEntity> {
   @Controller(name)

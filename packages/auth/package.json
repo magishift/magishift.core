@@ -21,7 +21,6 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@magishift/base": "^0.0.3",
-    "@magishift/keycloak": "^0.0.1",
     "@magishift/redis": "^0.0.2",
     "jsonwebtoken": "^8.5.1",
     "type-graphql": "^0.17.3",

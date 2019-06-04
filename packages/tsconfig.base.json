@@ -16,6 +16,6 @@
     "strict": true,
     "strictNullChecks": false
   },
-  "exclude": ["./node_modules/*", "./node_modules/@types", "**/*.spec.ts", "clients", "e2e"],
+  "exclude": ["node_modules/*", "node_modules/@types", "**/*.spec.ts", "clients", "e2e"],
   "buildOnSave": true
 }

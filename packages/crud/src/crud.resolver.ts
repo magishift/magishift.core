@@ -1,21 +1,17 @@
+import { AuthService, Realms, Roles, RolesGuard } from '@magishift/auth';
+import { capitalizeFirstLetter, ExceptionHandler, unCapitalizeFirstLetter } from '@magishift/util';
 import { ClassSerializerInterceptor, HttpException, HttpStatus, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { GraphQLJSONObject } from 'graphql-type-json';
 import pluralize = require('pluralize');
 import { ArgsType, ClassType, Field, ID, InputType, Int, ObjectType } from 'type-graphql';
-import { AuthService } from '../auth/auth.service';
-import { Realms } from '../auth/role/realms.decorator';
-import { Roles } from '../auth/role/roles.decorator';
-import { RolesGuard } from '../auth/role/roles.guard';
-import { IEndpointUserRoles } from '../user/userRole/interfaces/userRoleEndpoint.interface';
-import { ExceptionHandler } from '../utils/error.utils';
-import { capitalizeFirstLetter, unCapitalizeFirstLetter } from '../utils/string.utils';
 import { CrudDto } from './crud.dto';
 import { Filter } from './crud.filter';
 import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
 import { ICrudResolver, ISubscriptionResult } from './interfaces/crudResolver.interface';
+import { ICrudRoleEndpoint } from './interfaces/CrudRoleEndpoint.interface';
 import { ICrudService } from './interfaces/crudService.interface';
 import { IFindAllResult } from './interfaces/filter.interface';
 import { PubSubList } from './providers/pubSub.provider';
@@ -23,7 +19,7 @@ import { PubSubList } from './providers/pubSub.provider';
 export function CrudResolverFactory<TDto extends ICrudDto, TEntity extends ICrudEntity>(
   name: string,
   dtoClass: ClassType<CrudDto>,
-  roles: IEndpointUserRoles,
+  roles: ICrudRoleEndpoint,
   realms?: string[],
 ): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>, pubSub: PubSub) => ICrudResolver<
   TDto

@@ -1,6 +1,6 @@
 import { Response } from 'express';
-import { IFile } from '../../fileStorage/interfaces/fileStorage.interface';
 import { ICrudConfig, ICrudDto } from './crud.interface';
+import { IFile } from './file.interface';
 import { IFormSchema } from './form.interface';
 import { IGridSchema } from './grid.interface';
 

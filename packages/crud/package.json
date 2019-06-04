@@ -12,7 +12,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc --p tsconfig.json -d && copyfiles -u -f -V src/**/*.graphql src/**/**/*.graphql dist",
+    "build": "yarn barrels && rm -rf dist && tsc --p tsconfig.json -d && copyfiles -u -f -V src/**/*.graphql src/**/**/*.graphql dist",
     "precommit": "echo 'precommit'",
     "build:publish": "yarn build && yarn publish --no-git-tag-version",
     "barrels": "barrelsby --delete -d ./src"
@@ -20,17 +20,20 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@magishift/base": "^0.0.2",
+    "@magishift/auth": "^0.0.2",
+    "@magishift/base": "^0.0.3",
     "@magishift/draft": "^0.0.1",
-    "@nestjs/common": "^6.1.1",
-    "@nestjs/core": "^6.1.1"
+    "@magishift/util": "^0.0.3",
+    "@nestjs/common": "^6.2.4",
+    "@nestjs/core": "^6.2.4"
   },
   "devDependencies": {
-    "@types/node": "^11.13.9",
+    "@types/node": "^12.0.4",
     "@types/uuid": "^3.4.4",
+    "barrelsby": "^2.1.1",
     "copyfiles": "^2.1.0",
-    "nodemon": "^1.19.0",
+    "nodemon": "^1.19.1",
     "supertest": "^4.0.2",
-    "typescript": "^3.4.5"
+    "typescript": "^3.5.1"
   }
 }

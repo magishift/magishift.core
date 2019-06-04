@@ -1,6 +1,6 @@
 {
   "name": "@magishift/filestorage",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Magishift is Low-Code Framework, helps you to build application easier, faster and a more efficient use of time. (@filestorage)",
   "author": "Sofyan Hadi Ahmad",
   "license": "MIT",
@@ -27,5 +27,8 @@
   "peerDependencies": {
     "@nestjs/common": "^6.1.1",
     "@nestjs/core": "^6.1.1"
+  },
+  "devDependencies": {
+    "barrelsby": "^2.1.1"
   }
 }

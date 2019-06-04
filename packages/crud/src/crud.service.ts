@@ -1,11 +1,10 @@
+import { DefaultRoles, SessionUtil } from '@magishift/auth';
+import { BaseService, DataStatus } from '@magishift/base';
+import { ColumnIsNumber, GetPropertyType, GetRelationsTableName } from '@magishift/util';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import _ = require('lodash');
 import { FindConditions, FindManyOptions, FindOneOptions, Like, ObjectLiteral, Repository } from 'typeorm';
-import { DefaultRoles } from '../auth/role/defaultRoles';
-import { SessionUtil } from '../auth/session.util';
-import { BaseService } from '../base/base.service';
-import { DataStatus } from '../base/interfaces/base.interface';
-import { ColumnIsNumber, GetPropertyType, GetRelationsTableName } from '../database/utils.database';
+
 import { GetFormSchema, GetGridSchema, GetKanbanSchema } from './crud.util';
 import { Draft } from './draft/draft.entity.mongo';
 import { DraftService } from './draft/draft.service';
@@ -25,7 +24,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     protected readonly mapper: ICrudMapper<TEntity, TDto>,
     protected readonly config: IServiceConfig = { softDelete: true },
   ) {
-    super(repository, config);
+    super(repository);
   }
 
   getCrudConfig(): ICrudConfig {
@@ -91,7 +90,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
   async fetch(
     id: string,
     options?: FindOneOptions<TEntity>,
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
+    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | string)[],
   ): Promise<TDto> {
     options = options || {};
     options.cache = true;
@@ -198,7 +197,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       isShowDeleted: false,
     },
   ): Promise<TDto[]> {
-    const result = await this.draftService.findAllByService(this.constructor.name, filter);
+    const result = await this.draftService.findAllByService({ service: this.constructor.name, filter });
     return result.map(data => data.data as TDto);
   }
 

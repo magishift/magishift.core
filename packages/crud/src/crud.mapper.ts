@@ -1,9 +1,10 @@
+import { GetPropertyType } from '@magishift/util';
 import { plainToClassFromExist } from 'class-transformer';
 import { Validator } from 'class-validator';
 import _ = require('lodash');
 import { DeepPartial, getRepository, ObjectLiteral, Repository } from 'typeorm';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
-import { GetPropertyType } from '../database/utils.database';
+
 import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
 

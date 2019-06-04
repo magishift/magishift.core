@@ -54,8 +54,6 @@ services:
       - postgres
     ports:
       - ${MAGISHIFT_ADMINER_PORT}:8080
-    depends_on:
-      - 'postgres'
 
   grafana:
     image: grafana/grafana:latest

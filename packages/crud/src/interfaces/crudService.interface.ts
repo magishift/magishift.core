@@ -1,5 +1,5 @@
+import { DefaultRoles } from '@magishift/auth';
 import { FindOneOptions, ObjectLiteral } from 'typeorm';
-import { DefaultRoles } from '../../auth/role/defaultRoles';
 import { ICrudConfig, ICrudDto, ICrudEntity } from './crud.interface';
 import { IFilter } from './filter.interface';
 import { IFormSchema } from './form.interface';

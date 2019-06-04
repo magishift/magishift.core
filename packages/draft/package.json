@@ -28,6 +28,7 @@
   "devDependencies": {
     "@types/node": "^11.13.9",
     "@types/uuid": "^3.4.4",
+    "barrelsby": "^2.1.1",
     "copyfiles": "^2.1.0",
     "nodemon": "^1.19.0",
     "supertest": "^4.0.2",
