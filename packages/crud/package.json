@@ -20,7 +20,6 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@magishift/auth": "^0.0.2",
     "@magishift/base": "^0.0.3",
     "@magishift/draft": "^0.0.1",
     "@magishift/util": "^0.0.3",

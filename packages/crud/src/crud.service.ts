@@ -1,10 +1,8 @@
-import { DefaultRoles, SessionUtil } from '@magishift/auth';
 import { BaseService, DataStatus } from '@magishift/base';
 import { ColumnIsNumber, GetPropertyType, GetRelationsTableName } from '@magishift/util';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 import _ = require('lodash');
 import { FindConditions, FindManyOptions, FindOneOptions, Like, ObjectLiteral, Repository } from 'typeorm';
-
 import { GetFormSchema, GetGridSchema, GetKanbanSchema } from './crud.util';
 import { Draft } from './draft/draft.entity.mongo';
 import { DraftService } from './draft/draft.service';
@@ -87,26 +85,13 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return result;
   }
 
-  async fetch(
-    id: string,
-    options?: FindOneOptions<TEntity>,
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | string)[],
-  ): Promise<TDto> {
+  async fetch(id: string, options?: FindOneOptions<TEntity>): Promise<TDto> {
     options = options || {};
     options.cache = true;
 
     options.relations = options.relations || GetRelationsTableName(this.repository.metadata);
 
     const result = await this.repository.findOne(id, options);
-
-    if (
-      permissions &&
-      permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0 &&
-      result.__meta.dataOwner !== SessionUtil.getAccountId
-    ) {
-      throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, HttpStatus.FORBIDDEN);
-    }
 
     if (!result) {
       throw new HttpException(`${this.constructor.name} FindById with id: (${id}) Not Found`, 404);
@@ -119,25 +104,12 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return this.mapper.entityToDto(result);
   }
 
-  async findOne(
-    param: ObjectLiteral,
-    options?: FindOneOptions<TEntity>,
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
-  ): Promise<TDto> {
+  async findOne(param: ObjectLiteral, options?: FindOneOptions<TEntity>): Promise<TDto> {
     options = options || {};
     options.cache = true;
     options.relations = options.relations || GetRelationsTableName(this.repository.metadata);
 
     const result = await this.repository.findOne({ ...param } as FindConditions<TEntity>, options);
-
-    if (
-      permissions &&
-      permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0 &&
-      result.__meta.dataOwner !== SessionUtil.getAccountId
-    ) {
-      throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, HttpStatus.FORBIDDEN);
-    }
 
     return this.mapper.entityToDto(result);
   }
@@ -148,7 +120,6 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       limit: 10,
       isShowDeleted: false,
     },
-    permissions?: (DefaultRoles.public | DefaultRoles.authenticated | DefaultRoles.admin | string)[],
   ): Promise<TDto[]> {
     const findOptions = this.resolveFindOptions(filter);
 
@@ -158,34 +129,13 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     // convert entity to DTO before return
     return Promise.all(
       result.map(entity => {
-        if (
-          permissions &&
-          permissions.indexOf(DefaultRoles.owner) >= 0 &&
-          SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0 &&
-          entity.__meta.dataOwner !== SessionUtil.getAccountId
-        ) {
-          throw new HttpException(`Only ${DefaultRoles.admin} or owner of this data can read`, HttpStatus.FORBIDDEN);
-        } else {
-          return this.mapper.entityToDto(entity);
-        }
+        return this.mapper.entityToDto(entity);
       }),
     );
   }
 
-  async fetchDraft(id: string, permissions?: string[]): Promise<TDto> {
+  async fetchDraft(id: string): Promise<TDto> {
     const result = await this.draftService.fetch(id, this.constructor.name);
-
-    if (
-      permissions &&
-      permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0 &&
-      result.data.__meta.dataOwner !== SessionUtil.getAccountId
-    ) {
-      throw new HttpException(
-        `Only ${DefaultRoles.admin} or owner of this data can read this draft`,
-        HttpStatus.FORBIDDEN,
-      );
-    }
 
     return result.data as TDto;
   }
@@ -238,7 +188,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return this.mapper.entityToDto(entity);
   }
 
-  async update(id: string, data: TDto, doValidation: boolean = true, permissions?: string[]): Promise<TDto> {
+  async update(id: string, data: TDto, doValidation: boolean = true): Promise<TDto> {
     if (doValidation) {
       await data.validate();
     }
@@ -246,18 +196,6 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     const toEntity = await this.mapper.dtoToEntity(data);
 
     const beforeUpdate = await this.findOne({ id } as any);
-
-    if (
-      permissions &&
-      permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0 &&
-      beforeUpdate.__meta.dataOwner !== SessionUtil.getAccountId
-    ) {
-      throw new HttpException(
-        `Only ${DefaultRoles.admin} or owner of this data can update this data`,
-        HttpStatus.FORBIDDEN,
-      );
-    }
 
     // make sure updated id was not altered
     toEntity.id = id;
@@ -267,20 +205,8 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return this.mapper.entityToDto(toEntity);
   }
 
-  async destroy(id: string, permissions?: string[]): Promise<void> {
+  async destroy(id: string): Promise<void> {
     const entity = await this.repository.findOneOrFail(id);
-
-    if (
-      permissions &&
-      permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0 &&
-      entity.__meta.dataOwner !== SessionUtil.getAccountId
-    ) {
-      throw new HttpException(
-        `Only ${DefaultRoles.admin} or owner of this data can delete this data`,
-        HttpStatus.FORBIDDEN,
-      );
-    }
 
     if (this.config.softDelete && entity.__meta.dataStatus !== DataStatus.Draft && !entity.isDeleted) {
       // tslint:disable-next-line:no-any
@@ -294,13 +220,13 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     }
   }
 
-  async destroyBulk(ids: string[], permissions?: string[]): Promise<{ [key: string]: string }> {
+  async destroyBulk(ids: string[]): Promise<{ [key: string]: string }> {
     const result: { [key: string]: string } = {};
 
     await Promise.all(
       ids.map(async id => {
         try {
-          await this.destroy(id, permissions);
+          await this.destroy(id);
         } catch (e) {
           result[id] = e.messages;
         }
@@ -310,21 +236,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return result;
   }
 
-  async destroyDraft(id: string, permissions?: string[]): Promise<void> {
-    const result = await this.draftService.fetch(id, this.constructor.name);
-
-    if (
-      permissions &&
-      permissions.indexOf(DefaultRoles.owner) >= 0 &&
-      SessionUtil.getAccountRoles.indexOf(DefaultRoles.admin) < 0 &&
-      result.data.__meta.dataOwner !== SessionUtil.getAccountId
-    ) {
-      throw new HttpException(
-        `Only ${DefaultRoles.admin} or owner of this data can delete this draft`,
-        HttpStatus.FORBIDDEN,
-      );
-    }
-
+  async destroyDraft(id: string): Promise<void> {
     await this.draftService.delete(id);
   }
 

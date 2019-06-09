@@ -24,7 +24,6 @@ export * from './interfaces/crud.interface';
 export * from './interfaces/crudController.interface';
 export * from './interfaces/crudMapper.Interface';
 export * from './interfaces/crudResolver.interface';
-export * from './interfaces/crudRoleEndpoint.interface';
 export * from './interfaces/crudService.interface';
 export * from './interfaces/file.interface';
 export * from './interfaces/filter.interface';
