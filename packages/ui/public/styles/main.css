@@ -1,0 +1,149 @@
+:root {
+  --sidebar-width: 200px;
+}
+
+.jl {
+  justify-content: flex-start;
+}
+
+.jc {
+  justify-content: center;
+}
+
+.jr {
+  justify-content: flex-end;
+}
+
+.fixed-bottom {
+  position: fixed;
+  width: 300px;
+  bottom: 0;
+}
+
+.crud-grid-thumb {
+  margin: 0.5em;
+  max-height: 5em;
+}
+
+.input-group label {
+  font-size: 12px;
+}
+
+.v-toolbar--fixed {
+  z-index: 99;
+}
+
+.v-navigation-drawer--is-mobile,
+.v-navigation-drawer--temporary,
+.v-navigation-drawer {
+  z-index: 100;
+}
+
+.box-shadow {
+  box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14),
+    0 1px 3px 0 rgba(0, 0, 0, 0.12);
+}
+
+.bg-white {
+  background: #ffffff !important;
+}
+
+.bg-yellow {
+  background: #fff9c4 !important;
+}
+
+.bg-red {
+  background: #ffccbc !important;
+}
+
+.v-label {
+  font-size: 12px;
+}
+
+.v-stepper {
+  box-shadow: none;
+}
+
+.v-list--dense .v-list__tile,
+table.v-table tbody td {
+  font-size: 12px;
+}
+
+table.v-table tbody td:first-child,
+table.v-table tbody td:not(:first-child),
+table.v-table tbody th:first-child,
+table.v-table tbody th:not(:first-child),
+table.v-table thead td:first-child,
+table.v-table thead td:not(:first-child),
+table.v-table thead th:first-child,
+table.v-table thead th:not(:first-child),
+.v-list__tile {
+  padding: 0 8px;
+}
+
+input,
+optgroup,
+select,
+textarea {
+  font-size: 13px;
+}
+
+.container {
+  padding: 12px;
+}
+
+.v-list__tile__action,
+.v-list__tile__avatar {
+  min-width: 32px;
+}
+
+.v-stepper--vertical .v-stepper__step {
+  padding: 8px;
+}
+
+.v-stepper--vertical .v-stepper__content {
+  margin: 0 -36px 0px 20px;
+  padding: 0px 24px 16px 0px;
+  width: auto;
+}
+
+.hidden {
+  display: none;
+}
+
+.v-messages {
+  font-size: 10px;
+}
+
+.v-stepper--vertical {
+  padding-bottom: 0px;
+}
+
+.v-text-field .v-label--active {
+  transform: translateY(-20px) scale(0.95);
+}
+
+.v-messages {
+  font-size: 10px;
+  text-align: right;
+}
+
+.v-input {
+  font-size: 13px;
+}
+
+table.v-table thead tr {
+  height: 44px;
+}
+
+.theme--light.application {
+  background: #eee;
+}
+
+.v-select.v-select--chips .v-select__selections {
+  min-height: 32px;
+}
+
+.v-chip .v-chip__content {
+  height: 20px;
+}

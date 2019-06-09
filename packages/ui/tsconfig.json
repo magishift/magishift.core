@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "strictPropertyInitialization": false,
+    "module": "esnext",
+    "strict": true,
+    "jsx": "preserve",
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "types": ["webpack-env", "mocha", "chai", "vuetify"],
+    "paths": {
+      "*": ["types/*"],
+      "@/*": ["src/*"]
+    },
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "tests/**/*.ts",
+    "types/vue.d.ts",
+    "types/shims-vue.d.ts",
+    "types/vue-lodash.d.ts",
+    "types/shims-tsx.d.ts",
+    "types/vue-keycloak-js.d.ts",
+    "types/definitions.d.ts",
+    "tests/**/*.tsx"
+  ],
+  "exclude": ["node_modules"]
+}

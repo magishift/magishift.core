@@ -1,0 +1,33 @@
+{
+  "editor.formatOnSave": true,
+  "files.autoSave": "onFocusChange",
+  "cSpell.words": [
+    "datetime",
+    "dropzone",
+    "inflector",
+    "kanban",
+    "keycloak",
+    "magishift",
+    "mandalalabs",
+    "mimetypes",
+    "noimage",
+    "on",
+    "persistedstate",
+    "randomstring",
+    "snackbar",
+    "styl",
+    "timeago",
+    "upsert",
+    "upserts",
+    "vuetify",
+    "vuex"
+  ],
+  "editor.tabSize": 2,
+  "files.associations": {
+    "*.vue": "vue"
+  },
+  "tslint.autoFixOnSave": true,
+  "prettier.singleQuote": true,
+  "prettier.trailingComma": "all",
+  "javascript.preferences.quoteStyle": "single"
+}

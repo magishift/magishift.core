@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Loading...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!--use google's cdn for other countries-->
+  <link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet">
+  <link href="https://cdn.bootcss.com/material-design-icons/3.0.1/iconfont/material-icons.css" rel="stylesheet">
+  <link href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" rel="stylesheet">
+  <link href="https://apis.google.com/js/api:client.js">
+  <!--<link rel="stylesheet" href="/dist/main.css">-->
+  <style>
+    .loader {
+      border: 16px solid #f3f3f3;
+      /* Light grey */
+      border-top: 16px solid #2196F3;
+      /* Blue */
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      animation: spin 1s linear infinite;
+      margin-left: auto;
+      margin-right: auto;
+      margin-top: 100px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loader-text {
+      margin-left: auto;
+      margin-right: auto;
+      width: 300px;
+      text-align: center;
+      position: relative;
+      color: rgba(0, 0, 0, .3);
+      font-size: 1.5em;
+      font-family: sans-serif;
+    }
+
+    .loader-text:before {
+      content: attr(data-text);
+      position: absolute;
+      overflow: hidden;
+      max-width: 10em;
+      white-space: nowrap;
+      color: #2196F3;
+      animation: loading 4s infinite;
+    }
+
+    @keyframes loading {
+      0% {
+        max-width: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="loader"></div>
+    <h3 class="loader-text" data-text="It's Loading...">It's Loading...</h1>
+  </div>
+  <!-- built files will be auto injected -->
+</body>
+
+</html>

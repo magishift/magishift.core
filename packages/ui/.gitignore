@@ -1,0 +1,12 @@
+.DS_Store
+dist/*
+node_modules/
+build/
+
+# npm lock file
+package.lock
+
+yarn-error.log
+
+.env.local
+.env.*.local
