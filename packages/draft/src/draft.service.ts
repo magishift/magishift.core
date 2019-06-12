@@ -105,4 +105,39 @@ export class DraftService {
     await this.repository.delete(find);
     return true;
   }
+
+  // async fetchDraft(id: string): Promise<TDto> {
+  //   const result = await this.draftService.fetch(id, this.constructor.name);
+
+  //   return result.data as TDto;
+  // }
+
+  // async findAllDrafts(
+  //   filter: IFilter = {
+  //     offset: 0,
+  //     limit: -1,
+  //     isShowDeleted: false,
+  //   },
+  // ): Promise<TDto[]> {
+  //   const result = await this.draftService.findAllByService({ service: this.constructor.name, filter });
+  //   return result.map(data => data.data as TDto);
+  // }
+
+  // async saveAsDraft(data: TDto, doValidation: boolean = true): Promise<TDto> {
+  //   if (doValidation) {
+  //     await data.validate();
+  //   }
+
+  //   const draft = new Draft();
+  //   draft.service = this.constructor.name;
+  //   draft.data = data;
+
+  //   const result = await this.draftService.write(draft);
+
+  //   return result.data as TDto;
+  // }
+
+  // async destroyDraft(id: string): Promise<void> {
+  //   await this.draftService.delete(id);
+  // }
 }

@@ -1,20 +1,19 @@
+import { csvtojson, ExceptionHandler } from '@magishift/util';
 import { Res } from '@nestjs/common';
 import { Response } from 'express';
 import { parse as json2csv } from 'json2csv';
 import _ = require('lodash');
 import * as stream from 'stream';
 import { v4 as uuid } from 'uuid';
-import { IFile } from '../../fileStorage/interfaces/fileStorage.interface';
-import { csvtojson } from '../../utils/csvtojson';
-import { ExceptionHandler } from '../../utils/error.utils';
 import { Filter } from '../crud.filter';
-import { ICrudConfig, ICrudDto, ICrudEntity } from '../interfaces/crud.interface';
-import { ICrudController } from '../interfaces/crudController.interface';
-import { ICrudMapper } from '../interfaces/crudMapper.Interface';
-import { ICrudService } from '../interfaces/crudService.interface';
-import { IFindAllResult } from '../interfaces/filter.interface';
-import { FieldTypes, IFormSchema } from '../interfaces/form.interface';
-import { IGridSchema } from '../interfaces/grid.interface';
+import { ICrudConfig, ICrudDto, ICrudEntity } from './crud.interface';
+import { ICrudController } from './crudController.interface';
+import { ICrudMapper } from './crudMapper.Interface';
+import { ICrudService } from './crudService.interface';
+import { IFile } from './file.interface';
+import { IFindAllResult } from './filter.interface';
+import { FieldTypes, IFormSchema } from './form.interface';
+import { IGridSchema } from './grid.interface';
 
 export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICrudEntity>
   implements ICrudController<TDto> {
@@ -23,7 +22,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     protected readonly mapper: ICrudMapper<TEntity, TDto>,
   ) {}
 
-  getConfig(): ICrudConfig {
+  getCrudConfig(): ICrudConfig {
     try {
       return this.service.getCrudConfig();
     } catch (e) {
@@ -70,28 +69,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  async findAllDrafts(filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
-    try {
-      let filter: Filter<TDto>;
-
-      if (filterArg) {
-        filter = JSON.parse(filterArg);
-      }
-
-      const items = await this.service.findAllDrafts(filter);
-
-      const totalCount = 0;
-
-      return {
-        items,
-        totalCount,
-      };
-    } catch (e) {
-      return ExceptionHandler(e);
-    }
-  }
-
-  async findAll(filterArg?: string): Promise<IFindAllResult> {
+  async findAll(filterArg?: string): Promise<IFindAllResult<TDto>> {
     try {
       let filter: Filter<TDto>;
 
@@ -127,28 +105,10 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  async fetchDraftById(id: string): Promise<TDto> {
-    try {
-      return this.service.fetchDraft(id);
-    } catch (e) {
-      return ExceptionHandler(e);
-    }
-  }
-
   async create(data: TDto): Promise<TDto> {
     try {
       const param = await this.mapper.dtoFromObject(data);
       return await this.service.create(param);
-    } catch (e) {
-      return ExceptionHandler(e);
-    }
-  }
-
-  async saveAsDraft(data: TDto): Promise<TDto> {
-    try {
-      const param = await this.mapper.dtoFromObject(data);
-      const result = await this.service.saveAsDraft(param);
-      return result;
     } catch (e) {
       return ExceptionHandler(e);
     }
@@ -171,17 +131,9 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  async destroyDraft(id: string): Promise<void> {
+  async destroyBulk({ ids }: { ids: string }): Promise<{ [key: string]: string }> {
     try {
-      await this.service.destroyDraft(id);
-    } catch (e) {
-      return ExceptionHandler(e);
-    }
-  }
-
-  async destroyBulk(ids: string): Promise<{ [key: string]: string }> {
-    try {
-      const result = await this.service.destroyBulk(JSON.parse('[' + ids + ']'));
+      const result = await this.service.destroyBulk(JSON.parse(ids));
       return result;
     } catch (e) {
       return ExceptionHandler(e);
@@ -198,7 +150,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
             async (val): Promise<TDto> => {
               const param: TDto = await this.mapper.dtoFromObject(val);
               param.id = uuid();
-              const result = await this.service.saveAsDraft(param);
+              const result = await this.service.create(param);
 
               return result;
             },

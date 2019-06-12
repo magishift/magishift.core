@@ -2,10 +2,14 @@ import { BaseDto } from '@magishift/base';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ApiModelProperty } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsUUID, validate, ValidationError } from 'class-validator';
+import { Field, ID, InputType, InterfaceType, ObjectType } from 'type-graphql';
 import { ICrudDto, IDataMeta } from './interfaces/crud.interface';
 import { IForm, IFormField } from './interfaces/form.interface';
 import { IGrid, IGridColumns } from './interfaces/grid.interface';
 
+@InterfaceType({ isAbstract: true })
+@ObjectType({ isAbstract: true })
+@InputType({ isAbstract: true })
 export abstract class CrudDto extends BaseDto implements ICrudDto {
   gridSchema: IGrid;
 
@@ -17,10 +21,12 @@ export abstract class CrudDto extends BaseDto implements ICrudDto {
 
   @IsOptional()
   @IsUUID()
-  @ApiModelProperty({ required: false, readOnly: true })
+  @ApiModelProperty()
+  @Field(() => ID)
   id: string;
 
-  @ApiModelProperty({ required: false })
+  @Field({ nullable: true })
+  @ApiModelProperty()
   @IsBoolean()
   isDeleted: boolean;
 

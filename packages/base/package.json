@@ -1,6 +1,6 @@
 {
   "name": "@magishift/base",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "Magishift is Low-Code Framework, helps you to build application easier, faster and a more efficient use of time. (@base)",
   "author": "Sofyan Hadi Ahmad",
   "license": "MIT",
@@ -13,30 +13,26 @@
   },
   "scripts": {
     "precommit": "echo 'precommit'",
-    "build": "rm -rf dist && tsc --p tsconfig.json -d && copyfiles -u -f -V src/**/*.graphql src/**/**/*.graphql dist",
+    "build": "yarn barrels && rm -rf dist && tsc --p tsconfig.json -d",
     "build:publish": "yarn build && yarn publish --no-git-tag-version ",
-    "barrels": "barrelsby --delete -d ./src"
+    "barrels": "barrelsby --delete -d ./src --singleQuotes"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@nestjs/common": "^6.3.1",
+    "@nestjs/core": "^6.3.1",
     "class-validator": "^0.9.1",
     "os-utils": "^0.0.14",
-    "type-graphql": "^0.17.3",
-    "typeorm": "^0.2.17",
+    "typeorm": "^0.2.18",
     "uuid": "^3.3.2"
   },
-  "peerDependencies": {
-    "@nestjs/common": "^6.1.1",
-    "@nestjs/core": "^6.1.1"
-  },
   "devDependencies": {
-    "@types/node": "^11.13.9",
+    "@types/node": "^12.0.7",
     "@types/uuid": "^3.4.4",
-    "barrelsby": "^2.0.0",
-    "copyfiles": "^2.1.0",
-    "nodemon": "^1.19.0",
+    "barrelsby": "^2.1.1",
+    "nodemon": "^1.19.1",
     "supertest": "^4.0.2",
-    "typescript": "^3.4.5"
+    "typescript": "^3.5.1"
   }
 }

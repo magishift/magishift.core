@@ -18,6 +18,8 @@
   },
   "dependencies": {
     "@magishift/base": "^0.0.3",
+    "@nestjs/common": "^6.3.1",
+    "@nestjs/graphql": "^6.2.4",
     "@nestjs/typeorm": "^6.1.0",
     "typeorm": "^0.2.17"
   },

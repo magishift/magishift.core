@@ -21,6 +21,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@magishift/config": "^0.0.3",
+    "@nestjs/graphql": "^6.2.4",
     "axios": "^0.18.0"
   },
   "peerDependencies": {

@@ -25,9 +25,9 @@ export interface ICrudController<TDto extends ICrudDto> {
 
   destroy(id: string): Promise<void>;
 
-  destroyBulk(
-    ids: string,
-  ): Promise<{
+  destroyBulk(param: {
+    ids: string;
+  }): Promise<{
     [key: string]: string;
   }>;
 

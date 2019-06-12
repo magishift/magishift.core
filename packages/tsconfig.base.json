@@ -5,7 +5,7 @@
     "noImplicitAny": false,
     "skipLibCheck": true,
     "suppressImplicitAnyIndexErrors": true,
-    "noUnusedLocals": false,
+    "noUnusedLocals": true,
     "removeComments": false,
     "noLib": false,
     "emitDecoratorMetadata": true,

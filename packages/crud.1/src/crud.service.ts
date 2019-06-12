@@ -156,6 +156,8 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
 
     const toEntity = await this.mapper.dtoToEntity(data);
 
+    const beforeUpdate = await this.findOne({ id } as any);
+
     // make sure updated id was not altered
     toEntity.id = id;
 

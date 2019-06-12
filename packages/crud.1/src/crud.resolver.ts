@@ -68,7 +68,7 @@ export function CrudResolverFactory<TDto extends ICrudDto, TEntity extends ICrud
   }
 
   @ObjectType(`${nameCapFirst}FindAll`)
-  class FindAllResult implements IFindAllResult {
+  class FindAllResult implements IFindAllResult<TDto> {
     @Field(() => Int)
     totalCount: number;
 

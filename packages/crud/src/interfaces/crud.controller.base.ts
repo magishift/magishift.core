@@ -22,7 +22,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     protected readonly mapper: ICrudMapper<TEntity, TDto>,
   ) {}
 
-  getConfig(): ICrudConfig {
+  getCrudConfig(): ICrudConfig {
     try {
       return this.service.getCrudConfig();
     } catch (e) {
@@ -69,28 +69,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  async findAllDrafts(filterArg?: string): Promise<{ items: TDto[]; totalCount: number }> {
-    try {
-      let filter: Filter<TDto>;
-
-      if (filterArg) {
-        filter = JSON.parse(filterArg);
-      }
-
-      const items = await this.service.findAllDrafts(filter);
-
-      const totalCount = 0;
-
-      return {
-        items,
-        totalCount,
-      };
-    } catch (e) {
-      return ExceptionHandler(e);
-    }
-  }
-
-  async findAll(filterArg?: string): Promise<IFindAllResult> {
+  async findAll(filterArg?: string): Promise<IFindAllResult<TDto>> {
     try {
       let filter: Filter<TDto>;
 
@@ -126,28 +105,10 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  async fetchDraftById(id: string): Promise<TDto> {
-    try {
-      return this.service.fetchDraft(id);
-    } catch (e) {
-      return ExceptionHandler(e);
-    }
-  }
-
   async create(data: TDto): Promise<TDto> {
     try {
       const param = await this.mapper.dtoFromObject(data);
       return await this.service.create(param);
-    } catch (e) {
-      return ExceptionHandler(e);
-    }
-  }
-
-  async saveAsDraft(data: TDto): Promise<TDto> {
-    try {
-      const param = await this.mapper.dtoFromObject(data);
-      const result = await this.service.saveAsDraft(param);
-      return result;
     } catch (e) {
       return ExceptionHandler(e);
     }
@@ -170,17 +131,10 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
     }
   }
 
-  async destroyDraft(id: string): Promise<void> {
+  async destroyBulk(ids: string): Promise<{ [key: string]: string }> {
     try {
-      await this.service.destroyDraft(id);
-    } catch (e) {
-      return ExceptionHandler(e);
-    }
-  }
-
-  async destroyBulk({ ids }: { ids: string }): Promise<{ [key: string]: string }> {
-    try {
-      const result = await this.service.destroyBulk(JSON.parse(ids));
+      const arrIds = ids.split(',');
+      const result = await this.service.destroyBulk(arrIds);
       return result;
     } catch (e) {
       return ExceptionHandler(e);
@@ -197,7 +151,7 @@ export abstract class CrudController<TDto extends ICrudDto, TEntity extends ICru
             async (val): Promise<TDto> => {
               const param: TDto = await this.mapper.dtoFromObject(val);
               param.id = uuid();
-              const result = await this.service.saveAsDraft(param);
+              const result = await this.service.create(param);
 
               return result;
             },

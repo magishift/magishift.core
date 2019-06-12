@@ -1,6 +1,6 @@
 {
   "name": "@magishift/crud",
-  "version": "0.0.14",
+  "version": "0.0.11",
   "description": "Magishift is Low-Code Framework, helps you to build application easier, faster and a more efficient use of time. (@crud)",
   "author": "Sofyan Hadi Ahmad",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "yarn barrels && rm -rf dist && tsc --p tsconfig.json -d",
+    "build": "yarn barrels && rm -rf dist && tsc --p tsconfig.json -d && copyfiles -u -f -V src/**/*.graphql src/**/**/*.graphql dist",
     "precommit": "echo 'precommit'",
     "build:publish": "yarn build && yarn publish --no-git-tag-version",
     "barrels": "barrelsby --delete -d ./src --singleQuotes"
@@ -20,20 +20,22 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@magishift/base": "^0.0.5",
+    "@magishift/base": "^0.0.4",
     "@magishift/util": "^0.0.3",
     "@nestjs/common": "^6.3.1",
     "@nestjs/core": "^6.3.1",
+    "@nestjs/graphql": "^6.2.4",
     "@nestjs/platform-express": "^6.3.1",
     "@nestjs/swagger": "^3.0.2",
     "@nestjs/testing": "^6.3.1",
     "@nestjs/typeorm": "^6.1.2",
+    "apollo-server-express": "^2.6.2",
     "class-transformer": "^0.2.3",
+    "graphql": "^14.3.1",
+    "graphql-tools": "^4.0.4",
+    "graphql-type-json": "^0.3.0",
     "json2csv": "^4.5.1",
-    "pluralize": "^8.0.0",
-    "reflect-metadata": "^0.1.13",
-    "rxjs": "^6.5.2",
-    "typeorm": "^0.2.18"
+    "pluralize": "^8.0.0"
   },
   "devDependencies": {
     "@types/node": "^12.0.7",

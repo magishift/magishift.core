@@ -16,7 +16,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiImplicitBody,
   ApiImplicitFile,
-  ApiImplicitParam,
   ApiImplicitQuery,
   ApiOperation,
   ApiResponse,
@@ -137,18 +136,10 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
 
     @Delete('multi/:ids')
     @ApiOperation({ title: `Delete multiple existing ${name}` })
-    @ApiImplicitParam({
-      name: 'ids',
-      description: 'example: id,id,id',
-      type: String,
-      required: false,
-    })
-    async destroyBulk(
-      @Param('ids') ids: string,
-    ): Promise<{
+    async destroyBulk(@Param('ids') { ids }: { ids: string }): Promise<{
       [key: string]: string;
     }> {
-      return await super.destroyBulk(ids);
+      return await super.destroyBulk({ ids });
     }
 
     @Post('import-csv')
