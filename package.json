@@ -118,7 +118,7 @@
     "@types/connect-redis": "0.0.9",
     "@types/cron": "1.7.0",
     "@types/dotenv": "6.1.1",
-    "@types/express-session": "1.15.12",
+    "@types/express-session": "1.15.13",
     "@types/handlebars": "4.1.0",
     "@types/http-proxy": "1.17.0",
     "@types/ioredis": "4.0.10",
