@@ -130,7 +130,7 @@
     "@types/passport-jwt": "3.0.1",
     "@types/pug": "2.0.4",
     "@types/shelljs": "0.8.5",
-    "@types/supertest": "2.0.7",
+    "@types/supertest": "2.0.8",
     "@types/twilio": "0.0.10",
     "@types/uuid": "3.4.4",
     "copyfiles": "2.1.0",
