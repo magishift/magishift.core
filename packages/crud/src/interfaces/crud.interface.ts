@@ -1,6 +1,4 @@
-import { DataStatus, IBaseDto, IBaseEntity } from '@magishift/base';
 import { ApiModelProperty } from '@nestjs/swagger';
-import { ValidationError } from 'class-validator';
 import { Repository } from 'typeorm';
 
 export enum DataHistoryAction {
@@ -21,9 +19,6 @@ export abstract class IDataHistory {
 }
 
 export abstract class IDataMeta {
-  @ApiModelProperty({ required: false, enum: Object.keys(DataStatus).map(key => DataStatus[key]) })
-  dataStatus?: DataStatus;
-
   @ApiModelProperty({ required: false })
   editable?: boolean;
 
@@ -37,7 +32,7 @@ export abstract class IDataMeta {
   histories?: IDataHistory[];
 }
 
-export abstract class ICrudEntity implements IBaseEntity {
+export interface ICrudEntity {
   id: string;
 
   isDeleted?: boolean;
@@ -47,15 +42,13 @@ export abstract class ICrudEntity implements IBaseEntity {
   getRepository: () => Repository<any>;
 }
 
-export abstract class ICrudDto implements IBaseDto {
+export abstract class ICrudDto {
   @ApiModelProperty({ readOnly: true })
-  id: string;
+  id?: string;
 
   @ApiModelProperty({ required: false })
   isDeleted?: boolean;
 
   @ApiModelProperty({ required: false, readOnly: true })
   __meta?: IDataMeta;
-
-  abstract validate(): Promise<ValidationError[]>;
 }

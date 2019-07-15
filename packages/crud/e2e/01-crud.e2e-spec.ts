@@ -1,137 +1,132 @@
-// import dotenv = require('dotenv');
+import dotenv = require('dotenv');
 
-// const envPath = process.env.NODE_ENV === 'test' ? '/.env.test' : '/.env';
+const envPath = process.env.NODE_ENV === 'test' ? '/.env.test' : '/.env';
 
-// const { parsed } = dotenv.config({
-//   path: process.cwd() + envPath,
-// });
+const { parsed } = dotenv.config({
+  path: process.cwd() + envPath,
+});
 
-// process.env = { ...parsed, ...process.env };
+process.env = { ...parsed, ...process.env };
 
-// import { ErrorFilter } from '@magishift/util';
-// import { HttpModule, INestApplication, Logger } from '@nestjs/common';
-// import { Test } from '@nestjs/testing';
-// import { TypeOrmModule } from '@nestjs/typeorm';
-// import * as request from 'supertest';
-// import {
-//   EInstitutionTypes,
-//   IOrganization
-// } from '../src/interfaces/organization.interface';
-// import { OrganizationController } from '../src/organization.controller';
-// import { Organization } from '../src/organization.entity';
-// import { OrganizationMapper } from '../src/organization.mapper';
-// import { OrganizationService } from '../src/organization.service';
+import { ErrorFilter } from '@magishift/util';
+import { INestApplication, Logger } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import * as request from 'supertest';
+import { ITestDto } from './test/interfaces/test.interface';
+import { Test as TestEntity } from './test/test.entity';
+import { TestModule } from './test/test.module';
 
-// describe('Test Organization CRUD', () => {
-//   let app: INestApplication;
+describe('Test Magi CRUD', () => {
+  let app: INestApplication;
 
-//   const fixture: IOrganization = {
-//     institutionType: EInstitutionTypes.sekolah,
-//     name: 'Test',
-//     totalStudent: 10,
-//     province: 'Jakarta',
-//     city: 'Jakarta Selatan',
-//     address: 'Tebet',
-//     picName: 'Test PIC',
-//     picKtpNumber: 'PIC01234',
-//     phoneNumber: '08123456789',
-//     email: 'test@test.com',
-//     akta: '123456',
-//     skKemenkumham: '123456',
-//     skdp: '123456',
-//     tdp: '123456',
-//     siup: '123456',
-//     npwp: '123456',
-//     directorKtpNumber: '123456',
-//   };
+  const fixture: ITestDto = {
+    testAttribute: 'Testing',
+  };
 
-//   let newOrganizationId: string;
+  let newEntityId: string;
 
-//   beforeAll(async () => {
-//     const module = await Test.createTestingModule({
-//       imports: [
-//         TypeOrmModule.forRoot({
-//           type: 'sqlite',
-//           database: ':memory:',
-//           entities: [Organization],
-//           synchronize: true,
-//         }),
-//         TypeOrmModule.forFeature([Organization]),
-//         HttpModule,
-//       ],
-//       controllers: [OrganizationController],
-//       providers: [OrganizationService, OrganizationMapper],
-//     }).compile();
+  beforeAll(async () => {
+    const module = await Test.createTestingModule({
+      imports: [
+        TypeOrmModule.forRoot({
+          type: 'sqlite',
+          database: ':memory:',
+          entities: [TestEntity],
+          synchronize: true,
+        }),
+        TestModule,
+      ],
+    }).compile();
 
-//     app = module.createNestApplication();
-//     app.useGlobalFilters(new ErrorFilter(Logger));
+    app = module.createNestApplication();
+    app.useGlobalFilters(new ErrorFilter(Logger));
 
-//     await app.init();
-//   });
+    await app.init();
+  });
 
-//   it(`GET /organization to fetch all organizations`, () =>
-//     request(app.getHttpServer())
-//       .get('/organization')
-//       .expect(200)
-//       .then(({ body }) => {
-//         expect(typeof body.totalCount).toBe('number');
-//         expect(Array.isArray(body.items)).toBe(true);
-//       }));
+  it(`GET /test to fetch all entities`, () =>
+    request(app.getHttpServer())
+      .get('/test?order=["id"]&isShowDeleted=false&limit=10&relations=[]&where={}&whereOr={}')
+      .expect(200)
+      .then(({ body }) => {
+        expect(typeof body.totalCount).toBe('number');
+        expect(Array.isArray(body.items)).toBe(true);
+      }));
 
-//   it(`POST /organization add new organization`, () =>
-//     request(app.getHttpServer())
-//       .post('/organization')
-//       .send(fixture)
-//       .set('Accept', 'application/json')
-//       .expect(201)
-//       .then(({ body }) => {
-//         expect(body.id).toBeDefined();
-//         newOrganizationId = body.id;
-//       }));
+  it(`POST /test add new invalid entity`, () =>
+    request(app.getHttpServer())
+      .post('/test')
+      .send({
+        testAttribute: null,
+      })
+      .set('Accept', 'application/json')
+      .expect(400));
 
-//   it(`GET /organization/:id  get new created organization`, () => {
-//     return request(app.getHttpServer())
-//       .get(`/organization/${newOrganizationId}`)
-//       .set('Accept', 'application/json')
-//       .expect(200)
-//       .expect('Content-Type', /json/)
-//       .then(({ body }) => {
-//         expect(body.id).toBe(newOrganizationId);
-//         expect(body.name).toBe(fixture.name);
-//       });
-//   });
+  it(`POST /test add new entity`, () =>
+    request(app.getHttpServer())
+      .post('/test')
+      .send(fixture)
+      .set('Accept', 'application/json')
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.id).toBeDefined();
+        newEntityId = body.id;
+      }));
 
-//   it(`PATCH /organization update existing organization`, () => {
-//     const updatedFixture = Object.assign(fixture);
+  it(`GET /test/:id get new created entity`, () => {
+    return request(app.getHttpServer())
+      .get(`/test/${newEntityId}`)
+      .set('Accept', 'application/json')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .then(({ body }) => {
+        expect(body.id).toBe(newEntityId);
+        expect(body.testAttribute).toBe(fixture.testAttribute);
+      });
+  });
 
-//     updatedFixture.name = 'Updated test name';
+  it(`PATCH /test update existing entity`, () => {
+    const updatedFixture: ITestDto = Object.assign(fixture);
 
-//     return request(app.getHttpServer())
-//       .patch(`/organization/${newOrganizationId}`)
-//       .send(fixture)
-//       .set('Accept', 'application/json')
-//       .expect(200)
-//       .then(({ body }) => {
-//         expect(body.id).toBe(newOrganizationId);
-//         expect(body.name).toBe(updatedFixture.name);
-//       });
-//   });
+    updatedFixture.testAttribute = 'Updated test name';
 
-//   it(`DELETE /organization/:id  delete new created organization`, () => {
-//     return request(app.getHttpServer())
-//       .delete(`/organization/${newOrganizationId}`)
-//       .set('Accept', 'application/json')
-//       .expect(200);
-//   });
+    return request(app.getHttpServer())
+      .patch(`/test/${newEntityId}`)
+      .send(fixture)
+      .set('Accept', 'application/json')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.id).toBe(newEntityId);
+        expect(body.testAttribute).toBe(updatedFixture.testAttribute);
+      });
+  });
 
-//   it(`GET /organization/:id  get new created organization`, () => {
-//     return request(app.getHttpServer())
-//       .get(`/organization/${newOrganizationId}`)
-//       .set('Accept', 'application/json')
-//       .expect(404);
-//   });
+  it(`DELETE /test/:id  delete new created entity`, () => {
+    return request(app.getHttpServer())
+      .delete(`/test/${newEntityId}`)
+      .set('Accept', 'application/json')
+      .expect(200);
+  });
 
-//   afterAll(async () => {
-//     await app.close();
-//   });
-// });
+  it(`GET /test/deleted to fetch all deleted entities`, () =>
+    request(app.getHttpServer())
+      .get(`/test?order=["id"]&isShowDeleted=false&limit=1&relations=[]&where={id=${newEntityId}}&whereOr={}`)
+      .expect(200)
+      .then(({ body }) => {
+        expect(typeof body.totalCount).toBe('number');
+        expect(Array.isArray(body.items)).toBe(true);
+        expect(body.items[0].id).toBe(newEntityId);
+      }));
+
+  it(`GET /test/:id  get new created entity`, () => {
+    return request(app.getHttpServer())
+      .get(`/test/${newEntityId}`)
+      .set('Accept', 'application/json')
+      .expect(404);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+});

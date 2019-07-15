@@ -10,20 +10,41 @@ import {
   Post,
   Query,
   UseInterceptors,
+  UsePipes,
 } from '@nestjs/common';
-import { ApiImplicitBody, ApiImplicitParam, ApiOperation, ApiResponse, ApiUseTags } from '@nestjs/swagger';
+import {
+  ApiImplicitBody,
+  ApiImplicitParam,
+  ApiModelProperty,
+  ApiOperation,
+  ApiResponse,
+  ApiUseTags,
+} from '@nestjs/swagger';
+import { IsOptional } from 'class-validator';
 import { Filter } from './crud.filter';
 import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudController } from './interfaces/crudController.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
 import { ICrudService, IDeleteBulkResult } from './interfaces/crudService.interface';
 import { IFindAllResult } from './interfaces/filter.interface';
+import { FilterTransformerPipe } from './pipes/filterTransformer.pipe';
+import { ValidationPipe } from './pipes/validation.pipe';
 
 export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICrudEntity>(
   name: string,
   dtoClass: new (...args: any[]) => TDto,
 ): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>) => ICrudController<TDto> {
   class FindAllResult extends IFindAllResult<TDto> {}
+
+  class FilterClass extends Filter<TDto> {
+    @IsOptional()
+    @ApiModelProperty({ required: false })
+    where?: Partial<typeof dtoClass>;
+
+    @IsOptional()
+    @ApiModelProperty({ required: false })
+    whereOr?: Partial<typeof dtoClass>;
+  }
 
   @Controller(name)
   @ApiUseTags(name)
@@ -37,9 +58,10 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
     @Get()
     @ApiOperation({ title: `Fetch and filter list of ${name} ` })
     @ApiResponse({ status: 200, type: FindAllResult })
-    async findAll(@Query() filterArg?: Filter<TDto>): Promise<FindAllResult> {
+    async findAll(@Query(new FilterTransformerPipe(FilterClass)) filterArg?: FilterClass): Promise<FindAllResult> {
       try {
         const items = await this.service.findAll(filterArg);
+
         const totalCount = await this.service.count(filterArg);
 
         return {
@@ -73,7 +95,7 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
 
     @Get('/deleted')
     @ApiOperation({ title: `Get all deleted ${name}` })
-    async openDeleted(@Query('filter') filterArg?: Filter<TDto>): Promise<FindAllResult> {
+    async openDeleted(@Query(new FilterTransformerPipe(FilterClass)) filterArg?: FilterClass): Promise<FindAllResult> {
       try {
         filterArg.isShowDeleted = true;
 
@@ -96,6 +118,7 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
       type: dtoClass,
     })
     @ApiOperation({ title: `Create new ${name}` })
+    @UsePipes(new ValidationPipe(dtoClass))
     async create(@Body() data: TDto): Promise<TDto> {
       try {
         const param = await this.mapper.dtoFromObject(data);
@@ -111,6 +134,7 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
       type: dtoClass,
     })
     @ApiOperation({ title: `Update existing ${name}` })
+    @UsePipes(new ValidationPipe(dtoClass))
     async update(@Param('id') id: string, @Body() data: TDto): Promise<TDto> {
       try {
         const param: TDto = await this.mapper.dtoFromObject(data);

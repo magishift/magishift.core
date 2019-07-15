@@ -3,7 +3,7 @@ import { IsArray, IsBoolean, IsInt, IsOptional, Max, Min } from 'class-validator
 import { ICrudDto } from './interfaces/crud.interface';
 import { IFilter } from './interfaces/filter.interface';
 
-export class Filter<TDto extends ICrudDto> implements IFilter {
+export abstract class Filter<TDto extends ICrudDto> implements IFilter {
   @IsOptional()
   @ApiModelProperty({ required: false })
   where?: Partial<TDto>;
@@ -37,7 +37,7 @@ export class Filter<TDto extends ICrudDto> implements IFilter {
 
   @IsOptional()
   @IsBoolean()
-  @ApiModelProperty({ required: false, isArray: true })
+  @ApiModelProperty({ required: false })
   relations?: string[];
 
   constructor(partial: Partial<Filter<TDto>>) {

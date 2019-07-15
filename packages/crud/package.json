@@ -24,7 +24,6 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@magishift/base": "^0.0.5",
     "@magishift/util": "^0.0.3",
     "@nestjs/common": "^6.3.1",
     "@nestjs/core": "^6.3.1",

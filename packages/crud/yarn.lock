@@ -285,18 +285,6 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^12.0.9"
 
-"@magishift/base@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@magishift/base/-/base-0.0.5.tgz#fc0a6e022666bc6da5296c985cbcd905a01edaee"
-  integrity sha512-pQSnWi+cDZ+4JI7P/6mHdOelAk+j93IzPTWAI2HPSIwv10qfsIyYYvmDm1HczU0aShm5MHdsX6cpFrt3OrpO7g==
-  dependencies:
-    "@nestjs/common" "^6.3.1"
-    "@nestjs/core" "^6.3.1"
-    class-validator "^0.9.1"
-    os-utils "^0.0.14"
-    typeorm "^0.2.18"
-    uuid "^3.3.2"
-
 "@magishift/util@^0.0.3":
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/@magishift/util/-/util-0.0.3.tgz#c9643b2626c644d1b477d256f4e070d51c780fc2"
@@ -988,14 +976,6 @@ class-utils@^0.3.5:
     define-property "^0.2.5"
     isobject "^3.0.0"
     static-extend "^0.1.1"
-
-class-validator@^0.9.1:
-  version "0.9.1"
-  resolved "https://registry.yarnpkg.com/class-validator/-/class-validator-0.9.1.tgz#d60e58c5d14abca0a41bce38cf792ad4c46d1531"
-  integrity sha512-3wApflrd3ywVZyx4jaasGoFt8pmo4aGLPPAEKCKCsTRWVGPilahD88q3jQjRQwja50rl9a7rsP5LAxJYwGK8/Q==
-  dependencies:
-    google-libphonenumber "^3.1.6"
-    validator "10.4.0"
 
 cli-boxes@^1.0.0:
   version "1.0.0"
@@ -1928,11 +1908,6 @@ globals@^11.1.0:
   version "11.12.0"
   resolved "https://registry.yarnpkg.com/globals/-/globals-11.12.0.tgz#ab8795338868a0babd8525758018c2a7eb95c42e"
   integrity sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==
-
-google-libphonenumber@^3.1.6:
-  version "3.2.2"
-  resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.2.2.tgz#3d9d7ba727e99a50812f21b0ed313723b76c5c54"
-  integrity sha512-ubjGeosYPeusjYbUHy76lCniGTTI0k1rIFc+uKBX+jHQLDmWOSUtlFUxaeoLJ+Y+PAMM6dWp+C1HjHx5BI8kEw==
 
 got@^6.7.1:
   version "6.7.1"
@@ -3640,11 +3615,6 @@ os-tmpdir@^1.0.0:
   resolved "https://registry.yarnpkg.com/os-tmpdir/-/os-tmpdir-1.0.2.tgz#bbe67406c79aa85c5cfec766fe5734555dfa1274"
   integrity sha1-u+Z0BseaqFxc/sdm/lc0VV36EnQ=
 
-os-utils@^0.0.14:
-  version "0.0.14"
-  resolved "https://registry.yarnpkg.com/os-utils/-/os-utils-0.0.14.tgz#29e511697b1982b8c627722175fe39797ef64156"
-  integrity sha1-KeURaXsZgrjGJ3Ihdf45eX72QVY=
-
 osenv@^0.1.4:
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/osenv/-/osenv-0.1.5.tgz#85cdfafaeb28e8677f416e287592b5f3f49ea410"
@@ -4994,11 +4964,6 @@ validate-npm-package-license@^3.0.1:
   dependencies:
     spdx-correct "^3.0.0"
     spdx-expression-parse "^3.0.0"
-
-validator@10.4.0:
-  version "10.4.0"
-  resolved "https://registry.yarnpkg.com/validator/-/validator-10.4.0.tgz#ee99a44afb3bb5ed350a159f056ca72a204cfc3c"
-  integrity sha512-Q/wBy3LB1uOyssgNlXSRmaf22NxjvDNZM2MtIQ4jaEOAB61xsh1TQxsq1CgzUMBV1lDrVMogIh8GjG1DYW0zLg==
 
 vary@^1, vary@~1.1.2:
   version "1.1.2"

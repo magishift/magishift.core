@@ -1,4 +1,3 @@
-import { BaseService, DataStatus } from '@magishift/base';
 import { GetRelationsTableName } from '@magishift/util';
 import { HttpException } from '@nestjs/common';
 import { FindConditions, FindOneOptions, ObjectLiteral, Repository } from 'typeorm';
@@ -8,14 +7,12 @@ import { ICrudMapper } from './interfaces/crudMapper.Interface';
 import { ICrudService, IDeleteBulkResult } from './interfaces/crudService.interface';
 import { IFilter } from './interfaces/filter.interface';
 
-export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICrudDto> extends BaseService<TEntity>
+export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICrudDto>
   implements ICrudService<TEntity, TDto> {
   constructor(
     protected readonly repository: Repository<TEntity>,
     protected readonly mapper: ICrudMapper<TEntity, TDto>,
-  ) {
-    super(repository);
-  }
+  ) {}
 
   async isExist(id: string): Promise<boolean> {
     return !!(await this.repository.findOne(id));
@@ -85,15 +82,10 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
   }
 
   async create(data: TDto, doValidation: boolean = true): Promise<TDto> {
-    if (doValidation) {
-      await data.validate();
-    }
-
     if (!data.__meta) {
       data.__meta = {};
     }
 
-    data.__meta.dataStatus = DataStatus.Submitted;
     data.isDeleted = false;
 
     const entity = await this.mapper.dtoToEntity(data);
@@ -104,10 +96,6 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
   }
 
   async update(id: string, data: TDto, doValidation: boolean = true): Promise<TDto> {
-    if (doValidation) {
-      await data.validate();
-    }
-
     const toEntity = await this.mapper.dtoToEntity(data);
 
     // make sure updated id was not altered
