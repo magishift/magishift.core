@@ -14,7 +14,7 @@ export abstract class Filter<TDto extends ICrudDto> implements IFilter {
 
   @IsOptional()
   @IsArray()
-  @ApiModelProperty({ required: false, type: String, isArray: true, example: 'id ASC' })
+  @ApiModelProperty({ required: false, type: String, isArray: true, example: '["id ASC"]' })
   order?: string[];
 
   @ApiModelProperty({ required: false })

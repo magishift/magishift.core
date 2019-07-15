@@ -47,7 +47,7 @@ describe('Test Magi CRUD', () => {
 
   it(`GET /test to fetch all entities`, () =>
     request(app.getHttpServer())
-      .get('/test?order=["id"]&isShowDeleted=false&limit=10&relations=[]&where={}&whereOr={}')
+      .get('/test?order=["id ASC"]&isShowDeleted=false&limit=10&relations=[]&where={}&whereOr={}')
       .expect(200)
       .then(({ body }) => {
         expect(typeof body.totalCount).toBe('number');
