@@ -19,21 +19,23 @@ export abstract class IDataHistory {
 }
 
 export abstract class IDataMeta {
-  @ApiModelProperty({ required: false })
+  @ApiModelProperty()
   editable?: boolean;
 
-  @ApiModelProperty({ required: false })
+  @ApiModelProperty()
   deleteable?: boolean;
 
-  @ApiModelProperty({ required: false })
+  @ApiModelProperty()
   dataOwner?: string;
 
-  @ApiModelProperty({ required: false })
+  @ApiModelProperty({ type: IDataHistory, isArray: true })
   histories?: IDataHistory[];
 }
 
 export interface ICrudEntity {
   id: string;
+
+  publicId: string;
 
   isDeleted?: boolean;
 
@@ -42,13 +44,12 @@ export interface ICrudEntity {
   getRepository: () => Repository<any>;
 }
 
-export abstract class ICrudDto {
-  @ApiModelProperty({ readOnly: true })
+export interface ICrudDto {
   id?: string;
 
-  @ApiModelProperty({ required: false })
+  publicId?: string;
+
   isDeleted?: boolean;
 
-  @ApiModelProperty({ required: false, readOnly: true })
   __meta?: IDataMeta;
 }

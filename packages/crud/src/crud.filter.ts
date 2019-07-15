@@ -5,16 +5,16 @@ import { IFilter } from './interfaces/filter.interface';
 
 export abstract class Filter<TDto extends ICrudDto> implements IFilter {
   @IsOptional()
-  @ApiModelProperty({ required: false })
+  @ApiModelProperty({ required: false, example: '{"id" : "001"}', description: 'Filter where' })
   where?: Partial<TDto>;
 
   @IsOptional()
-  @ApiModelProperty({ required: false })
+  @ApiModelProperty({ required: false, example: '{"id" : "001"}', description: 'Filter where or' })
   whereOr?: Partial<TDto>;
 
   @IsOptional()
   @IsArray()
-  @ApiModelProperty({ required: false, type: String, isArray: true, example: '["id ASC"]' })
+  @ApiModelProperty({ required: false, type: String, example: '["id ASC"]' })
   order?: string[];
 
   @ApiModelProperty({ required: false })
@@ -37,7 +37,7 @@ export abstract class Filter<TDto extends ICrudDto> implements IFilter {
 
   @IsOptional()
   @IsBoolean()
-  @ApiModelProperty({ required: false })
+  @ApiModelProperty({ required: false, type: String, example: '["relationA", "relationB"]' })
   relations?: string[];
 
   constructor(partial: Partial<Filter<TDto>>) {

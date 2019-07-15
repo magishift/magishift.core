@@ -1,3 +1,4 @@
+import cryptoRandomString = require('crypto-random-string');
 import { BeforeInsert, BeforeUpdate, Column, getRepository, PrimaryGeneratedColumn, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { DataHistoryAction, ICrudEntity, IDataMeta } from './interfaces/crud.interface';
@@ -5,6 +6,9 @@ import { DataHistoryAction, ICrudEntity, IDataMeta } from './interfaces/crud.int
 export abstract class CrudEntity implements ICrudEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = uuid();
+
+  @Column({ unique: true })
+  publicId: string = cryptoRandomString({ length: 8 });
 
   @Column({ default: false })
   isDeleted?: boolean;
