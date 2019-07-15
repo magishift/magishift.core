@@ -26,9 +26,7 @@ export interface ICrudEntity extends IBaseEntity {
 
 export interface ICrudDto extends IBaseDto {
   id: string;
-
   isDeleted: boolean;
-
   __meta: IDataMeta;
 
   validate(): Promise<ValidationError[]>;

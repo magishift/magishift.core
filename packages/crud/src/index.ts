@@ -14,5 +14,3 @@ export * from './interfaces/crudController.interface';
 export * from './interfaces/crudMapper.Interface';
 export * from './interfaces/crudService.interface';
 export * from './interfaces/filter.interface';
-export * from './interfaces/form.interface';
-export * from './interfaces/grid.interface';

@@ -2,8 +2,10 @@ import { FindOneOptions, ObjectLiteral } from 'typeorm';
 import { ICrudDto, ICrudEntity } from './crud.interface';
 import { IFilter } from './filter.interface';
 
-export interface IServiceConfig {
-  softDelete: boolean;
+export interface IDeleteBulkResult {
+  [key: string]: string;
+  status: string;
+  errorMessage: string;
 }
 
 export interface ICrudService<TEntity extends ICrudEntity, TDto extends ICrudDto> {
@@ -23,9 +25,9 @@ export interface ICrudService<TEntity extends ICrudEntity, TDto extends ICrudDto
 
   delete(id: string, ...rest: any[]): Promise<void>;
 
-  deleteBulk(ids: string[], ...rest: any[]): Promise<{ [key: string]: string }>;
+  deleteBulk(ids: string[], ...rest: any[]): Promise<IDeleteBulkResult[]>;
 
   destroy(id: string, ...rest: any[]): Promise<void>;
 
-  destroyBulk(ids: string[], ...rest: any[]): Promise<{ [key: string]: string }>;
+  destroyBulk(ids: string[], ...rest: any[]): Promise<IDeleteBulkResult[]>;
 }

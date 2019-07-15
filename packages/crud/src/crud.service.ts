@@ -5,7 +5,7 @@ import { FindConditions, FindOneOptions, ObjectLiteral, Repository } from 'typeo
 import { ResolveFindOptions } from './crud.util';
 import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
-import { ICrudService, IServiceConfig } from './interfaces/crudService.interface';
+import { ICrudService } from './interfaces/crudService.interface';
 import { IFilter } from './interfaces/filter.interface';
 
 export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICrudDto> extends BaseService<TEntity>
@@ -13,12 +13,11 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
   constructor(
     protected readonly repository: Repository<TEntity>,
     protected readonly mapper: ICrudMapper<TEntity, TDto>,
-    protected readonly config: IServiceConfig = { softDelete: true },
   ) {
     super(repository);
   }
 
-  async isExist(id: string, ...rest: any[]): Promise<boolean> {
+  async isExist(id: string): Promise<boolean> {
     return !!(await this.repository.findOne(id));
   }
 
@@ -28,7 +27,6 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       limit: -1,
       isShowDeleted: false,
     },
-    ...rest: any[]
   ): Promise<number> {
     const findOptions = ResolveFindOptions(filter, this.repository);
 
@@ -37,7 +35,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return result;
   }
 
-  async fetch(id: string, options?: FindOneOptions<TEntity>, ...rest: any[]): Promise<TDto> {
+  async fetch(id: string, options?: FindOneOptions<TEntity>): Promise<TDto> {
     options = options || {};
     options.cache = true;
 
@@ -46,17 +44,17 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     const result = await this.repository.findOne(id, options);
 
     if (!result) {
-      throw new HttpException(`${this.constructor.name} FindById with id: (${id}) Not Found`, 404);
+      throw new HttpException(`${this.constructor.name} entity with id: ${id} is not found`, 404);
     }
 
     if (result.isDeleted) {
-      throw new HttpException(`${this.constructor.name} record with id: "${id}" Has Been Deleted`, 404);
+      throw new HttpException(`${this.constructor.name} record with id: ${id} is deleted`, 404);
     }
 
     return this.mapper.entityToDto(result);
   }
 
-  async findOne(param: ObjectLiteral, options?: FindOneOptions<TEntity>, ...rest: any[]): Promise<TDto> {
+  async findOne(param: ObjectLiteral, options?: FindOneOptions<TEntity>): Promise<TDto> {
     options = options || {};
     options.cache = true;
     options.relations = options.relations || GetRelationsTableName(this.repository.metadata);
@@ -72,7 +70,6 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       limit: 10,
       isShowDeleted: false,
     },
-    ...rest: any[]
   ): Promise<TDto[]> {
     const findOptions = ResolveFindOptions(filter, this.repository);
 
@@ -87,7 +84,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     );
   }
 
-  async create(data: TDto, doValidation: boolean = true, ...rest: any[]): Promise<TDto> {
+  async create(data: TDto, doValidation: boolean = true): Promise<TDto> {
     if (doValidation) {
       await data.validate();
     }
@@ -106,7 +103,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return this.mapper.entityToDto(entity);
   }
 
-  async update(id: string, data: TDto, doValidation: boolean = true, ...rest: any[]): Promise<TDto> {
+  async update(id: string, data: TDto, doValidation: boolean = true): Promise<TDto> {
     if (doValidation) {
       await data.validate();
     }
@@ -121,30 +118,26 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return this.mapper.entityToDto(toEntity);
   }
 
-  async delete(id: string, ...rest: any[]): Promise<void> {
-    const entity = await this.repository.findOneOrFail(id);
+  async delete(id: string): Promise<void> {
+    // tslint:disable-next-line:no-any
+    const deletedObj: any = {
+      isDeleted: true,
+    };
 
-    if (this.config.softDelete && !entity.isDeleted) {
-      // tslint:disable-next-line:no-any
-      const deletedObj: any = {
-        isDeleted: true,
-      };
-
-      await this.repository.update(id, deletedObj);
-    } else {
-      await this.repository.delete(id);
-    }
+    await this.repository.update(id, deletedObj);
   }
 
-  async deleteBulk(ids: string[], ...rest: any[]): Promise<{ [key: string]: string }> {
-    const result: { [key: string]: string } = {};
+  async deleteBulk(ids: string[]): Promise<{ [key: string]: string; status: string; errorMessage: string }[]> {
+    const result: { [key: string]: string; status: string; errorMessage: string }[] = [];
 
     await Promise.all(
       ids.map(async id => {
         try {
           await this.delete(id);
+
+          result.push({ id, status: 'success', errorMessage: null });
         } catch (e) {
-          result[id] = e.messages;
+          result.push({ id, status: 'error', errorMessage: e.messages });
         }
       }),
     );
@@ -152,19 +145,21 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return result;
   }
 
-  async destroy(id: string, ...rest: any[]): Promise<void> {
+  async destroy(id: string): Promise<void> {
     await this.repository.delete(id);
   }
 
-  async destroyBulk(ids: string[], ...rest: any[]): Promise<{ [key: string]: string }> {
-    const result: { [key: string]: string } = {};
+  async destroyBulk(ids: string[]): Promise<{ [key: string]: string; status: string; errorMessage: string }[]> {
+    const result: { [key: string]: string; status: string; errorMessage: string }[] = [];
 
     await Promise.all(
       ids.map(async id => {
         try {
           await this.destroy(id);
+
+          result.push({ id, status: 'success', errorMessage: null });
         } catch (e) {
-          result[id] = e.messages;
+          result.push({ id, status: 'error', errorMessage: e.messages });
         }
       }),
     );

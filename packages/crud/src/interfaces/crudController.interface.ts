@@ -1,4 +1,5 @@
 import { ICrudDto } from './crud.interface';
+import { IDeleteBulkResult } from './crudService.interface';
 import { IFilter } from './filter.interface';
 
 export interface ICrudController<TDto extends ICrudDto> {
@@ -16,19 +17,9 @@ export interface ICrudController<TDto extends ICrudDto> {
 
   delete(id: string, ...rest: any[]): Promise<void>;
 
-  deleteBulk(
-    ids: string,
-    ...rest: any[]
-  ): Promise<{
-    [key: string]: string;
-  }>;
+  deleteBulk(ids: string, ...rest: any[]): Promise<IDeleteBulkResult[]>;
 
   destroy(id: string, ...rest: any[]): Promise<void>;
 
-  destroyBulk(
-    ids: string,
-    ...rest: any[]
-  ): Promise<{
-    [key: string]: string;
-  }>;
+  destroyBulk(ids: string, ...rest: any[]): Promise<IDeleteBulkResult[]>;
 }
