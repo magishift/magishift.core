@@ -1,10 +1,16 @@
+import { ApiModelProperty } from '@nestjs/swagger';
 import { FindOneOptions, ObjectLiteral } from 'typeorm';
 import { ICrudDto, ICrudEntity } from './crud.interface';
 import { IFilter } from './filter.interface';
 
-export interface IDeleteBulkResult {
-  [key: string]: string;
+export abstract class IDeleteBulkResult {
+  @ApiModelProperty()
+  id: string;
+
+  @ApiModelProperty()
   status: string;
+
+  @ApiModelProperty()
   errorMessage: string;
 }
 

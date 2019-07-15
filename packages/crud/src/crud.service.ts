@@ -5,7 +5,7 @@ import { FindConditions, FindOneOptions, ObjectLiteral, Repository } from 'typeo
 import { ResolveFindOptions } from './crud.util';
 import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
-import { ICrudService } from './interfaces/crudService.interface';
+import { ICrudService, IDeleteBulkResult } from './interfaces/crudService.interface';
 import { IFilter } from './interfaces/filter.interface';
 
 export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICrudDto> extends BaseService<TEntity>
@@ -127,8 +127,8 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     await this.repository.update(id, deletedObj);
   }
 
-  async deleteBulk(ids: string[]): Promise<{ [key: string]: string; status: string; errorMessage: string }[]> {
-    const result: { [key: string]: string; status: string; errorMessage: string }[] = [];
+  async deleteBulk(ids: string[]): Promise<IDeleteBulkResult[]> {
+    const result: IDeleteBulkResult[] = [];
 
     await Promise.all(
       ids.map(async id => {
@@ -149,8 +149,8 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     await this.repository.delete(id);
   }
 
-  async destroyBulk(ids: string[]): Promise<{ [key: string]: string; status: string; errorMessage: string }[]> {
-    const result: { [key: string]: string; status: string; errorMessage: string }[] = [];
+  async destroyBulk(ids: string[]): Promise<IDeleteBulkResult[]> {
+    const result: IDeleteBulkResult[] = [];
 
     await Promise.all(
       ids.map(async id => {

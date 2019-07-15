@@ -159,7 +159,7 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
     }
 
     @Delete('multi/purge/:ids')
-    @ApiOperation({ title: `Delete multiple existing ${name}` })
+    @ApiOperation({ title: `Purge multiple existing ${name}` })
     @ApiImplicitParam({
       name: 'ids',
       description: 'example: id,id,id',
