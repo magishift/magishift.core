@@ -1,35 +1,31 @@
 import { FindOneOptions, ObjectLiteral } from 'typeorm';
-import { ICrudConfig, ICrudDto, ICrudEntity } from './crud.interface';
+import { ICrudDto, ICrudEntity } from './crud.interface';
 import { IFilter } from './filter.interface';
-import { IFormSchema } from './form.interface';
-import { IGridSchema } from './grid.interface';
 
 export interface IServiceConfig {
   softDelete: boolean;
 }
 
 export interface ICrudService<TEntity extends ICrudEntity, TDto extends ICrudDto> {
-  getCrudConfig(): ICrudConfig;
+  count(filter: IFilter, ...rest: any[]): Promise<number>;
 
-  getFormSchema(isDeleted?: string): IFormSchema;
+  isExist(id: string, ...rest: any[]): Promise<boolean>;
 
-  getGridSchema(): IGridSchema;
+  fetch(id: string, options?: FindOneOptions<TEntity>, ...rest: any[]): Promise<TDto>;
 
-  count(filter: IFilter): Promise<number>;
+  findOne(param: ObjectLiteral, options?: FindOneOptions<TEntity>, ...rest: any[]): Promise<TDto>;
 
-  isExist(id: string): Promise<boolean>;
+  findAll(filter: IFilter, ...rest: any[]): Promise<TDto[]>;
 
-  fetch(id: string, options?: FindOneOptions<TEntity>): Promise<TDto>;
+  create(data: TDto, doValidation?: boolean, ...rest: any[]): Promise<TDto>;
 
-  findOne(param: ObjectLiteral, options?: FindOneOptions<TEntity>): Promise<TDto>;
+  update(id: string, data: TDto, doValidation?: boolean, ...rest: any[]): Promise<TDto>;
 
-  findAll(filter: IFilter): Promise<TDto[]>;
+  delete(id: string, ...rest: any[]): Promise<void>;
 
-  create(data: TDto, doValidation?: boolean): Promise<TDto>;
+  deleteBulk(ids: string[], ...rest: any[]): Promise<{ [key: string]: string }>;
 
-  update(id: string, data: TDto, doValidation?: boolean): Promise<TDto>;
+  destroy(id: string, ...rest: any[]): Promise<void>;
 
-  destroy(id: string): Promise<void>;
-
-  destroyBulk(ids: string[]): Promise<{ [key: string]: string }>;
+  destroyBulk(ids: string[], ...rest: any[]): Promise<{ [key: string]: string }>;
 }

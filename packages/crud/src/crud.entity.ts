@@ -9,6 +9,9 @@ export abstract class CrudEntity extends BaseEntity implements ICrudEntity {
   @Column({ default: false })
   isDeleted?: boolean;
 
+  @Column()
+  createdAt: Date;
+
   getRepository(): Repository<ICrudEntity> {
     return getRepository(this.constructor.name);
   }
@@ -16,11 +19,15 @@ export abstract class CrudEntity extends BaseEntity implements ICrudEntity {
   @BeforeUpdate()
   protected beforeUpdate(): void {
     this.__meta.histories = this.__meta.histories || [];
+
+    this.createdAt = new Date();
   }
 
   @BeforeInsert()
   protected beforeInsert(): void {
     this.__meta.histories = [];
     this.__meta.dataStatus = this.__meta.dataStatus || DataStatus.Submitted;
+
+    this.createdAt = new Date();
   }
 }

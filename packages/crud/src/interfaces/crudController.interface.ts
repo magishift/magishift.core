@@ -1,39 +1,34 @@
-import { Response } from 'express';
-import { ICrudConfig, ICrudDto } from './crud.interface';
-import { IFile } from './file.interface';
-import { IFormSchema } from './form.interface';
-import { IGridSchema } from './grid.interface';
+import { ICrudDto } from './crud.interface';
+import { IFilter } from './filter.interface';
 
 export interface ICrudController<TDto extends ICrudDto> {
-  getCrudConfig(): ICrudConfig;
+  findAll(filter?: IFilter, ...rest: any[]): Promise<{ items: TDto[]; totalCount: number }>;
 
-  getFormSchema(): IFormSchema;
+  fetchById(id: string, ...rest: any[]): Promise<TDto>;
 
-  getGridSchema(): IGridSchema;
+  openDeleted(filter?: IFilter, ...rest: any[]): Promise<{ items: TDto[]; totalCount: number }>;
 
-  openDeleted(filterArg?: string): Promise<{ items: TDto[]; totalCount: number }>;
+  fetchDeletedById(id: string, ...rest: any[]): Promise<TDto>;
 
-  findAll(filterArg?: string): Promise<{ items: TDto[]; totalCount: number }>;
+  create(data: TDto, ...rest: any[]): Promise<TDto>;
 
-  fetchById(id: string): Promise<TDto>;
+  update(id: string, data: object, ...rest: any[]): Promise<TDto>;
 
-  fetchDeletedById(id: string): Promise<TDto>;
+  delete(id: string, ...rest: any[]): Promise<void>;
 
-  create(data: TDto): Promise<TDto>;
-
-  update(id: string, data: object): Promise<TDto>;
-
-  destroy(id: string): Promise<void>;
-
-  destroyBulk(
+  deleteBulk(
     ids: string,
+    ...rest: any[]
   ): Promise<{
     [key: string]: string;
   }>;
 
-  importCSV(file: IFile): Promise<TDto[]>;
+  destroy(id: string, ...rest: any[]): Promise<void>;
 
-  exportCSV(res: Response, filterArg?: string): Promise<void>;
-
-  downloadCSVTemplate(res: Response): Promise<void>;
+  destroyBulk(
+    ids: string,
+    ...rest: any[]
+  ): Promise<{
+    [key: string]: string;
+  }>;
 }

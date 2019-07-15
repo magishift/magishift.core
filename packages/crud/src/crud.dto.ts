@@ -3,24 +3,14 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { ApiModelProperty } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsUUID, validate, ValidationError } from 'class-validator';
 import { ICrudDto, IDataMeta } from './interfaces/crud.interface';
-import { IForm, IFormField } from './interfaces/form.interface';
-import { IGrid, IGridColumns } from './interfaces/grid.interface';
 
 export abstract class CrudDto extends BaseDto implements ICrudDto {
-  gridSchema: IGrid;
-
-  gridColumns: IGridColumns;
-
-  formSchema: IForm;
-
-  formFields: IFormField[];
-
   @IsOptional()
   @IsUUID()
   @ApiModelProperty({ required: false, readOnly: true })
   id: string;
 
-  @ApiModelProperty({ required: false })
+  @ApiModelProperty({ required: false, default: false })
   @IsBoolean()
   isDeleted: boolean;
 

@@ -1,16 +1,12 @@
 import { BaseService, DataStatus } from '@magishift/base';
-import { ColumnIsNumber, GetPropertyType, GetRelationsTableName } from '@magishift/util';
+import { GetRelationsTableName } from '@magishift/util';
 import { HttpException } from '@nestjs/common';
-import _ = require('lodash');
-import { FindConditions, FindManyOptions, FindOneOptions, Like, ObjectLiteral, Repository } from 'typeorm';
-import { GetFormSchema, GetGridSchema, GetKanbanSchema } from './crud.util';
-import { ICrudConfig, ICrudDto, ICrudEntity } from './interfaces/crud.interface';
+import { FindConditions, FindOneOptions, ObjectLiteral, Repository } from 'typeorm';
+import { ResolveFindOptions } from './crud.util';
+import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
 import { ICrudService, IServiceConfig } from './interfaces/crudService.interface';
 import { IFilter } from './interfaces/filter.interface';
-import { IFormSchema } from './interfaces/form.interface';
-import { IGridSchema } from './interfaces/grid.interface';
-import { IKanban } from './interfaces/kanban.interface';
 
 export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICrudDto> extends BaseService<TEntity>
   implements ICrudService<TEntity, TDto> {
@@ -22,48 +18,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     super(repository);
   }
 
-  getCrudConfig(): ICrudConfig {
-    return {
-      kanban: this.getKanbanSchema(),
-      grid: this.getGridSchema(),
-      form: this.getFormSchema(),
-      softDelete: this.config.softDelete,
-    };
-  }
-
-  getFormSchema(): IFormSchema {
-    const result = GetFormSchema(this.constructor.name);
-
-    return result;
-  }
-
-  getGridSchema(): IGridSchema {
-    const result = GetGridSchema(this.constructor.name);
-
-    const relations = GetRelationsTableName(this.repository.metadata);
-
-    if (relations && relations.length > 0) {
-      result.schema.foreignKey = {};
-
-      relations.map(relation => {
-        result.schema.foreignKey[relation] = relation;
-      });
-    }
-
-    if (result && _.isEmpty(result.schema)) {
-      return null;
-    }
-
-    return result;
-  }
-
-  getKanbanSchema(): IKanban {
-    const result = GetKanbanSchema(this.constructor.name);
-
-    return result;
-  }
-
-  async isExist(id: string): Promise<boolean> {
+  async isExist(id: string, ...rest: any[]): Promise<boolean> {
     return !!(await this.repository.findOne(id));
   }
 
@@ -73,15 +28,16 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       limit: -1,
       isShowDeleted: false,
     },
+    ...rest: any[]
   ): Promise<number> {
-    const findOptions = this.resolveFindOptions(filter);
+    const findOptions = ResolveFindOptions(filter, this.repository);
 
     const result = await this.repository.count(findOptions);
 
     return result;
   }
 
-  async fetch(id: string, options?: FindOneOptions<TEntity>): Promise<TDto> {
+  async fetch(id: string, options?: FindOneOptions<TEntity>, ...rest: any[]): Promise<TDto> {
     options = options || {};
     options.cache = true;
 
@@ -100,7 +56,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return this.mapper.entityToDto(result);
   }
 
-  async findOne(param: ObjectLiteral, options?: FindOneOptions<TEntity>): Promise<TDto> {
+  async findOne(param: ObjectLiteral, options?: FindOneOptions<TEntity>, ...rest: any[]): Promise<TDto> {
     options = options || {};
     options.cache = true;
     options.relations = options.relations || GetRelationsTableName(this.repository.metadata);
@@ -116,8 +72,9 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
       limit: 10,
       isShowDeleted: false,
     },
+    ...rest: any[]
   ): Promise<TDto[]> {
-    const findOptions = this.resolveFindOptions(filter);
+    const findOptions = ResolveFindOptions(filter, this.repository);
 
     // execute query
     const result = await this.repository.find(findOptions);
@@ -130,7 +87,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     );
   }
 
-  async create(data: TDto, doValidation: boolean = true): Promise<TDto> {
+  async create(data: TDto, doValidation: boolean = true, ...rest: any[]): Promise<TDto> {
     if (doValidation) {
       await data.validate();
     }
@@ -149,7 +106,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return this.mapper.entityToDto(entity);
   }
 
-  async update(id: string, data: TDto, doValidation: boolean = true): Promise<TDto> {
+  async update(id: string, data: TDto, doValidation: boolean = true, ...rest: any[]): Promise<TDto> {
     if (doValidation) {
       await data.validate();
     }
@@ -164,7 +121,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return this.mapper.entityToDto(toEntity);
   }
 
-  async destroy(id: string): Promise<void> {
+  async delete(id: string, ...rest: any[]): Promise<void> {
     const entity = await this.repository.findOneOrFail(id);
 
     if (this.config.softDelete && !entity.isDeleted) {
@@ -179,7 +136,27 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     }
   }
 
-  async destroyBulk(ids: string[]): Promise<{ [key: string]: string }> {
+  async deleteBulk(ids: string[], ...rest: any[]): Promise<{ [key: string]: string }> {
+    const result: { [key: string]: string } = {};
+
+    await Promise.all(
+      ids.map(async id => {
+        try {
+          await this.delete(id);
+        } catch (e) {
+          result[id] = e.messages;
+        }
+      }),
+    );
+
+    return result;
+  }
+
+  async destroy(id: string, ...rest: any[]): Promise<void> {
+    await this.repository.delete(id);
+  }
+
+  async destroyBulk(ids: string[], ...rest: any[]): Promise<{ [key: string]: string }> {
     const result: { [key: string]: string } = {};
 
     await Promise.all(
@@ -191,76 +168,6 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
         }
       }),
     );
-
-    return result;
-  }
-
-  private resolveFindOptions(filter: IFilter): FindManyOptions {
-    if (!filter.relations) {
-      filter.relations = GetRelationsTableName(this.repository.metadata);
-    }
-
-    let where: FindConditions<TEntity> = {};
-
-    if (filter.where && !_.isEmpty(filter.where)) {
-      where = this.resolveWhereOperator(filter.where);
-    }
-
-    if (filter.isShowDeleted) {
-      (where as any).isDeleted = true;
-    } else {
-      (where as any).isDeleted = false;
-    }
-
-    const whereOrs: FindConditions<TEntity>[] = [];
-
-    if (filter.whereOr && !_.isEmpty(filter.whereOr)) {
-      whereOrs.push({ ...(where || {}), ...this.resolveWhereOperator(filter.whereOr) });
-    }
-
-    const order: { [P in keyof TEntity]?: 'ASC' | 'DESC' | 1 | -1 } = {};
-
-    if (filter.order) {
-      filter.order.map(ord => {
-        const orders = ord.split(' ');
-        if (orders.length === 2) {
-          order[orders[0]] = orders[1];
-        }
-      });
-    }
-
-    const result: FindManyOptions = {
-      relations: filter.relations,
-      where: whereOrs && whereOrs.length > 0 ? whereOrs : where,
-      order,
-      skip: filter.offset,
-      take: filter.limit,
-      cache: true,
-    };
-
-    return result;
-  }
-
-  private resolveWhereOperator(source: object): FindConditions<TEntity> {
-    const result: FindConditions<TEntity> = {};
-
-    _.forEach(source, (val: string, prop: string) => {
-      const value: string = val;
-
-      const propertyType = GetPropertyType(this.repository.metadata.columns, prop);
-
-      if (
-        propertyType &&
-        (propertyType === 'boolean' ||
-          propertyType === 'bool' ||
-          propertyType === 'uuid' ||
-          ColumnIsNumber(propertyType))
-      ) {
-        result[prop] = value;
-      } else {
-        result[prop] = Like('%' + value + '%');
-      }
-    });
 
     return result;
   }

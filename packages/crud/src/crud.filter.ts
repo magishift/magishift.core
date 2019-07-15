@@ -5,26 +5,26 @@ import { IFilter } from './interfaces/filter.interface';
 
 export class Filter<TDto extends ICrudDto> implements IFilter {
   @IsOptional()
-  @ApiModelProperty()
+  @ApiModelProperty({ required: false })
   where?: Partial<TDto>;
 
   @IsOptional()
-  @ApiModelProperty()
+  @ApiModelProperty({ required: false })
   whereOr?: Partial<TDto>;
 
   @IsOptional()
   @IsArray()
-  @ApiModelProperty()
+  @ApiModelProperty({ required: false, type: String, isArray: true, example: 'id ASC' })
   order?: string[];
 
-  @ApiModelProperty()
+  @ApiModelProperty({ required: false })
   @IsOptional()
   @IsInt()
   @Min(1)
   @Max(1000)
   limit?: number;
 
-  @ApiModelProperty()
+  @ApiModelProperty({ required: false })
   @IsOptional()
   @IsInt()
   @Min(0)
@@ -32,12 +32,12 @@ export class Filter<TDto extends ICrudDto> implements IFilter {
 
   @IsOptional()
   @IsBoolean()
-  @ApiModelProperty()
+  @ApiModelProperty({ required: false })
   isShowDeleted?: boolean;
 
   @IsOptional()
   @IsBoolean()
-  @ApiModelProperty()
+  @ApiModelProperty({ required: false, isArray: true })
   relations?: string[];
 
   constructor(partial: Partial<Filter<TDto>>) {

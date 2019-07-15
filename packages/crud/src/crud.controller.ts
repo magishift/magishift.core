@@ -1,3 +1,4 @@
+import { ExceptionHandler } from '@magishift/util';
 import {
   Body,
   ClassSerializerInterceptor,
@@ -8,105 +9,85 @@ import {
   Patch,
   Post,
   Query,
-  Res,
-  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  ApiImplicitBody,
-  ApiImplicitFile,
-  ApiImplicitParam,
-  ApiImplicitQuery,
-  ApiOperation,
-  ApiResponse,
-  ApiUseTags,
-} from '@nestjs/swagger';
-import { Response } from 'express';
+import { ApiImplicitBody, ApiImplicitParam, ApiOperation, ApiResponse, ApiUseTags } from '@nestjs/swagger';
 import { Filter } from './crud.filter';
-import { CrudController } from './interfaces/crud.controller.base';
-import { ICrudConfig, ICrudDto, ICrudEntity } from './interfaces/crud.interface';
+import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudController } from './interfaces/crudController.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
 import { ICrudService } from './interfaces/crudService.interface';
-import { IFile } from './interfaces/file.interface';
 import { IFindAllResult } from './interfaces/filter.interface';
-import { IFormSchema } from './interfaces/form.interface';
-import { IGridSchema } from './interfaces/grid.interface';
 
 export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICrudEntity>(
   name: string,
   dtoClass: new (...args: any[]) => TDto,
-): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>) => CrudController<TDto, TEntity> {
+): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>) => ICrudController<TDto> {
   class FindAllResult extends IFindAllResult<TDto> {}
 
   @Controller(name)
   @ApiUseTags(name)
   @UseInterceptors(ClassSerializerInterceptor)
-  class CrudControllerBuilder extends CrudController<TDto, TEntity> implements ICrudController<TDto> {
+  class CrudControllerBuilder implements ICrudController<TDto> {
     constructor(
       protected readonly service: ICrudService<TEntity, TDto>,
       protected readonly mapper: ICrudMapper<TEntity, TDto>,
-    ) {
-      super(service, mapper);
-    }
-
-    @Get('/crudConfig')
-    @ApiOperation({ title: `Get ${name} CRUD (form and grid schema included) config` })
-    @ApiResponse({ status: 200, type: ICrudConfig })
-    getCrudConfig(): ICrudConfig {
-      return super.getCrudConfig();
-    }
-
-    @Get('/form')
-    @ApiOperation({ title: `Get ${name} form schema config` })
-    @ApiResponse({ status: 200, type: IFormSchema })
-    getFormSchema(): IFormSchema {
-      return { schema: new dtoClass().formSchema };
-    }
-
-    @Get('/grid')
-    @ApiOperation({ title: `Get ${name} grid schema config` })
-    @ApiResponse({ status: 200, type: IGridSchema })
-    getGridSchema(): IGridSchema {
-      return super.getGridSchema();
-    }
+    ) {}
 
     @Get()
     @ApiOperation({ title: `Fetch and filter list of ${name} ` })
-    @ApiImplicitQuery({
-      name: 'filter',
-      description: 'example: {"order":["id DESC"],"where":{},"limit":25,"offset":0}',
-      type: Filter,
-      required: false,
-    })
     @ApiResponse({ status: 200, type: FindAllResult })
-    async findAll(@Query('filter') filterArg?: string): Promise<FindAllResult> {
-      return await super.findAll(filterArg);
+    async findAll(@Query() filterArg?: Filter<TDto>, ...rest: any[]): Promise<FindAllResult> {
+      try {
+        const items = await this.service.findAll(filterArg, ...rest);
+        const totalCount = await this.service.count(filterArg, ...rest);
+
+        return {
+          items,
+          totalCount,
+        };
+      } catch (e) {
+        return ExceptionHandler(e);
+      }
     }
 
     @Get(':id')
     @ApiOperation({ title: `Fetch single ${name} by id` })
-    async fetchById(@Param('id') id: string): Promise<TDto> {
-      return await super.fetchById(id);
+    async fetchById(@Param('id') id: string, ...rest: any[]): Promise<TDto> {
+      try {
+        return this.service.fetch(id, ...rest);
+      } catch (e) {
+        return ExceptionHandler(e);
+      }
     }
 
     @Get('deleted/:id')
     @ApiOperation({ title: `Get single deleted ${name} by id` })
-    async fetchDeletedById(@Param('id') id: string): Promise<TDto> {
-      return await super.fetchDeletedById(id);
+    async fetchDeletedById(@Param('id') id: string, ...rest: any[]): Promise<TDto> {
+      try {
+        return this.service.findOne({ id, isDeleted: true } as any, ...rest);
+      } catch (e) {
+        return ExceptionHandler(e);
+      }
     }
 
     @Get('/deleted')
     @ApiOperation({ title: `Get all deleted ${name}` })
-    @ApiImplicitQuery({
-      name: 'filter',
-      description: 'example: {"order":["id DESC"],"where":{},"limit":25,"offset":0}',
-      type: Filter,
-      required: false,
-    })
-    async openDeleted(@Query('filter') filterArg?: string): Promise<FindAllResult> {
-      return await super.openDeleted(filterArg);
+    async openDeleted(@Query('filter') filterArg?: Filter<TDto>, ...rest: any[]): Promise<FindAllResult> {
+      try {
+        filterArg.isShowDeleted = true;
+
+        const items = await this.service.findAll(filterArg, ...rest);
+
+        const totalCount = await this.service.count(filterArg, ...rest);
+
+        return {
+          items,
+          totalCount,
+        };
+      } catch (e) {
+        return ExceptionHandler(e);
+      }
     }
 
     @Post()
@@ -115,8 +96,13 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
       type: dtoClass,
     })
     @ApiOperation({ title: `Create new ${name}` })
-    async create(@Body() data: TDto): Promise<TDto> {
-      return await super.create(data);
+    async create(@Body() data: TDto, ...rest: any[]): Promise<TDto> {
+      try {
+        const param = await this.mapper.dtoFromObject(data);
+        return await this.service.create(param, ...rest);
+      } catch (e) {
+        return ExceptionHandler(e);
+      }
     }
 
     @Patch(':id')
@@ -125,14 +111,23 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
       type: dtoClass,
     })
     @ApiOperation({ title: `Update existing ${name}` })
-    async update(@Param('id') id: string, @Body() data: TDto): Promise<TDto> {
-      return await super.update(id, data);
+    async update(@Param('id') id: string, @Body() data: TDto, ...rest: any[]): Promise<TDto> {
+      try {
+        const param: TDto = await this.mapper.dtoFromObject(data);
+        return await this.service.update(id, param, ...rest);
+      } catch (e) {
+        return ExceptionHandler(e);
+      }
     }
 
     @Delete(':id')
     @ApiOperation({ title: `Delete existing ${name}` })
-    async destroy(@Param('id') id: string): Promise<void> {
-      return await super.destroy(id);
+    async delete(@Param('id') id: string, ...rest: any[]): Promise<void> {
+      try {
+        await this.service.delete(id, ...rest);
+      } catch (e) {
+        return ExceptionHandler(e);
+      }
     }
 
     @Delete('multi/:ids')
@@ -143,32 +138,52 @@ export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICr
       type: String,
       required: false,
     })
-    async destroyBulk(
+    async deleteBulk(
       @Param('ids') ids: string,
+      ...rest: any[]
     ): Promise<{
       [key: string]: string;
     }> {
-      return await super.destroyBulk(ids);
+      try {
+        const arrIds = ids.split(',');
+        const result = await this.service.deleteBulk(arrIds, ...rest);
+        return result;
+      } catch (e) {
+        return ExceptionHandler(e);
+      }
     }
 
-    @Post('import-csv')
-    @ApiImplicitFile({ name: 'file' })
-    @UseInterceptors(FileInterceptor('file'))
-    @ApiOperation({ title: `Import and create ${name} from CSV file` })
-    async importCSV(@UploadedFile() file: IFile): Promise<TDto[]> {
-      return await super.importCSV(file);
+    @Delete('purge/:id')
+    @ApiOperation({ title: `Purge existing ${name}` })
+    async destroy(@Param('id') id: string, ...rest: any[]): Promise<void> {
+      try {
+        await this.service.delete(id, ...rest);
+      } catch (e) {
+        return ExceptionHandler(e);
+      }
     }
 
-    @Get('export/csv')
-    @ApiOperation({ title: `Export listed ${name} to CSV file` })
-    async exportCSV(@Res() res: Response, @Query('filter') filterArg?: string): Promise<void> {
-      return await super.exportCSV(res, filterArg);
-    }
-
-    @Get('import-csv/template')
-    @ApiOperation({ title: `Download ${name}'s CSV template` })
-    async downloadCSVTemplate(@Res() res: Response): Promise<void> {
-      return await super.downloadCSVTemplate(res);
+    @Delete('multi/purge/:ids')
+    @ApiOperation({ title: `Delete multiple existing ${name}` })
+    @ApiImplicitParam({
+      name: 'ids',
+      description: 'example: id,id,id',
+      type: String,
+      required: false,
+    })
+    async destroyBulk(
+      @Param('ids') ids: string,
+      ...rest: any[]
+    ): Promise<{
+      [key: string]: string;
+    }> {
+      try {
+        const arrIds = ids.split(',');
+        const result = await this.service.deleteBulk(arrIds, ...rest);
+        return result;
+      } catch (e) {
+        return ExceptionHandler(e);
+      }
     }
   }
 

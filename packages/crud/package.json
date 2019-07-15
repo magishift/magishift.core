@@ -1,6 +1,6 @@
 {
   "name": "@magishift/crud",
-  "version": "0.0.14",
+  "version": "0.0.18",
   "description": "Magishift is Low-Code Framework, helps you to build application easier, faster and a more efficient use of time. (@crud)",
   "author": "Sofyan Hadi Ahmad",
   "license": "MIT",
@@ -15,7 +15,11 @@
     "build": "yarn barrels && rm -rf dist && tsc --p tsconfig.json -d",
     "precommit": "echo 'precommit'",
     "build:publish": "yarn build && yarn publish --no-git-tag-version",
-    "barrels": "barrelsby --delete -d ./src --singleQuotes"
+    "barrels": "barrelsby --delete -d ./src --singleQuotes",
+    "lint": "tslint --project .",
+    "e2e": "jest --config=jest-e2e.json --forceExit --detectOpenHandles",
+    "e2e:watch": "jest --watch --config=jest-e2e.json --detectOpenHandles",
+    "e2e:coverage": "jest --config=jest-e2e.json --coverage --coverageDirectory=./coverage --detectOpenHandles"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,12 +40,16 @@
     "typeorm": "^0.2.18"
   },
   "devDependencies": {
-    "@types/node": "^12.0.7",
+    "@types/node": "^12.0.8",
     "@types/uuid": "^3.4.4",
     "barrelsby": "^2.1.1",
     "copyfiles": "^2.1.0",
+    "jest": "^24.8.0",
     "nodemon": "^1.19.1",
+    "sqlite3": "^4.0.9",
     "supertest": "^4.0.2",
-    "typescript": "^3.5.1"
+    "ts-jest": "^24.0.2",
+    "tslint": "^5.17.0",
+    "typescript": "^3.5.2"
   }
 }
