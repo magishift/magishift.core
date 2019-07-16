@@ -6,17 +6,17 @@ export abstract class CrudDto implements ICrudDto {
   @IsOptional()
   @IsUUID()
   @ApiModelProperty({ required: false, readOnly: true })
-  id: string;
+  id?: string;
 
   @IsOptional()
   @ApiModelProperty({ required: false, readOnly: true })
-  publicId: string;
+  publicId?: string;
 
   @IsOptional()
   @IsBoolean()
   @ApiModelProperty({ required: false, default: false })
-  isDeleted: boolean;
+  isDeleted?: boolean;
 
   @ApiModelProperty({ required: false, readOnly: true, type: IDataMeta })
-  __meta: IDataMeta = {};
+  __meta?: IDataMeta = {};
 }
