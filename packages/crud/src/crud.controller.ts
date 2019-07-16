@@ -21,8 +21,8 @@ import {
   ApiUseTags,
 } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
+import { CrudDto, CrudEntity } from 'src';
 import { Filter } from './crud.filter';
-import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
 import { ICrudController } from './interfaces/crudController.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
 import { ICrudService, IDeleteBulkResult } from './interfaces/crudService.interface';
@@ -30,11 +30,14 @@ import { IFindAllResult } from './interfaces/filter.interface';
 import { FilterTransformerPipe } from './pipes/filterTransformer.pipe';
 import { ValidationPipe } from './pipes/validation.pipe';
 
-export function CrudControllerFactory<TDto extends ICrudDto, TEntity extends ICrudEntity>(
+export function CrudControllerFactory<TDto extends CrudDto, TEntity extends CrudEntity>(
   name: string,
   dtoClass: new (...args: any[]) => TDto,
 ): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>) => ICrudController<TDto> {
-  class FindAllResult extends IFindAllResult<TDto> {}
+  class FindAllResult extends IFindAllResult {
+    @ApiModelProperty({ type: typeof dtoClass, isArray: true })
+    items: TDto[];
+  }
 
   class FilterClass extends Filter<TDto> {
     @IsOptional()

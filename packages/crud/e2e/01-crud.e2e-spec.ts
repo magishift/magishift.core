@@ -13,14 +13,14 @@ import { INestApplication, Logger } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as request from 'supertest';
-import { ITestDto } from './test/interfaces/test.interface';
+import { TestDto } from './test/test.dto';
 import { Test as TestEntity } from './test/test.entity';
 import { TestModule } from './test/test.module';
 
 describe('Test Magi CRUD', () => {
   let app: INestApplication;
 
-  const fixture: ITestDto = {
+  const fixture: Partial<TestDto> = {
     testAttribute: 'Testing',
   };
 
@@ -87,7 +87,7 @@ describe('Test Magi CRUD', () => {
   });
 
   it(`PATCH /test update existing entity`, () => {
-    const updatedFixture: ITestDto = Object.assign(fixture);
+    const updatedFixture: TestDto = Object.assign(fixture);
 
     updatedFixture.testAttribute = 'Updated test name';
 

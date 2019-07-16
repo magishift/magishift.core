@@ -16,7 +16,7 @@ export abstract class CrudEntity implements ICrudEntity {
   @Column({ type: 'simple-json', nullable: true })
   __meta: IDataMeta = {};
 
-  getRepository(): Repository<ICrudEntity> {
+  getRepository(): Repository<CrudEntity> {
     return getRepository(this.constructor.name);
   }
 

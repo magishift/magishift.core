@@ -1,6 +1,4 @@
 import { ApiModelProperty } from '@nestjs/swagger';
-import { CrudDto } from '../crud.dto';
-import { ICrudDto } from './crud.interface';
 
 export abstract class IFilter {
   @ApiModelProperty({ required: false })
@@ -25,10 +23,7 @@ export abstract class IFilter {
   relations?: string[];
 }
 
-export abstract class IFindAllResult<TDto extends ICrudDto> {
+export abstract class IFindAllResult {
   @ApiModelProperty()
   totalCount: number;
-
-  @ApiModelProperty({ type: CrudDto, isArray: true })
-  items: TDto[];
 }
