@@ -14,5 +14,6 @@ export * from './interfaces/crudController.interface';
 export * from './interfaces/crudMapper.Interface';
 export * from './interfaces/crudService.interface';
 export * from './interfaces/filter.interface';
+export * from './pipes/dtoValidation.pipe';
+export * from './pipes/dtosValidation.pipe';
 export * from './pipes/filterTransformer.pipe';
-export * from './pipes/validation.pipe';

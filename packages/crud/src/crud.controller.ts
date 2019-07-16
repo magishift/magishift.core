@@ -27,26 +27,34 @@ import { ICrudController } from './interfaces/crudController.interface';
 import { ICrudMapper } from './interfaces/crudMapper.Interface';
 import { ICrudService, IDeleteBulkResult } from './interfaces/crudService.interface';
 import { IFindAllResult } from './interfaces/filter.interface';
+import { DtoValidationPipe } from './pipes/dtoValidation.pipe';
 import { FilterTransformerPipe } from './pipes/filterTransformer.pipe';
-import { ValidationPipe } from './pipes/validation.pipe';
 
 export function CrudControllerFactory<TDto extends CrudDto, TEntity extends CrudEntity>(
   name: string,
   dtoClass: new (...args: any[]) => TDto,
 ): new (service: ICrudService<TEntity, TDto>, mapper: ICrudMapper<TEntity, TDto>) => ICrudController<TDto> {
   class FindAllResult extends IFindAllResult {
-    @ApiModelProperty({ type: typeof dtoClass, isArray: true })
+    @ApiModelProperty({ type: dtoClass, isArray: true })
     items: TDto[];
   }
 
   class FilterClass extends Filter<TDto> {
     @IsOptional()
-    @ApiModelProperty({ required: false })
-    where?: Partial<typeof dtoClass>;
+    @ApiModelProperty({
+      required: false,
+      type: dtoClass,
+      description: 'ex: {"id" : /001/,  "name" : /a/} => Filter where id contain "001" AND name contain "a"',
+    })
+    where?: Partial<TDto>;
 
     @IsOptional()
-    @ApiModelProperty({ required: false })
-    whereOr?: Partial<typeof dtoClass>;
+    @ApiModelProperty({
+      required: false,
+      type: dtoClass,
+      description: 'ex: {"id" : /001/, "name" : /a/} => Filter where id contain "001" OR name contain "a"',
+    })
+    whereOr?: Partial<TDto>;
   }
 
   @Controller(name)
@@ -63,6 +71,25 @@ export function CrudControllerFactory<TDto extends CrudDto, TEntity extends Crud
     @ApiResponse({ status: 200, type: FindAllResult })
     async findAll(@Query(new FilterTransformerPipe(FilterClass)) filterArg?: FilterClass): Promise<FindAllResult> {
       try {
+        const items = await this.service.findAll(filterArg);
+
+        const totalCount = await this.service.count(filterArg);
+
+        return {
+          items,
+          totalCount,
+        };
+      } catch (e) {
+        return ExceptionHandler(e);
+      }
+    }
+
+    @Get('/deleted')
+    @ApiOperation({ title: `Get all deleted ${name}` })
+    async openDeleted(@Query(new FilterTransformerPipe(FilterClass)) filterArg?: FilterClass): Promise<FindAllResult> {
+      try {
+        filterArg.isShowDeleted = true;
+
         const items = await this.service.findAll(filterArg);
 
         const totalCount = await this.service.count(filterArg);
@@ -96,32 +123,13 @@ export function CrudControllerFactory<TDto extends CrudDto, TEntity extends Crud
       }
     }
 
-    @Get('/deleted')
-    @ApiOperation({ title: `Get all deleted ${name}` })
-    async openDeleted(@Query(new FilterTransformerPipe(FilterClass)) filterArg?: FilterClass): Promise<FindAllResult> {
-      try {
-        filterArg.isShowDeleted = true;
-
-        const items = await this.service.findAll(filterArg);
-
-        const totalCount = await this.service.count(filterArg);
-
-        return {
-          items,
-          totalCount,
-        };
-      } catch (e) {
-        return ExceptionHandler(e);
-      }
-    }
-
     @Post()
     @ApiImplicitBody({
       name: 'Create ' + name,
       type: dtoClass,
     })
     @ApiOperation({ title: `Create new ${name}` })
-    @UsePipes(new ValidationPipe(dtoClass))
+    @UsePipes(new DtoValidationPipe(dtoClass))
     async create(@Body() data: TDto): Promise<TDto> {
       try {
         const param = await this.mapper.dtoFromObject(data);
@@ -137,7 +145,7 @@ export function CrudControllerFactory<TDto extends CrudDto, TEntity extends Crud
       type: dtoClass,
     })
     @ApiOperation({ title: `Update existing ${name}` })
-    @UsePipes(new ValidationPipe(dtoClass))
+    @UsePipes(new DtoValidationPipe(dtoClass))
     async update(@Param('id') id: string, @Body() data: TDto): Promise<TDto> {
       try {
         const param: TDto = await this.mapper.dtoFromObject(data);

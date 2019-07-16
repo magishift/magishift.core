@@ -4,7 +4,7 @@ import { validate } from 'class-validator';
 import { ICrudDto } from 'src/interfaces/crud.interface';
 
 @Injectable()
-export class ValidationPipe implements PipeTransform<any> {
+export class DtoValidationPipe implements PipeTransform<any> {
   constructor(private dto: new (...args: any[]) => ICrudDto) {}
 
   async transform(value: any): Promise<any> {

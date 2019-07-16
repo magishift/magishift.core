@@ -8,7 +8,7 @@ export enum DataHistoryAction {
 }
 
 export abstract class IDataHistory {
-  @ApiModelProperty()
+  @ApiModelProperty({ type: String, format: 'date-time' })
   date: Date;
 
   @ApiModelProperty({ enum: Object.keys(DataHistoryAction).map(key => DataHistoryAction[key]) })

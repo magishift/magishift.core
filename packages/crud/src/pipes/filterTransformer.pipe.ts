@@ -17,6 +17,14 @@ export class FilterTransformerPipe implements PipeTransform<any> {
       object.relations = JSON.parse(value.relations);
     }
 
+    if (value.where) {
+      object.where = JSON.parse(value.where);
+    }
+
+    if (value.whereOr) {
+      object.whereOr = JSON.parse(value.whereOr);
+    }
+
     return object;
   }
 }

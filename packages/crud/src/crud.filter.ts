@@ -14,7 +14,7 @@ export abstract class Filter<TDto extends ICrudDto> implements IFilter {
 
   @IsOptional()
   @IsArray()
-  @ApiModelProperty({ required: false, type: String, example: '["id ASC"]' })
+  @ApiModelProperty({ required: false, type: String, description: '["id ASC"]' })
   order?: string[];
 
   @ApiModelProperty({ required: false })
@@ -37,7 +37,7 @@ export abstract class Filter<TDto extends ICrudDto> implements IFilter {
 
   @IsOptional()
   @IsBoolean()
-  @ApiModelProperty({ required: false, type: String, example: '["relationA", "relationB"]' })
+  @ApiModelProperty({ required: false, type: String, description: '["relationA", "relationB"]' })
   relations?: string[];
 
   constructor(partial: Partial<Filter<TDto>>) {

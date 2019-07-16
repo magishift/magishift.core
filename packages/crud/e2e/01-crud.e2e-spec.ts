@@ -111,7 +111,7 @@ describe('Test Magi CRUD', () => {
 
   it(`GET /test/deleted to fetch all deleted entities`, () =>
     request(app.getHttpServer())
-      .get(`/test?order=["id"]&isShowDeleted=false&limit=1&relations=[]&where={id=${newEntityId}}&whereOr={}`)
+      .get(`/test/deleted?order=["id"]&limit=1&relations=[]&where={"id":"${newEntityId}"}&whereOr={}`)
       .expect(200)
       .then(({ body }) => {
         expect(typeof body.totalCount).toBe('number');
@@ -119,7 +119,7 @@ describe('Test Magi CRUD', () => {
         expect(body.items[0].id).toBe(newEntityId);
       }));
 
-  it(`GET /test/:id  get new created entity`, () => {
+  it(`GET /test/:id get new deleted entity`, () => {
     return request(app.getHttpServer())
       .get(`/test/${newEntityId}`)
       .set('Accept', 'application/json')
