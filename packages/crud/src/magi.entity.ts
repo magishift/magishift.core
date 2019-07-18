@@ -1,24 +1,20 @@
-import cryptoRandomString = require('crypto-random-string');
-import { BeforeInsert, BeforeUpdate, Column, getRepository, PrimaryGeneratedColumn, Repository } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, PrimaryGeneratedColumn } from 'typeorm';
 import { v4 as uuid } from 'uuid';
-import { DataHistoryAction, ICrudEntity, IDataMeta } from './interfaces/crud.interface';
+import { IMagiEntity } from './interfaces/magi.interface';
+import { DataHistoryAction, DataMeta } from './types/magi.type';
 
-export abstract class CrudEntity implements ICrudEntity {
+export abstract class MagiEntity implements IMagiEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = uuid();
 
   @Column({ unique: true })
-  publicId: string = cryptoRandomString({ length: 8 });
+  alias: string;
 
   @Column({ default: false })
-  isDeleted?: boolean;
+  isDeleted: boolean;
 
   @Column({ type: 'simple-json', nullable: true })
-  __meta: IDataMeta = {};
-
-  getRepository(): Repository<CrudEntity> {
-    return getRepository(this.constructor.name);
-  }
+  __meta: DataMeta = {};
 
   @BeforeInsert()
   protected beforeInsert(): void {
@@ -28,6 +24,8 @@ export abstract class CrudEntity implements ICrudEntity {
       date: new Date(),
       by: null,
     });
+
+    this.alias = this.id;
   }
 
   @BeforeUpdate()

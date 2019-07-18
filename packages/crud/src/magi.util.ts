@@ -2,10 +2,10 @@ import { ColumnIsNumber, GetPropertyType, GetRelationsTableName } from '@magishi
 import _ = require('lodash');
 import { FindConditions, FindManyOptions, Like, Repository } from 'typeorm';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
-import { ICrudEntity } from './interfaces/crud.interface';
 import { IFilter } from './interfaces/filter.interface';
+import { IMagiEntity } from './interfaces/magi.interface';
 
-export function ResolveFindOptions<TEntity extends ICrudEntity>(
+export function ResolveFindOptions<TEntity extends IMagiEntity>(
   filter: IFilter,
   repository: Repository<TEntity>,
 ): FindManyOptions {
@@ -54,7 +54,7 @@ export function ResolveFindOptions<TEntity extends ICrudEntity>(
   return result;
 }
 
-function ResolveWhereOperator<TEntity extends ICrudEntity>(
+function ResolveWhereOperator<TEntity extends IMagiEntity>(
   source: object,
   columns: ColumnMetadata[],
 ): FindConditions<TEntity> {

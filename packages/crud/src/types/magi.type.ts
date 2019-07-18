@@ -1,5 +1,4 @@
 import { ApiModelProperty } from '@nestjs/swagger';
-import { Repository } from 'typeorm';
 
 export enum DataHistoryAction {
   Updated = 'updated',
@@ -7,7 +6,7 @@ export enum DataHistoryAction {
   Deleted = 'deleted',
 }
 
-export abstract class IDataHistory {
+export class DataHistory {
   @ApiModelProperty({ type: String, format: 'date-time' })
   date: Date;
 
@@ -18,7 +17,7 @@ export abstract class IDataHistory {
   by: string;
 }
 
-export abstract class IDataMeta {
+export class DataMeta {
   @ApiModelProperty()
   editable?: boolean;
 
@@ -28,28 +27,6 @@ export abstract class IDataMeta {
   @ApiModelProperty()
   dataOwner?: string;
 
-  @ApiModelProperty({ type: IDataHistory, isArray: true })
-  histories?: IDataHistory[];
-}
-
-export interface ICrudEntity {
-  id: string;
-
-  publicId: string;
-
-  isDeleted?: boolean;
-
-  __meta?: IDataMeta;
-
-  getRepository: () => Repository<any>;
-}
-
-export interface ICrudDto {
-  id?: string;
-
-  publicId?: string;
-
-  isDeleted?: boolean;
-
-  __meta?: IDataMeta;
+  @ApiModelProperty({ type: DataHistory, isArray: true })
+  histories?: DataHistory[];
 }

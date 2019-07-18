@@ -13,15 +13,15 @@ import { INestApplication, Logger } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as request from 'supertest';
-import { TestDto } from './test/test.dto';
-import { Test as TestEntity } from './test/test.entity';
-import { TestModule } from './test/test.module';
+import { CatDto } from './cat/cat.dto';
+import { Cat } from './cat/cat.entity';
+import { CatModule } from './cat/cat.module';
 
-describe('Test Magi CRUD', () => {
+describe('Cat Magi CRUD', () => {
   let app: INestApplication;
 
-  const fixture: Partial<TestDto> = {
-    testAttribute: 'Testing',
+  const fixture: Partial<CatDto> = {
+    catAttribute: 'Miaaaau',
   };
 
   let newEntityId: string;
@@ -32,10 +32,10 @@ describe('Test Magi CRUD', () => {
         TypeOrmModule.forRoot({
           type: 'sqlite',
           database: ':memory:',
-          entities: [TestEntity],
+          entities: [Cat],
           synchronize: true,
         }),
-        TestModule,
+        CatModule,
       ],
     }).compile();
 
@@ -45,27 +45,27 @@ describe('Test Magi CRUD', () => {
     await app.init();
   });
 
-  it(`GET /test to fetch all entities`, () =>
+  it(`GET /cat to fetch all entities`, () =>
     request(app.getHttpServer())
-      .get('/test?order=["id ASC"]&isShowDeleted=false&limit=10&relations=[]&where={}&whereOr={}')
+      .get('/cat?order=["id ASC"]&limit=10&relations=[]&where={}&whereOr={}')
       .expect(200)
       .then(({ body }) => {
-        expect(typeof body.totalCount).toBe('number');
+        expect(typeof body.totalRecords).toBe('number');
         expect(Array.isArray(body.items)).toBe(true);
       }));
 
-  it(`POST /test add new invalid entity`, () =>
+  it(`POST /cat add new invalid entity`, () =>
     request(app.getHttpServer())
-      .post('/test')
+      .post('/cat')
       .send({
-        testAttribute: null,
+        catAttribute: null,
       })
       .set('Accept', 'application/json')
       .expect(400));
 
-  it(`POST /test add new entity`, () =>
+  it(`POST /cat add new entity`, () =>
     request(app.getHttpServer())
-      .post('/test')
+      .post('/cat')
       .send(fixture)
       .set('Accept', 'application/json')
       .expect(201)
@@ -74,54 +74,61 @@ describe('Test Magi CRUD', () => {
         newEntityId = body.id;
       }));
 
-  it(`GET /test/:id get new created entity`, () => {
+  it(`GET /cat/:id get new created entity`, () => {
     return request(app.getHttpServer())
-      .get(`/test/${newEntityId}`)
+      .get(`/cat/${newEntityId}`)
       .set('Accept', 'application/json')
       .expect(200)
       .expect('Content-Type', /json/)
       .then(({ body }) => {
         expect(body.id).toBe(newEntityId);
-        expect(body.testAttribute).toBe(fixture.testAttribute);
+        expect(body.catAttribute).toBe(fixture.catAttribute);
       });
   });
 
-  it(`PATCH /test update existing entity`, () => {
-    const updatedFixture: TestDto = Object.assign(fixture);
+  it(`PATCH /cat update existing entity`, () => {
+    const updatedFixture: CatDto = Object.assign(fixture);
 
-    updatedFixture.testAttribute = 'Updated test name';
+    updatedFixture.catAttribute = 'Updated test name';
 
     return request(app.getHttpServer())
-      .patch(`/test/${newEntityId}`)
+      .patch(`/cat/${newEntityId}`)
       .send(fixture)
       .set('Accept', 'application/json')
       .expect(200)
       .then(({ body }) => {
         expect(body.id).toBe(newEntityId);
-        expect(body.testAttribute).toBe(updatedFixture.testAttribute);
+        expect(body.catAttribute).toBe(updatedFixture.catAttribute);
       });
   });
 
-  it(`DELETE /test/:id  delete new created entity`, () => {
+  it(`DELETE /cat/:id  delete new created entity`, () => {
     return request(app.getHttpServer())
-      .delete(`/test/${newEntityId}`)
+      .delete(`/cat/${newEntityId}`)
       .set('Accept', 'application/json')
       .expect(200);
   });
 
-  it(`GET /test/deleted to fetch all deleted entities`, () =>
+  it(`GET /cat/deleted to fetch all deleted entities`, () =>
     request(app.getHttpServer())
-      .get(`/test/deleted?order=["id"]&limit=1&relations=[]&where={"id":"${newEntityId}"}&whereOr={}`)
+      .get(`/cat/deleted?order=["id"]&limit=1&relations=[]&where={"id":"${newEntityId}"}&whereOr={}`)
       .expect(200)
       .then(({ body }) => {
-        expect(typeof body.totalCount).toBe('number');
+        expect(typeof body.totalRecords).toBe('number');
         expect(Array.isArray(body.items)).toBe(true);
         expect(body.items[0].id).toBe(newEntityId);
       }));
 
-  it(`GET /test/:id get new deleted entity`, () => {
+  it(`GET /cat/deleted/:id get new deleted entity`, () => {
     return request(app.getHttpServer())
-      .get(`/test/${newEntityId}`)
+      .get(`/cat/deleted/${newEntityId}`)
+      .set('Accept', 'application/json')
+      .expect(200);
+  });
+
+  it(`GET /cat/:id get new deleted entity`, () => {
+    return request(app.getHttpServer())
+      .get(`/cat/${newEntityId}`)
       .set('Accept', 'application/json')
       .expect(404);
   });

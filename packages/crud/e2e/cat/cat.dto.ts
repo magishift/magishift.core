@@ -1,9 +1,9 @@
-import { CrudDto } from '../../src';
+import { MagiDto } from '../../src';
 import { ApiModelProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 
-export class TestDto extends CrudDto {
+export class CatDto extends MagiDto {
   @ApiModelProperty()
   @IsString()
-  testAttribute: string;
+  catAttribute: string;
 }

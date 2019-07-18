@@ -1,7 +1,7 @@
 import { ApiModelProperty } from '@nestjs/swagger';
 import { FindOneOptions, ObjectLiteral } from 'typeorm';
-import { ICrudDto, ICrudEntity } from './crud.interface';
 import { IFilter } from './filter.interface';
+import { IMagiDto, IMagiEntity } from './magi.interface';
 
 export abstract class IDeleteBulkResult {
   @ApiModelProperty()
@@ -14,7 +14,7 @@ export abstract class IDeleteBulkResult {
   errorMessage: string;
 }
 
-export interface ICrudService<TEntity extends ICrudEntity, TDto extends ICrudDto> {
+export interface ICrudService<TEntity extends IMagiEntity, TDto extends IMagiDto> {
   count(filter: IFilter, ...rest: any[]): Promise<number>;
 
   isExist(id: string, ...rest: any[]): Promise<boolean>;

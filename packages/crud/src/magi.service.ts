@@ -1,13 +1,13 @@
 import { GetRelationsTableName } from '@magishift/util';
 import { HttpException } from '@nestjs/common';
 import { FindConditions, FindOneOptions, ObjectLiteral, Repository } from 'typeorm';
-import { ResolveFindOptions } from './crud.util';
-import { ICrudDto, ICrudEntity } from './interfaces/crud.interface';
-import { ICrudMapper } from './interfaces/crudMapper.Interface';
-import { ICrudService, IDeleteBulkResult } from './interfaces/crudService.interface';
 import { IFilter } from './interfaces/filter.interface';
+import { IMagiDto, IMagiEntity } from './interfaces/magi.interface';
+import { ICrudMapper } from './interfaces/magiMapper.Interface';
+import { ICrudService, IDeleteBulkResult } from './interfaces/magiService.interface';
+import { ResolveFindOptions } from './magi.util';
 
-export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICrudDto>
+export abstract class MagiService<TEntity extends IMagiEntity, TDto extends IMagiDto>
   implements ICrudService<TEntity, TDto> {
   constructor(
     protected readonly repository: Repository<TEntity>,
@@ -58,7 +58,9 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
 
     const result = await this.repository.findOne({ ...param } as FindConditions<TEntity>, options);
 
-    return this.mapper.entityToDto(result);
+    if (result && result.id) {
+      return this.mapper.entityToDto(result);
+    }
   }
 
   async findAll(

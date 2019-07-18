@@ -1,16 +1,12 @@
 import { ApiModelProperty } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsInt, IsOptional, Max, Min } from 'class-validator';
-import { ICrudDto } from './interfaces/crud.interface';
 import { IFilter } from './interfaces/filter.interface';
+import { IMagiDto } from './interfaces/magi.interface';
 
-export abstract class Filter<TDto extends ICrudDto> implements IFilter {
-  @IsOptional()
-  @ApiModelProperty({ required: false, example: '{"id" : "001"}', description: 'Filter where' })
-  where?: Partial<TDto>;
+export abstract class MagiFilter<TDto extends IMagiDto> implements IFilter {
+  abstract where: Partial<TDto>;
 
-  @IsOptional()
-  @ApiModelProperty({ required: false, example: '{"id" : "001"}', description: 'Filter where or' })
-  whereOr?: Partial<TDto>;
+  abstract whereOr: Partial<TDto>;
 
   @IsOptional()
   @IsArray()
@@ -32,15 +28,12 @@ export abstract class Filter<TDto extends ICrudDto> implements IFilter {
 
   @IsOptional()
   @IsBoolean()
-  @ApiModelProperty({ required: false })
-  isShowDeleted?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
   @ApiModelProperty({ required: false, type: String, description: '["relationA", "relationB"]' })
   relations?: string[];
 
-  constructor(partial: Partial<Filter<TDto>>) {
+  isShowDeleted?: boolean;
+
+  constructor(partial: Partial<MagiFilter<TDto>>) {
     Object.assign(this, partial);
   }
 }
