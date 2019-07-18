@@ -7,9 +7,6 @@ export abstract class MagiEntity implements IMagiEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = uuid();
 
-  @Column({ unique: true })
-  alias: string;
-
   @Column({ default: false })
   isDeleted: boolean;
 
@@ -24,8 +21,6 @@ export abstract class MagiEntity implements IMagiEntity {
       date: new Date(),
       by: null,
     });
-
-    this.alias = this.id;
   }
 
   @BeforeUpdate()

@@ -1,5 +1,5 @@
 import { ApiModelProperty } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsOptional, IsUUID } from 'class-validator';
 import { IMagiDto } from './interfaces/magi.interface';
 import { DataMeta } from './types/magi.type';
 
@@ -8,11 +8,6 @@ export abstract class MagiDto implements IMagiDto {
   @IsUUID()
   @ApiModelProperty({ required: false, readOnly: true })
   id?: string;
-
-  @IsOptional()
-  @IsString()
-  @ApiModelProperty({ required: false, readOnly: true })
-  alias?: string;
 
   @IsOptional()
   @IsBoolean()
