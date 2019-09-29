@@ -8,7 +8,7 @@ import { IDraft } from './interfaces/draft.interface';
 
 @Injectable()
 export class DraftService {
-  constructor(@InjectRepository(Draft) protected readonly repository: Repository<Draft>) {}
+  constructor(@InjectRepository(Draft, 'mongodb') protected readonly repository: Repository<IDraft>) {}
 
   async isExist(id: string): Promise<boolean> {
     const result = await this.repository.findOne({

@@ -1,7 +1,6 @@
 import {
   Body,
   Delete,
-  FileInterceptor,
   Get,
   Param,
   Patch,
@@ -12,6 +11,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiUseTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { DefaultRoles } from '../auth/role/role.const';

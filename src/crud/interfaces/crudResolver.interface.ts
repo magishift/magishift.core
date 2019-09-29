@@ -1,9 +1,5 @@
 import { ICrudDto, ICrudEntity } from './crud.interface';
 
-export interface ISubscriptionResult {
-  subscribe: () => any;
-}
-
 export interface ICrudResolver<TDto extends ICrudDto, TEntity extends ICrudEntity> {
   findById(ctx: any): Promise<object>;
 
@@ -18,10 +14,4 @@ export interface ICrudResolver<TDto extends ICrudDto, TEntity extends ICrudEntit
   destroy(ctx: any): Promise<object>;
 
   destroyById(ctx: any): Promise<object>;
-
-  created(ctx: any): ISubscriptionResult;
-
-  updated(): ISubscriptionResult;
-
-  destroyed(): ISubscriptionResult;
 }

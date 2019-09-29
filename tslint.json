@@ -1,11 +1,18 @@
 {
   "defaultSeverity": "error",
-  "extends": ["tslint:recommended"],
+  "extends": [
+    "tslint:recommended"
+  ],
   "cliOptions": {
-    "exclude": ["node_modules/subscriptions-transport-ws/dist/**.d.ts"]
+    "exclude": [
+      "node_modules/subscriptions-transport-ws/dist/**.d.ts"
+    ]
   },
   "linterOptions": {
-    "exclude": ["dist", "node_modules/subscriptions-transport-ws/dist/**.d.ts"]
+    "exclude": [
+      "dist",
+      "node_modules/subscriptions-transport-ws/dist/**.d.ts"
+    ]
   },
   "jsRules": {
     "no-unused-expression": true
@@ -13,7 +20,12 @@
   "rules": {
     "no-this-assignment": [
       true,
-      { "allowed-names": ["^self$"], "allow-destructuring": true }
+      {
+        "allowed-names": [
+          "^self$"
+        ],
+        "allow-destructuring": true
+      }
     ],
     "typedef": [
       true,
@@ -21,26 +33,54 @@
       "parameter",
       "member-variable-declaration"
     ],
-    "no-unused-variable": [true, { "ignore-pattern": "^_" }],
+    "no-unused-variable": [
+      true,
+      {
+        "ignore-pattern": "^_"
+      }
+    ],
     "no-submodule-imports": false,
-    "no-console": [true, "log"],
+    "no-console": [
+      true,
+      "log"
+    ],
     "eofline": false,
-    "quotemark": [true, "single"],
+    "quotemark": [
+      true,
+      "single"
+    ],
     "indent": false,
-    "member-access": [false],
-    "ordered-imports": [true],
-    "max-line-length": [true, 150],
+    "member-access": [
+      false
+    ],
+    "ordered-imports": [
+      true
+    ],
+    "max-line-length": [
+      true,
+      150
+    ],
     "curly": false,
-    "interface-name": [true],
-    "array-type": [false],
+    "interface-name": [
+      true
+    ],
+    "array-type": [
+      false
+    ],
     "no-empty-interface": true,
     "no-empty": true,
     "arrow-parens": false,
     "object-literal-sort-keys": false,
-    "max-classes-per-file": [false],
-    "variable-name": [false],
-    "one-line": [true],
-    "one-variable-per-declaration": [false],
+    "max-classes-per-file": false,
+    "variable-name": [
+      false
+    ],
+    "one-line": [
+      true
+    ],
+    "one-variable-per-declaration": [
+      false
+    ],
     "member-ordering": [
       true,
       {

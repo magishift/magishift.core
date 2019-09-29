@@ -1,6 +1,5 @@
 import {
   Body,
-  FileInterceptor,
   Get,
   HttpException,
   Post,
@@ -11,6 +10,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiUseTags } from '@nestjs/swagger';
 import { IToken } from '../auth/interfaces/auth.interface';
 import { LoginData } from '../auth/loginData.dto';
@@ -32,13 +32,11 @@ import { UserService } from './user.service';
 export function UserControllerFactory<TDto extends IUserDto, TEntity extends IUser>(
   name: string,
   roles: IEndpointRoles,
-): {
-  new (
-    service: UserService<TEntity, TDto>,
-    fileService: FileStorageService,
-    mapper: CrudMapper<TEntity, TDto>,
-  ): IUserController<TDto>;
-} {
+): new (
+  service: UserService<TEntity, TDto>,
+  fileService: FileStorageService,
+  mapper: CrudMapper<TEntity, TDto>,
+) => IUserController<TDto> {
   @ApiUseTags(name)
   @UseGuards(RolesGuard)
   @Roles(...roles.default)

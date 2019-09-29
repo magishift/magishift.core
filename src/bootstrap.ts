@@ -4,8 +4,6 @@ import { NestFactory } from '@nestjs/core';
 import { GraphQLModule } from '@nestjs/graphql';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import * as Agenda from 'agenda';
-import * as Agendash from 'agendash';
 import { json } from 'body-parser';
 import chalk from 'chalk';
 import * as compression from 'compression';
@@ -13,13 +11,11 @@ import * as express from 'express';
 import * as rateLimit from 'express-rate-limit';
 import * as StatusMonitor from 'express-status-monitor';
 import { existsSync } from 'fs';
-import * as graphqlJS from 'graphql';
+import { DocumentNode, printSchema } from 'graphql';
 import * as GraphQlJSON from 'graphql-type-json';
-import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import * as helmet from 'helmet';
 import { fileLoader, mergeTypes } from 'merge-graphql-schemas';
 import * as path from 'path';
-import 'reflect-metadata';
 import { AccountModule } from './auth/account/account.module';
 import { AuthModule } from './auth/auth.module';
 import { LoginHistoryModule } from './auth/loginHistory/loginHistory.module';
@@ -31,9 +27,7 @@ import { SmsTemplateModule } from './common/smsTemplate/smsTemplate.module';
 import { IConfigOptions } from './config/config.interfaces';
 import { ConfigModule } from './config/config.module';
 import { ConfigService } from './config/config.service';
-import { CronModule } from './cron/cron.module';
 import { DraftModule } from './crud/draft/draft.module';
-import { PubSubList, PubSubProvider } from './crud/providers/pubSub.provider';
 import { FileStorageModule } from './fileStorage/fileStorage.module';
 import { GraphQLInstance } from './graphql/graphql.instance';
 import { HttpModule } from './http/http.module';
@@ -47,6 +41,8 @@ import { GoogleFcmModule } from './thirdParty/google/googleFcm/googleFcm.module'
 import { DeviceModule } from './user/device/device.module';
 import { NotificationModule } from './user/notification/notification.module';
 import { ErrorFilter } from './utils/error.utils';
+
+import 'reflect-metadata';
 
 /**
  * Magishift application Bootstrapper
@@ -66,7 +62,6 @@ export async function MagiApp(
   controllers?: Type<any>[],
   providers?: Provider[],
   exports?: Array<DynamicModule | string | Provider | ForwardReference>,
-  components?: Provider[],
 ): Promise<any> {
   if (!ConfigService.getConfig) {
     ConfigService.setConfig = config;
@@ -88,7 +83,7 @@ export async function MagiApp(
     return mergeTypes(fileLoader(graphqlPath), { all: true });
   });
 
-  const graphQLSchema = mergeTypes([...typesArray, PubSubList.GetPubSubSchema, graphqlJS.printSchema(mainSchema)], {
+  const graphQLSchema: DocumentNode = mergeTypes([...typesArray, printSchema(mainSchema)], {
     all: true,
   });
 
@@ -101,7 +96,7 @@ export async function MagiApp(
     ConfigModule.injectConfig(ConfigService.getConfig),
     GraphQLModule.forRoot({
       resolvers: { JSON: GraphQlJSON },
-      typeDefs: graphQLSchema,
+      typeDefs: graphQLSchema.toString(),
       debug: true,
       playground: true,
       installSubscriptionHandlers: true,
@@ -120,7 +115,6 @@ export async function MagiApp(
     FileStorageModule,
     LoggerModule,
     SettingModule,
-    CronModule,
     EmailTemplateModule,
     SmsTemplateModule,
     AuthModule,
@@ -138,9 +132,8 @@ export async function MagiApp(
   if (ConfigService.getConfig.email) {
     defaultImports.push(
       MailerModule.forRoot({
-        transport: `smtps://${ConfigService.getConfig.email.username}:${ConfigService.getConfig.email.password}@${
-          ConfigService.getConfig.email.host
-        }`,
+        // tslint:disable-next-line: max-line-length
+        transport: `smtps://${ConfigService.getConfig.email.username}:${ConfigService.getConfig.email.password}@${ConfigService.getConfig.email.host}`,
       }),
     );
   }
@@ -150,40 +143,13 @@ export async function MagiApp(
   }
 
   providers.push(DateScalar);
-  providers.push(PubSubProvider);
-
-  if (!exports) {
-    exports = [];
-  }
-
-  exports.push(PubSubProvider);
 
   @Module({
     imports: [...defaultImports, ...imports],
     controllers,
     providers,
-    exports,
-    components,
   })
-  class ApplicationModule {
-    static AgendaInstance: Agenda;
-
-    constructor(private readonly cron: CronModule) {
-      ApplicationModule.AgendaInstance = this.agendaSetup(ConfigService.getConfig);
-      this.cron.configureAgenda(ApplicationModule.AgendaInstance);
-    }
-
-    private agendaSetup({ db }: IConfigOptions): Agenda {
-      return new Agenda({
-        db: {
-          address: `mongodb://${db.secondary.username}:${db.secondary.password}@${db.secondary.host}:${
-            db.secondary.port
-          }`,
-          collection: 'agendaDb',
-        },
-      });
-    }
-  }
+  class ApplicationModule {}
 
   // Bootstrap Magi Application
   async function bootstrap(): Promise<void> {
@@ -210,30 +176,15 @@ export async function MagiApp(
 
     app.use('/favicon.ico', express.static(`${__dirname}/../images/favicon.ico`));
 
-    console.info(chalk.green(`Enabling Voyager`));
-    app.use('/voyager', voyagerMiddleware({ endpointUrl: '/graphql' }));
-
-    if (ApplicationModule.AgendaInstance) {
-      app.use(
-        '/dash',
-        (_req, _res, next) => {
-          next();
-        },
-        Agendash(ApplicationModule.AgendaInstance),
-      );
-    }
-
     app.useGlobalFilters(new ErrorFilter(appLogger));
 
     app.use(json({ limit: '50mb' }));
 
     app.use(StatusMonitor());
 
-    console.info(chalk.green(`Load security features: helmet, csurf, rate-limit`));
+    console.info(chalk.green(`Load security features: helmet, rate-limit`));
 
     app.use(helmet());
-
-    // app.use(csurf());
 
     app.use(
       rateLimit({

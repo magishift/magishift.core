@@ -10,7 +10,7 @@ import { TextInputMapper } from './textInput.mapper';
 @Injectable()
 export class TextInputService extends CrudService<ITextInput, ITextInputDto> {
   constructor(
-    @InjectRepository(TextInput) protected readonly textInputRepository: Repository<TextInput>,
+    @InjectRepository(TextInput) protected readonly textInputRepository: Repository<ITextInput>,
     protected readonly draftService: DraftService,
     protected readonly mapper: TextInputMapper,
   ) {

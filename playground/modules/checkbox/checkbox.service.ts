@@ -10,7 +10,7 @@ import { ICheckbox, ICheckboxDto } from './interfaces/checkbox.interface';
 @Injectable()
 export class CheckboxService extends CrudService<ICheckbox, ICheckboxDto> {
   constructor(
-    @InjectRepository(Checkbox) protected readonly repository: Repository<Checkbox>,
+    @InjectRepository(Checkbox) protected readonly repository: Repository<ICheckbox>,
     protected readonly draftService: DraftService,
     protected readonly mapper: CheckboxMapper,
   ) {

@@ -7,7 +7,10 @@ import { Setting } from './setting.entity.mongo';
 
 @Injectable()
 export class SettingService<TSetting extends ISetting> {
-  constructor(@InjectRepository(Setting) protected readonly repository: Repository<Setting>) {}
+  constructor(
+    @InjectRepository(Setting, 'mongodb')
+    protected readonly repository: Repository<Setting>,
+  ) {}
 
   async isExist(id: string): Promise<boolean> {
     const result = await this.repository.findOne({

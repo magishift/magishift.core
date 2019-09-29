@@ -11,7 +11,7 @@ import { IAdmin, IAdminDto } from './interfaces/admin.interface';
 @Injectable()
 export class AdminService extends UserService<IAdmin, IAdminDto> {
   constructor(
-    @InjectRepository(Admin) protected readonly repository: Repository<Admin>,
+    @InjectRepository(Admin) protected readonly repository: Repository<IAdmin>,
     protected readonly accountService: AccountService,
     protected readonly mapper: AdminMapper,
     protected readonly draftService: DraftService,

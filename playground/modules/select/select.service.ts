@@ -10,7 +10,7 @@ import { SelectMapper } from './select.mapper';
 @Injectable()
 export class SelectService extends CrudService<ISelect, ISelectDto> {
   constructor(
-    @InjectRepository(Select) protected readonly SelectRepository: Repository<Select>,
+    @InjectRepository(Select) protected readonly SelectRepository: Repository<ISelect>,
     protected readonly draftService: DraftService,
     protected readonly mapper: SelectMapper,
   ) {

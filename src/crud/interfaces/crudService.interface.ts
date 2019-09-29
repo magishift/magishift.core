@@ -1,4 +1,4 @@
-import { DeepPartial, FindOneOptions } from 'typeorm';
+import { FindOneOptions, ObjectLiteral } from 'typeorm';
 import { ICrudDto, ICrudEntity } from './crud.interface';
 import { IFilter } from './filter.interface';
 
@@ -11,7 +11,7 @@ export interface ICrudService<TEntity extends ICrudEntity, TDto extends ICrudDto
 
   fetchDraft(id: string): Promise<TDto>;
 
-  findOne(param: DeepPartial<TEntity>, options?: FindOneOptions<TEntity>): Promise<TDto>;
+  findOne(param: ObjectLiteral, options?: FindOneOptions<TEntity>): Promise<TDto>;
 
   findAll(filter: IFilter): Promise<TDto[]>;
 

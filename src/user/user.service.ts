@@ -43,7 +43,8 @@ export abstract class UserService<TEntity extends IUser, TDto extends IUserDto> 
     }
 
     const userDto = await this.mapper.dtoToEntity(data);
-    await this.repository.update(id, userDto);
+
+    await this.repository.update(id, userDto as any);
 
     return this.fetch(id);
   }

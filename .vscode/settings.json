@@ -20,6 +20,7 @@
     "pubsub",
     "realtime",
     "skck",
+    "smtps",
     "stnk",
     "twilio",
     "typeorm",

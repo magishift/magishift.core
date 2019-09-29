@@ -10,7 +10,7 @@ import { SmsTemplateMapper } from './smsTemplate.mapper';
 @Injectable()
 export class SmsTemplateService extends CrudService<ISmsTemplate, ISmsTemplateDto> {
   constructor(
-    @InjectRepository(SmsTemplate) protected readonly smsTemplateRepository: Repository<SmsTemplate>,
+    @InjectRepository(SmsTemplate) protected readonly smsTemplateRepository: Repository<ISmsTemplate>,
     protected readonly draftService: DraftService,
     protected readonly mapper: SmsTemplateMapper,
   ) {

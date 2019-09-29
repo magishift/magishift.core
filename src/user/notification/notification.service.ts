@@ -10,7 +10,7 @@ import { NotificationMapper } from './notification.mapper';
 @Injectable()
 export class NotificationService extends CrudService<INotification, INotificationDto> {
   constructor(
-    @InjectRepository(Notification) protected readonly notificationRepository: Repository<Notification>,
+    @InjectRepository(Notification) protected readonly notificationRepository: Repository<INotification>,
     protected readonly draftService: DraftService,
     protected readonly mapper: NotificationMapper,
   ) {

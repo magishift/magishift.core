@@ -1,6 +1,14 @@
 import { HttpException } from '@nestjs/common';
 import * as _ from 'lodash';
-import { Brackets, DeepPartial, FindOneOptions, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  Brackets,
+  DeepPartial,
+  FindConditions,
+  FindOneOptions,
+  ObjectLiteral,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 import { BaseService } from '../base/base.service';
 import { DataStatus } from '../base/interfaces/base.interface';
@@ -64,12 +72,12 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     return this.mapper.entityToDto(result);
   }
 
-  async findOne(param: DeepPartial<TEntity>, options?: FindOneOptions<TEntity>): Promise<TDto> {
+  async findOne(param: ObjectLiteral, options?: FindOneOptions<TEntity>): Promise<TDto> {
     options = options || {};
 
     options.relations = options.relations || getRelationsName(this.repository.metadata.columns);
 
-    const result = await this.repository.findOne(param, options);
+    const result = await this.repository.findOne({ ...param } as FindConditions<TEntity>, options);
 
     return this.mapper.entityToDto(result);
   }
@@ -154,7 +162,7 @@ export abstract class CrudService<TEntity extends ICrudEntity, TDto extends ICru
     delete toEntity.id;
     delete toEntity.updatedAt;
 
-    await this.repository.update(id, toEntity);
+    await this.repository.update(id, toEntity as any);
 
     const result = await this.fetch(id);
 

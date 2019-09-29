@@ -12,7 +12,7 @@ import { LoginHistoryMapper } from './loginHistory.mapper';
 @Injectable()
 export class LoginHistoryService extends CrudService<ILoginHistory, ILoginHistoryDto> {
   constructor(
-    @InjectRepository(LoginHistory) protected readonly repository: Repository<LoginHistory>,
+    @InjectRepository(LoginHistory) protected readonly repository: Repository<ILoginHistory>,
     protected readonly draftService: DraftService,
     protected readonly mapper: LoginHistoryMapper,
   ) {

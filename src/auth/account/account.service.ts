@@ -13,7 +13,7 @@ import { IAccount, IAccountDto } from './interfaces/account.interface';
 @Injectable()
 export class AccountService extends CrudService<IAccount, IAccountDto> {
   constructor(
-    @InjectRepository(Account) protected readonly repository: Repository<Account>,
+    @InjectRepository(Account) protected readonly repository: Repository<IAccount>,
     protected readonly authService: AuthService,
     protected readonly draftService: DraftService,
     protected readonly mapper: AccountMapper,

@@ -10,7 +10,7 @@ import { PickerMapper } from './picker.mapper';
 @Injectable()
 export class PickerService extends CrudService<IPicker, IPickerDto> {
   constructor(
-    @InjectRepository(Picker) protected readonly PickerRepository: Repository<Picker>,
+    @InjectRepository(Picker) protected readonly PickerRepository: Repository<IPicker>,
     protected readonly draftService: DraftService,
     protected readonly mapper: PickerMapper,
   ) {

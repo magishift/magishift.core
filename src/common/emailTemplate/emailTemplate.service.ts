@@ -10,7 +10,7 @@ import { IEmailTemplate, IEmailTemplateDto } from './interfaces/emailTemplate.in
 @Injectable()
 export class EmailTemplateService extends CrudService<IEmailTemplate, IEmailTemplateDto> {
   constructor(
-    @InjectRepository(EmailTemplate) protected readonly emailTemplateRepository: Repository<EmailTemplate>,
+    @InjectRepository(EmailTemplate) protected readonly emailTemplateRepository: Repository<IEmailTemplate>,
     protected readonly draftService: DraftService,
     protected readonly mapper: EmailTemplateMapper,
   ) {

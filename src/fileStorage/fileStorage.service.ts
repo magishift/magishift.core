@@ -18,7 +18,7 @@ export class FileStorageService extends CrudService<IFileStorage, IFileStorageDt
   private s3: AWS.S3 = new AWS.S3();
 
   constructor(
-    @InjectRepository(FileStorage) protected readonly repository: Repository<FileStorage>,
+    @InjectRepository(FileStorage) protected readonly repository: Repository<IFileStorage>,
     protected readonly draftService: DraftService,
     protected readonly mapper: FileStorageMapper,
   ) {

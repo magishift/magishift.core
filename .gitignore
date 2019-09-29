@@ -19,7 +19,6 @@ package.lock
 
 .DS_Store
 
-
 clients/**
 .history
 

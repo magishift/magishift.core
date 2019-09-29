@@ -5,6 +5,8 @@ import { Menu } from '../setting/menu/menu.utils';
 import { SnakeNamingStrategy } from './../database/snakeNaming';
 import { IAwsS3, IConfigOptions, IDBConfigs, IEmailConfig, IGraphQlConfig, NodeEnvType } from './config.interfaces';
 import { ConfigService } from './config.service';
+import { Setting } from '../setting/setting.entity.mongo';
+import { Draft } from '../crud/draft/draft.entity.mongo';
 
 export const ConfigLoaderHelper = (
   appName: string,
@@ -29,16 +31,16 @@ export const ConfigLoaderHelper = (
 
   const appVersion = process.env.MAGISHIFT_APP_VERSION;
 
-  const entities = [`${process.cwd()}/src/modules/**/*.entity{.ts,.js}`, `${__dirname}/../**/*.entity{.ts,.js}`];
+  console.info(process.cwd);
 
-  const mongoEntities = [
-    `${process.cwd()}/src/modules/**/*.entity.mongo{.ts,.js}`,
-    `${__dirname}/../**/*.entity.mongo{.ts,.js}`,
+  const entities = [
+    `${process.cwd()}/src/**/*.entity{.ts,.js}`,
+    `${process.cwd()}/src/modules/**/*.entity{.ts,.js}`,
+    `${__dirname}/../**/*.entity{.ts,.js}`,
   ];
 
   if (cwd) {
     entities.push(`${cwd}/**/*.entity{.ts,.js}`);
-    mongoEntities.push(`${cwd}/**/*.entity.mongo{.ts,.js}`);
   }
 
   const dbConfig: IDBConfigs = {
@@ -53,14 +55,6 @@ export const ConfigLoaderHelper = (
       synchronize: true,
       entities,
       namingStrategy: new SnakeNamingStrategy(),
-      cache: {
-        type: 'redis',
-        options: {
-          host: process.env.MAGISHIFT_REDIS_HOST,
-          port: process.env.MAGISHIFT_REDIS_PORT,
-          duration: 30000,
-        },
-      },
     },
     secondary: {
       type: 'mongodb',
@@ -72,7 +66,7 @@ export const ConfigLoaderHelper = (
       port: Number(process.env.MAGISHIFT_MONGO_DB_PORT),
       synchronize: true,
       logging: envType !== 'production',
-      entities: mongoEntities,
+      entities: [Draft, Setting],
       namingStrategy: new SnakeNamingStrategy(),
     },
   };

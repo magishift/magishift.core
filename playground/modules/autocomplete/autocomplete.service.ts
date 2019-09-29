@@ -10,7 +10,7 @@ import { IAutocomplete, IAutocompleteDto } from './interfaces/autocomplete.inter
 @Injectable()
 export class AutocompleteService extends CrudService<IAutocomplete, IAutocompleteDto> {
   constructor(
-    @InjectRepository(Autocomplete) protected readonly AutocompleteRepository: Repository<Autocomplete>,
+    @InjectRepository(Autocomplete) protected readonly AutocompleteRepository: Repository<IAutocomplete>,
     protected readonly draftService: DraftService,
     protected readonly mapper: AutocompleteMapper,
   ) {

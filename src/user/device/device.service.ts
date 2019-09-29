@@ -11,7 +11,7 @@ import { IDevice, IDeviceDto } from './interfaces/device.interface';
 @Injectable()
 export class DeviceService extends CrudService<IDevice, IDeviceDto> {
   constructor(
-    @InjectRepository(Device) protected readonly repository: Repository<Device>,
+    @InjectRepository(Device) protected readonly repository: Repository<IDevice>,
     protected readonly draftService: DraftService,
     protected readonly mapper: DeviceMapper,
   ) {
