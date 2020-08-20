@@ -762,10 +762,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/agenda@2.0.4":
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/@types/agenda/-/agenda-2.0.4.tgz#94f43a9b6022fde8a87209bad2475a90029a42ca"
-  integrity sha512-iOAt0JjmfD0APkGSfIjh/wD909kUW6WDhB5irGIIqHYih4znbiHtgCzXHKi219QFVdF6KeNhVA7N1yTd9a0CtA==
+"@types/agenda@2.0.9":
+  version "2.0.9"
+  resolved "https://registry.yarnpkg.com/@types/agenda/-/agenda-2.0.9.tgz#bc7354aeee064bfe6145e4804e450c9b04345526"
+  integrity sha512-uSQmxC9/OWvXCprY5+xzDUt95NCAffijeODNM4qscWnl9TGXIxyeA59MKF1Wq0OUPpURiWylVuNGUzBku1KrIA==
   dependencies:
     "@types/mongodb" "*"
     "@types/node" "*"
