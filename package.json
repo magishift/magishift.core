@@ -111,7 +111,7 @@
   },
   "devDependencies": {
     "@compodoc/compodoc": "1.1.9",
-    "@types/agenda": "2.0.4",
+    "@types/agenda": "2.0.9",
     "@types/bcryptjs": "2.4.2",
     "@types/chalk": "2.2.0",
     "@types/cli-color": "0.3.29",
