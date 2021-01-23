@@ -44,7 +44,7 @@
     "cache-manager": "^2.9.0",
     "chalk": "^2.4.2",
     "class-transformer": "^0.2.0",
-    "class-validator": "^0.9.1",
+    "class-validator": "^0.13.0",
     "cli-color": "^1.4.0",
     "compression": "^1.7.4",
     "connect-redis": "^3.4.1",
