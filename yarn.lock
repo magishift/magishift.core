@@ -4704,12 +4704,13 @@ fs-minipass@^1.2.5:
   dependencies:
     minipass "^2.2.1"
 
-fs-path@^0.0.24:
-  version "0.0.24"
-  resolved "https://registry.yarnpkg.com/fs-path/-/fs-path-0.0.24.tgz#21a4b8d7dce5bae6d208261955dbc2bcf1e75c06"
-  integrity sha512-kKxBYWJVCidJpBkp2pj9yn9myAoe+fwk/w8PfZQS4RfjB0oY9pkD4MQQQBq/NQib6Yq9EhGZgzUv/NORK/k+5A==
+fs-path@^0.0.25:
+  version "0.0.25"
+  resolved "https://registry.yarnpkg.com/fs-path/-/fs-path-0.0.25.tgz#19ae668f865c864eb76ebd6fee1e8801b59e1f2d"
+  integrity sha512-EzYXXH6tvZ8oE2iAlB7nt0q34CYG8J+SfCauuipvBaLBscaQvcyZrafsJC1+EDZwIEpPwVcBElF1/Y+1tEWAcQ==
   dependencies:
     async "~0.9.0"
+    shell-escape "^0.2.0"
 
 fs.realpath@^1.0.0:
   version "1.0.0"
@@ -9896,6 +9897,11 @@ shebang-regex@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-1.0.0.tgz#da42f49740c0b42db2ca9728571cb190c98efea3"
   integrity sha1-2kL0l0DAtC2yypcoVxyxkMmO/qM=
+
+shell-escape@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/shell-escape/-/shell-escape-0.2.0.tgz#68fd025eb0490b4f567a027f0bf22480b5f84133"
+  integrity sha1-aP0CXrBJC09WegJ/C/IkgLX4QTM=
 
 shelljs@^0.8.3:
   version "0.8.3"
