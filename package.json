@@ -132,7 +132,7 @@
     "@types/shelljs": "0.8.5",
     "@types/supertest": "2.0.7",
     "@types/twilio": "0.0.10",
-    "@types/uuid": "3.4.4",
+    "@types/uuid": "3.4.10",
     "copyfiles": "2.1.0",
     "nodemon": "1.18.11",
     "supertest": "4.0.2"
