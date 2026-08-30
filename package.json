@@ -106,7 +106,7 @@
     "typegql": "^0.7.1",
     "typeorm": "^0.2.16",
     "typescript": "^3.4.4",
-    "uuid": "^3.3.2",
+    "uuid": "^11.0.0",
     "winston": "^3.2.1"
   },
   "devDependencies": {
