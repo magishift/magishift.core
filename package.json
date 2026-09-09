@@ -73,7 +73,7 @@
     "json2csv": "^4.5.0",
     "jsonwebtoken": "^8.5.1",
     "keycloak-admin": "^1.10.0",
-    "keycloak-connect": "^6.0.0",
+    "keycloak-connect": "^21.0.0",
     "keycloak-request-token": "^0.1.0",
     "lodash": "^4.17.11",
     "merge-graphql-schemas": "^1.5.8",
